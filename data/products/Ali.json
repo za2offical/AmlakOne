@@ -1,0 +1,62 @@
+{
+  "products": [
+    {
+      "id": "1749397890341",
+      "bedrooms": 3,
+      "area": 200,
+      "constructionYear": 1400,
+      "images": [],
+      "facilities": {
+        "parking": true,
+        "storage": true,
+        "elevator": true,
+        "balcony": false,
+        "parquet": false,
+        "westernToilet": false
+      },
+      "privateInfo": {
+        "propertyAddress": "",
+        "ownerName": "",
+        "ownerPhone": "",
+        "propertyNumber": "",
+        "tenantName": "",
+        "tenantPhone": ""
+      },
+      "description": "",
+      "created_at": "2025-06-08T15:51:30.341Z",
+      "updated_at": "2025-06-08T15:51:30.341Z",
+      "deposit": 50000000000,
+      "monthlyRent": 1000000000,
+      "allowConversion": false
+    },
+    {
+      "id": "1749400785538",
+      "bedrooms": 3,
+      "area": 250,
+      "constructionYear": 1400,
+      "images": [],
+      "facilities": {
+        "parking": false,
+        "storage": false,
+        "elevator": true,
+        "balcony": false,
+        "parquet": false,
+        "westernToilet": false
+      },
+      "privateInfo": {
+        "propertyAddress": "",
+        "ownerName": "",
+        "ownerPhone": "",
+        "propertyNumber": "",
+        "tenantName": "",
+        "tenantPhone": ""
+      },
+      "description": "",
+      "created_at": "2025-06-08T16:39:45.538Z",
+      "updated_at": "2025-06-08T16:39:45.538Z",
+      "deposit": 50000000000,
+      "monthlyRent": 1000000000,
+      "allowConversion": false
+    }
+  ]
+}

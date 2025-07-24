@@ -1,0 +1,141 @@
+[
+  {
+    "id": "1751238214056",
+    "title": "اختلال در ثبت اگهی",
+    "description": "سلام ثبت آگهی ارور میده",
+    "priority": "urgent",
+    "category": "technical",
+    "status": "open",
+    "createdBy": "alireza",
+    "createdAt": "2025-06-29T23:03:34.056Z",
+    "updatedAt": "2025-06-29T23:05:07.548Z",
+    "messages": [
+      {
+        "id": "1751238214056",
+        "sender": "alireza",
+        "message": "سلام ثبت آگهی ارور میده",
+        "timestamp": "2025-06-29T23:03:34.056Z",
+        "isAdmin": false
+      },
+      {
+        "id": "1751238246225",
+        "sender": "admin",
+        "message": "سلام بررسی میکنیم",
+        "timestamp": "2025-06-29T23:04:06.225Z",
+        "isAdmin": true,
+        "isSystemMessage": true,
+        "isInternal": false
+      },
+      {
+        "id": "1751238267660",
+        "sender": "alireza",
+        "message": "چقدر طول میکشه",
+        "timestamp": "2025-06-29T23:04:27.660Z",
+        "isAdmin": false
+      },
+      {
+        "id": "1751238307548",
+        "sender": "admin",
+        "message": "مشکل شما بررسی شد این تیکت بسته خواهد شد",
+        "timestamp": "2025-06-29T23:05:07.548Z",
+        "isAdmin": true,
+        "isSystemMessage": true,
+        "isInternal": false
+      }
+    ],
+    "assignedTo": null,
+    "resolvedAt": null,
+    "closedAt": null,
+    "tags": [],
+    "attachments": []
+  },
+  {
+    "id": "1751237879593",
+    "title": "اختلال در ثبت اگهی",
+    "description": "متن کاربر ...... .......... ................... .",
+    "priority": "high",
+    "category": "support",
+    "status": "open",
+    "createdBy": "alireza",
+    "createdAt": "2025-06-29T22:57:59.593Z",
+    "updatedAt": "2025-06-29T22:57:59.593Z",
+    "messages": [
+      {
+        "id": "1751237879593",
+        "sender": "alireza",
+        "message": "متن کاربر ...... .......... ................... .",
+        "timestamp": "2025-06-29T22:57:59.593Z",
+        "isAdmin": false
+      }
+    ],
+    "assignedTo": null,
+    "resolvedAt": null,
+    "closedAt": null,
+    "tags": [],
+    "attachments": []
+  },
+  {
+    "id": "1751238000000",
+    "title": "مشکل در ورود به سیستم",
+    "description": "نمی‌توانم وارد حساب کاربری خود شوم",
+    "priority": "medium",
+    "category": "technical",
+    "status": "in_progress",
+    "createdBy": "a",
+    "createdAt": "2025-06-29T23:00:00.000Z",
+    "updatedAt": "2025-06-29T23:05:00.000Z",
+    "messages": [
+      {
+        "id": "1751238000000",
+        "sender": "a",
+        "message": "نمی‌توانم وارد حساب کاربری خود شوم",
+        "timestamp": "2025-06-29T23:00:00.000Z",
+        "isAdmin": false
+      },
+      {
+        "id": "1751238030000",
+        "sender": "admin",
+        "message": "سلام، مشکل شما بررسی می‌شود",
+        "timestamp": "2025-06-29T23:05:00.000Z",
+        "isAdmin": true
+      }
+    ],
+    "assignedTo": "admin",
+    "resolvedAt": null,
+    "closedAt": null,
+    "tags": [],
+    "attachments": []
+  },
+  {
+    "id": "1751238100000",
+    "title": "سوال درباره قیمت‌گذاری",
+    "description": "آیا امکان تخفیف برای خریدهای عمده وجود دارد؟",
+    "priority": "low",
+    "category": "billing",
+    "status": "resolved",
+    "createdBy": "zii",
+    "createdAt": "2025-06-29T23:10:00.000Z",
+    "updatedAt": "2025-06-29T23:15:00.000Z",
+    "messages": [
+      {
+        "id": "1751238100000",
+        "sender": "zii",
+        "message": "آیا امکان تخفیف برای خریدهای عمده وجود دارد؟",
+        "timestamp": "2025-06-29T23:10:00.000Z",
+        "isAdmin": false
+      },
+      {
+        "id": "1751238130000",
+        "sender": "admin",
+        "message": "بله، برای خریدهای بالای 10 میلیون تومان 10% تخفیف اعمال می‌شود",
+        "timestamp": "2025-06-29T23:15:00.000Z",
+        "isAdmin": true
+      }
+    ],
+    "assignedTo": "admin",
+    "resolvedAt": "2025-06-29T23:15:00.000Z",
+    "closedAt": null,
+    "tags": [],
+    "attachments": []
+  }
+]

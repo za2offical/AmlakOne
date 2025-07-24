@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت قرارهای ملکی - پنل کاربری</title>
+    <link rel="stylesheet" href="/css/appointments.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+    <meta name="description" content="مدیریت قرارهای ملکی - ثبت و مدیریت قرارهای ملاقات با مشتریان">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="/js/common.js"></script>
+</head>
+<body class="appointments-bg">
+    <div class="container">
+        <!-- Header Section -->
+        <header class="appointments-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button class="back-btn" onclick="window.location.href='/panel'" title="بازگشت به پنل">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                    </button>
+                    <div class="header-title">
+                        <h1>مدیریت قرارهای ملکی</h1>
+                        <p>ثبت و مدیریت قرارهای ملاقات با مشتریان</p>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openNewAppointmentModal()" id="newAppointmentBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        </svg>
+                        قرار جدید
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Statistics Cards -->
+        <div class="stats-container" id="statsContainer">
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="totalAppointments">0</div>
+                    <div class="stat-label">کل قرارها</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon today">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="todayAppointments">0</div>
+                    <div class="stat-label">قرارهای امروز</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon upcoming">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="upcomingAppointments">0</div>
+                    <div class="stat-label">قرارهای آینده</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon completed">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="completedAppointments">0</div>
+                    <div class="stat-label">تکمیل شده</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="filters-section">
+            <div class="search-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+                <input type="text" id="searchInput" placeholder="جستجو در قرارها..." />
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">همه</button>
+                <button class="filter-btn" data-filter="scheduled">برنامه‌ریزی شده</button>
+                <button class="filter-btn" data-filter="completed">تکمیل شده</button>
+                <button class="filter-btn" data-filter="cancelled">لغو شده</button>
+            </div>
+        </div>
+
+        <!-- Appointments List -->
+        <div class="appointments-container">
+            <div id="loading" class="loading">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" style="animation: spin 1s linear infinite;">
+                    <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>
+                </svg>
+                <div>در حال بارگذاری قرارها...</div>
+            </div>
+
+            <div id="error" class="error-message" style="display: none;"></div>
+
+            <div id="appointmentsList" class="appointments-list"></div>
+        </div>
+    </div>
+
+    <!-- New Appointment Modal -->
+    <div class="modal" id="newAppointmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ثبت قرار جدید</h2>
+                <button class="close-btn" onclick="closeNewAppointmentModal()">&times;</button>
+            </div>
+            
+            <form id="newAppointmentForm" class="appointment-form">
+                <div class="form-group">
+                    <label for="propertySelect">انتخاب ملک *</label>
+                    <select id="propertySelect" required>
+                        <option value="">انتخاب کنید...</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="clientName">نام مشتری *</label>
+                        <input type="text" id="clientName" required placeholder="نام و نام خانوادگی">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="clientPhone">شماره تلفن *</label>
+                        <input type="tel" id="clientPhone" required placeholder="09123456789">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="appointmentDate">تاریخ قرار *</label>
+                        <input type="text" id="appointmentDate" data-jdp required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="appointmentTime">ساعت قرار *</label>
+                        <input type="text" id="appointmentTime" required pattern="^([01]?\d|2[0-3]):[0-5]\d$" maxlength="5" placeholder="مثال: 14:30">
+                        <small class="time-hint">ساعت را به صورت ۲۴ ساعته وارد کنید (مثال: 14:30)</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="appointmentType">نوع قرار</label>
+                    <select id="appointmentType">
+                        <option value="visit">بازدید ملک</option>
+                        <option value="contract">امضای قرارداد</option>
+                        <option value="consultation">مشاوره</option>
+                        <option value="other">سایر</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">توضیحات</label>
+                    <textarea id="notes" rows="3" placeholder="توضیحات اضافی..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeNewAppointmentModal()">انصراف</button>
+                    <button type="submit" class="btn btn-primary">ثبت قرار</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Appointment Modal -->
+    <div class="modal" id="editAppointmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ویرایش قرار</h2>
+                <button class="close-btn" onclick="closeEditAppointmentModal()">&times;</button>
+            </div>
+            
+            <form id="editAppointmentForm" class="appointment-form">
+                <input type="hidden" id="editAppointmentId">
+                
+                <div class="form-group">
+                    <label for="editPropertySelect">انتخاب ملک *</label>
+                    <select id="editPropertySelect" required>
+                        <option value="">انتخاب کنید...</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editClientName">نام مشتری *</label>
+                        <input type="text" id="editClientName" required placeholder="نام و نام خانوادگی">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editClientPhone">شماره تلفن *</label>
+                        <input type="tel" id="editClientPhone" required placeholder="09123456789">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editAppointmentDate">تاریخ قرار *</label>
+                        <input type="text" id="editAppointmentDate" data-jdp required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editAppointmentTime">ساعت قرار *</label>
+                        <input type="text" id="editAppointmentTime" required pattern="^([01]?\d|2[0-3]):[0-5]\d$" maxlength="5" placeholder="مثال: 14:30">
+                        <small class="time-hint">ساعت را به صورت ۲۴ ساعته وارد کنید (مثال: 14:30)</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editAppointmentType">نوع قرار</label>
+                        <select id="editAppointmentType">
+                            <option value="visit">بازدید ملک</option>
+                            <option value="contract">امضای قرارداد</option>
+                            <option value="consultation">مشاوره</option>
+                            <option value="other">سایر</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editStatus">وضعیت</label>
+                        <select id="editStatus">
+                            <option value="scheduled">برنامه‌ریزی شده</option>
+                            <option value="completed">تکمیل شده</option>
+                            <option value="cancelled">لغو شده</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editNotes">توضیحات</label>
+                    <textarea id="editNotes" rows="3" placeholder="توضیحات اضافی..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-danger" onclick="deleteAppointment()">حذف قرار</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditAppointmentModal()">انصراف</button>
+                    <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/appointments.js"></script>
+    <!-- اضافه کردن CDN JalaliDatePicker قبل از پایان body -->
+    <link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
+    <script src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
+    <!-- Timepicker CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-js-timepicker/dist/timepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-js-timepicker/dist/timepicker.min.js"></script>
+    <script src="https://unpkg.com/imask"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.1.0/dist/jalaali.min.js"></script>
+</body>
+</html> 

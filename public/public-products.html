@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محصولات - AmlakOne</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="مشاهده محصولات املاک">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="AmlakOne">
+    <meta name="msapplication-TileColor" content="#2563eb">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/icon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/icon-180x180.png">
+    <link rel="mask-icon" href="/images/icons/safari-pinned-tab.svg" color="#2563eb">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <link rel="stylesheet" href="/css/public-products.css">
+    <script src="/js/pwa.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1 id="pageTitle">محصولات</h1>
+            <p id="userContact" class="user-contact"></p>
+        </div>
+        <button class="about-us-btn" onclick="showAboutUs()">
+            درباره ما
+        </button>
+    </div>
+
+    <div class="filter-container">
+        <button class="filter-btn active" data-filter="all">همه</button>
+        <button class="filter-btn" data-filter="rent">اجاره</button>
+        <button class="filter-btn" data-filter="sale">فروش</button>
+        <button class="filter-btn advanced-filter-btn" onclick="toggleAdvancedFilter()">فیلتر پیشرفته</button>
+    </div>
+
+    <div id="advancedFilterPanel" class="advanced-filter-panel" style="display: none;">
+        <div class="advanced-filter-content">
+            <h3>فیلتر پیشرفته</h3>
+            
+            <!-- انتخاب نوع فیلتر -->
+            <div class="filter-type-selection">
+                <label>
+                    <input type="radio" name="advancedFilterType" value="budget" checked>
+                    فیلتر بر اساس بودجه
+                </label>
+                <label>
+                    <input type="radio" name="advancedFilterType" value="simple">
+                    فیلتر ساده (متراژ)
+                </label>
+            </div>
+
+            <!-- فیلتر بودجه -->
+            <div id="budgetFilter" class="budget-filter">
+                <div class="form-group">
+                    <label for="budgetType">نوع معامله:</label>
+                    <select id="budgetType">
+                        <option value="sale">خرید</option>
+                        <option value="rent">اجاره</option>
+                    </select>
+                </div>
+
+                <!-- فیلدهای خرید -->
+                <div id="saleBudgetFields" class="budget-fields">
+                    <div class="form-group">
+                        <label for="saleBudget">بودجه خرید (تومان):</label>
+                        <input type="text" id="saleBudget" placeholder="مثال: 2,000,000,000" class="price-input">
+                        <small>محصولات در بازه ±10% نمایش داده می‌شوند</small>
+                    </div>
+                </div>
+
+                <!-- فیلدهای اجاره -->
+                <div id="rentBudgetFields" class="budget-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="depositBudget">بودجه ودیعه (تومان):</label>
+                        <input type="text" id="depositBudget" placeholder="مثال: 150,000,000" class="price-input">
+                        <small>محصولات در بازه ±10% نمایش داده می‌شوند</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="rentBudget">حداکثر اجاره ماهانه (تومان):</label>
+                        <input type="text" id="rentBudget" placeholder="مثال: 8,000,000 (اختیاری)" class="price-input">
+                        <small>اختیاری - در صورت عدم وارد کردن، صفر در نظر گرفته می‌شود</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- فیلتر ساده -->
+            <div id="simpleFilter" class="simple-filter" style="display: none;">
+                <div class="form-group">
+                    <label for="propertyTypeSimple">نوع آگهی:</label>
+                    <select id="propertyTypeSimple">
+                        <option value="all">همه</option>
+                        <option value="sale">فروش</option>
+                        <option value="rent">اجاره</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="areaRange">متراژ:</label>
+                    <div class="area-range">
+                        <input type="number" id="minArea" placeholder="حداقل" min="1">
+                        <span>تا</span>
+                        <input type="number" id="maxArea" placeholder="حداکثر" min="1">
+                        <span>متر مربع</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button onclick="applyAdvancedFilter()" class="apply-btn">اعمال فیلتر</button>
+                <button onclick="resetAdvancedFilter()" class="reset-btn">پاک کردن</button>
+                <button onclick="closeAdvancedFilter()" class="close-btn">بستن</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading" class="loading">
+        <p>در حال بارگذاری محصولات...</p>
+    </div>
+
+    <div id="error" class="error" style="display: none;">
+        <p>خطا در بارگذاری محصولات. لطفاً دوباره تلاش کنید.</p>
+    </div>
+
+    <div id="productsContainer" class="products-grid" style="display: none;">
+    </div>
+
+    <div id="noProducts" class="no-products" style="display: none;">
+        <h3>محصولی یافت نشد</h3>
+        <p>این کاربر هنوز محصولی اضافه نکرده است.</p>
+    </div>
+
+    <script src="/js/products-filter.js"></script>
+    <script src="/js/product-cache.js"></script>
+    <script src="/js/pre-cache.js"></script>
+    <script src="/js/smart-cache.js"></script>
+    <script src="/js/public-products.js"></script>
+</body>
+</html>

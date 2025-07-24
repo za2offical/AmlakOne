@@ -1,0 +1,5 @@
+# This directory is for 3D model files (.glb, .gltf)
+# Place your door and window models here:
+# - Nice Door.glb
+# - Window Large.glb
+# These models are optional - the system will use fallback geometric shapes if not found

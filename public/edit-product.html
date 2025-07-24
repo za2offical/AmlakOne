@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ویرایش محصول</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/create-product.css">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button class="back-btn" onclick="window.location.href='/panel'" title="بازگشت به پنل">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                    </button>
+                    <div class="header-title">
+                        <h1>ویرایش محصول</h1>
+                        <p>بروزرسانی اطلاعات ملک</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="loading" class="loading" style="display: block;">
+            در حال بارگذاری اطلاعات محصول...
+        </div>
+
+        <div id="error" class="error-message" style="display: none;"></div>
+
+        <div class="card" id="editContainer" style="display: none;">
+            <div class="form-header">
+                <h2>اطلاعات ملک</h2>
+            </div>
+
+        <form id="editProductForm">
+            <!-- اطلاعات اصلی -->
+            <div class="form-section">
+                <div class="section-title">اطلاعات اصلی ملک</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="propertyType">نوع آگهی:</label>
+                        <select id="propertyType" name="propertyType" required onchange="togglePriceFields()">
+                            <option value="">انتخاب کنید</option>
+                            <option value="rent">اجاره</option>
+                            <option value="sale">فروش</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bedrooms">تعداد اتاق خواب:</label>
+                        <input type="number" id="bedrooms" name="bedrooms" 
+                               required min="0" max="10" placeholder="مثال: 2">
+                    </div>
+                    <div class="form-group">
+                        <label for="area">مساحت (متر مربع):</label>
+                        <input type="number" id="area" name="area" 
+                               required min="1" max="1000" step="0.01" placeholder="مثال: 80">
+                    </div>
+                    <div class="form-group">
+                        <label for="constructionYear">سال ساخت:</label>
+                        <input type="number" id="constructionYear" name="constructionYear" 
+                               min="1300" max="1410" placeholder="مثال: 1398">
+                    </div>
+                </div>
+            </div>
+
+            <!-- قیمت‌گذاری -->
+            <div class="form-section">
+                <div class="section-title">قیمت‌گذاری</div>
+                
+                <!-- فیلدهای فروش -->
+                <div id="saleFields" class="price-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="salePrice">قیمت کل (تومان):</label>
+                        <input type="text" id="salePrice" name="salePrice" 
+                               placeholder="مثال: 2,500,000,000" class="price-input">
+                        <small>قیمت هر متر مربع به صورت خودکار محاسبه می‌شود</small>
+                    </div>
+                </div>
+
+                <!-- فیلدهای اجاره -->
+                <div id="rentFields" class="price-fields" style="display: none;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="deposit">ودیعه (تومان):</label>
+                            <input type="text" id="deposit" name="deposit" 
+                                   placeholder="مثال: 150,000,000" class="price-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="monthlyRent">اجاره ماهانه (تومان):</label>
+                            <input type="text" id="monthlyRent" name="monthlyRent" 
+                                   placeholder="مثال: 8,000,000" class="price-input">
+                            <small>اختیاری - می‌تواند خالی بماند</small>
+                        </div>
+                    </div>
+                    
+                    <!-- امکان تبدیل -->
+                    <div class="form-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="allowConversion" name="allowConversion" value="true" onchange="toggleConversionFields()">
+                            <span>امکان تبدیل ودیعه به اجاره</span>
+                        </label>
+                    </div>
+                    
+                    <div id="conversionFields" class="conversion-section" style="display: none;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="conversionDeductAmount">مبلغ کاهش از ودیعه (تومان):</label>
+                                <input type="text" id="conversionDeductAmount" name="conversionDeductAmount" 
+                                       placeholder="مثال: 50,000,000" class="price-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="conversionAddAmount">مبلغ اضافه به اجاره ماهانه (تومان):</label>
+                                <input type="text" id="conversionAddAmount" name="conversionAddAmount" 
+                                       placeholder="مثال: 2,000,000" class="price-input">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- امکانات -->
+            <div class="form-section">
+                <div class="section-title">امکانات ملک</div>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="parking" value="true">
+                        <span>پارکینگ</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="storage" value="true">
+                        <span>انباری</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="elevator" value="true">
+                        <span>آسانسور</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="balcony" value="true">
+                        <span>بالکن</span>
+                    </label>
+                </div>
+
+                <!-- امکانات اختیاری -->
+                <button type="button" class="toggle-button" onclick="toggleOptionalFeatures()">
+                    امکانات اختیاری
+                </button>
+                <div id="optionalFeatures" class="optional-section">
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="parquet" value="true">
+                            <span>کف پارکت</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="westernToilet" value="true">
+                            <span>سرویس فرنگی</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- اطلاعات خصوصی -->
+            <div class="form-section">
+                <div class="private-info">
+                    <h3>اطلاعات خصوصی ملک</h3>
+                    <p>این اطلاعات فقط برای شما قابل مشاهده است و در آگهی نمایش داده نخواهد شد</p>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="propertyAddress">آدرس ملک:</label>
+                        <input type="text" id="propertyAddress" name="propertyAddress" 
+                               placeholder="آدرس کامل ملک را وارد کنید">
+                    </div>
+                    <div class="form-group">
+                        <label for="ownerName">نام مالک:</label>
+                        <input type="text" id="ownerName" name="ownerName" 
+                               placeholder="نام و نام خانوادگی مالک">
+                    </div>
+                    <div class="form-group">
+                        <label for="ownerPhone">شماره تماس مالک:</label>
+                        <input type="tel" id="ownerPhone" name="ownerPhone" 
+                               placeholder="09xxxxxxxxx" pattern="09[0-9]{9}">
+                    </div>
+                    <div class="form-group">
+                        <label for="propertyNumber">شماره ملک:</label>
+                        <input type="text" id="propertyNumber" name="propertyNumber" 
+                               placeholder="شماره یا کد ملک">
+                    </div>
+                    <div class="form-group">
+                        <label for="tenantName">نام ساکن فعلی:</label>
+                        <input type="text" id="tenantName" name="tenantName" 
+                               placeholder="نام و نام خانوادگی ساکن فعلی">
+                    </div>
+                    <div class="form-group">
+                        <label for="tenantPhone">شماره تماس ساکن فعلی:</label>
+                        <input type="tel" id="tenantPhone" name="tenantPhone" 
+                               placeholder="09xxxxxxxxx" pattern="09[0-9]{9}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- گالری تصاویر (موجود + جدید) -->
+            <div class="form-section">
+                <div class="section-title">تصاویر محصول</div>
+                <div class="image-upload">
+                    <label for="newImages">
+                        <input type="file" id="newImages" name="newImages" accept="image/*" multiple style="display: none;">
+                        <div>
+                            <p>📷 برای افزودن یا جایگزینی تصاویر کلیک کنید</p>
+                            <p style="font-size: 14px; color: #666;">حداکثر 5 تصویر | تصاویر به صورت خودکار فشرده می‌شوند</p>
+                            <p style="font-size: 12px; color: #999;">حداکثر حجم مجاز برای هر تصویر: 20 مگابایت</p>
+                        </div>
+                    </label>
+                </div>
+                <div id="galleryPreview" class="image-preview"></div>
+            </div>
+
+            <!-- توضیحات -->
+            <div class="form-section">
+                <div class="section-title">توضیحات اضافی</div>
+                <div class="form-group">
+                    <label for="description">توضیحات و جزئیات:</label>
+                    <textarea id="description" name="description" rows="4" 
+                              maxlength="200" placeholder="توضیحات اضافی در مورد ملک، موقعیت مکانی، دسترسی‌ها و سایر ویژگی‌ها را بنویسید..."></textarea>
+                    <div class="char-count">
+                        تعداد کاراکتر: <span id="charCount">0</span>/200
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="submit-button">ذخیره تغییرات</button>
+            </div>
+        </form>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="/js/edit-product.js"></script>
+</body>
+</html>

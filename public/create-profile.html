@@ -1,0 +1,330 @@
+
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تکمیل پروفایل</title>
+    <style>
+        body {
+            font-family: 'Tahoma', sans-serif;
+            direction: rtl;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-upload-btn {
+            display: inline-block;
+            padding: 12px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .file-upload-btn:hover {
+            background: #e9ecef;
+        }
+
+        #imagePreview {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        #imagePreview img {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .success {
+            color: #28a745;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تکمیل اطلاعات پروفایل</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            لطفاً اطلاعات زیر را برای تکمیل پروفایل خود وارد کنید
+        </p>
+
+        <form id="profileForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="firstName">نام <span class="required">*</span></label>
+                <input type="text" id="firstName" name="firstName" 
+                       placeholder="نام خود را وارد کنید" required>
+                <small style="color: #666;">نام باید به فارسی نوشته شود</small>
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">نام خانوادگی <span class="required">*</span></label>
+                <input type="text" id="lastName" name="lastName" 
+                       placeholder="نام خانوادگی خود را وارد کنید" required>
+                <small style="color: #666;">نام خانوادگی باید به فارسی نوشته شود</small>
+            </div>
+
+            <div class="form-group">
+                <label for="gender">جنسیت <span class="required">*</span></label>
+                <select id="gender" name="gender" required>
+                    <option value="">جنسیت را انتخاب کنید</option>
+                    <option value="male">مرد</option>
+                    <option value="female">زن</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">شماره تماس <span class="required">*</span></label>
+                <input type="tel" id="phone" name="phone" placeholder="09123456789" 
+                       pattern="09\d{9}" required>
+                <small style="color: #666;">فرمت: 09XXXXXXXXX</small>
+            </div>
+
+            <div class="form-group">
+                <label for="profileImage">عکس پروفایل (اختیاری)</label>
+                <div class="file-upload">
+                    <input type="file" id="profileImage" name="profileImage" accept="image/*">
+                    <div class="file-upload-btn">
+                        انتخاب عکس پروفایل
+                    </div>
+                </div>
+                <div id="imagePreview"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="province">استان <span class="required">*</span></label>
+                <select id="province" name="province" required>
+                    <option value="">استان را انتخاب کنید</option>
+                    <option value="تهران">تهران</option>
+                    <option value="اصفهان">اصفهان</option>
+                    <option value="شیراز">شیراز</option>
+                    <option value="مشهد">مشهد</option>
+                    <option value="تبریز">تبریز</option>
+                    <option value="کرج">کرج</option>
+                    <option value="اهواز">اهواز</option>
+                    <option value="قم">قم</option>
+                    <option value="کرمانشاه">کرمانشاه</option>
+                    <option value="ارومیه">ارومیه</option>
+                    <option value="رشت">رشت</option>
+                    <option value="زاهدان">زاهدان</option>
+                    <option value="کرمان">کرمان</option>
+                    <option value="همدان">همدان</option>
+                    <option value="یزد">یزد</option>
+                    <option value="اردبیل">اردبیل</option>
+                    <option value="بندرعباس">بندرعباس</option>
+                    <option value="اراک">اراک</option>
+                    <option value="بجنورد">بجنورد</option>
+                    <option value="ساری">ساری</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="neighborhood">محله/منطقه <span class="required">*</span></label>
+                <input type="text" id="neighborhood" name="neighborhood" 
+                       placeholder="نام محله یا منطقه خود را وارد کنید" required>
+            </div>
+
+            <button type="submit" id="submitBtn">تکمیل پروفایل</button>
+        </form>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // پیش‌نمایش عکس
+        document.getElementById('profileImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = '';
+            }
+        });
+
+        // اعتبارسنجی فارسی بودن نام
+        function validatePersianText(text) {
+            const persianRegex = /^[\u0600-\u06FF\s]+$/;
+            return persianRegex.test(text.trim());
+        }
+
+        // ارسال فرم
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const messageDiv = document.getElementById('message');
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            
+            // بررسی فارسی بودن نام
+            if (!validatePersianText(firstName)) {
+                messageDiv.innerHTML = '<div class="error">نام باید به فارسی نوشته شود</div>';
+                return;
+            }
+            
+            if (!validatePersianText(lastName)) {
+                messageDiv.innerHTML = '<div class="error">نام خانوادگی باید به فارسی نوشته شود</div>';
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'در حال ارسال...';
+            messageDiv.innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('firstName', document.getElementById('firstName').value);
+            formData.append('lastName', document.getElementById('lastName').value);
+            formData.append('gender', document.getElementById('gender').value);
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('province', document.getElementById('province').value);
+            formData.append('neighborhood', document.getElementById('neighborhood').value);
+            
+            const profileImage = document.getElementById('profileImage').files[0];
+            if (profileImage) {
+                formData.append('profileImage', profileImage);
+            }
+
+            try {
+                const response = await fetch('/api/create-profile/complete', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageDiv.innerHTML = '<div class="success">پروفایل با موفقیت تکمیل شد! در حال انتقال...</div>';
+                    setTimeout(() => {
+                        window.location.href = '/panel';
+                    }, 2000);
+                } else {
+                    messageDiv.innerHTML = `<div class="error">${data.error}</div>`;
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'تکمیل پروفایل';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                messageDiv.innerHTML = '<div class="error">خطا در ارسال اطلاعات</div>';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'تکمیل پروفایل';
+            }
+        });
+
+        // بررسی وضعیت کاربر هنگام بارگذاری صفحه
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/api/create-profile/check-completion');
+                const data = await response.json();
+                
+                if (data.completed) {
+                    // اگر پروفایل تکمیل شده، به پنل هدایت کن
+                    window.location.href = '/panel';
+                }
+            } catch (error) {
+                console.error('Error checking completion:', error);
+            }
+        });
+    </script>
+</body>
+</html>

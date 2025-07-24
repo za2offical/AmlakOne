@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل مدیریت - ادمین</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/editor.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Login Panel -->
+    <div id="admin-login-panel">
+        <form class="login-form" id="adminLoginForm">
+            <h2><i class="fas fa-shield-alt"></i> ورود مدیر</h2>
+            <div class="form-group">
+                <label for="admin-username">نام کاربری:</label>
+                <input type="text" id="admin-username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="admin-password">رمز عبور:</label>
+                <input type="password" id="admin-password" name="password" required>
+            </div>
+            <button type="submit" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i> ورود
+            </button>
+        </form>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-panel" style="display: none;">
+        <button class="logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            خروج
+        </button>
+
+        <div class="container">
+            <div class="admin-header">
+                <h1 id="main-title"><i class="fas fa-crown"></i> پنل مدیریت</h1>
+                <p>مدیریت کامل سیستم املاک</p>
+            </div>
+
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="switchTab('dashboard')" data-tab="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    داشبورد
+                </button>
+                <button class="tab-btn" onclick="switchTab('users')" data-tab="users">
+                    <i class="fas fa-users"></i>
+                    کاربران
+                </button>
+                <button class="tab-btn" onclick="switchTab('tickets')" data-tab="tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    تیکت‌ها
+                </button>
+                <button class="tab-btn" onclick="switchTab('3drequests')" data-tab="3drequests">
+                    <i class="fas fa-cube"></i>
+                    درخواست‌های 3D
+                </button>
+                <button class="tab-btn" onclick="switchTab('notifications')" data-tab="notifications">
+                    <i class="fas fa-bell"></i>
+                    اعلان‌ها
+                </button>
+                <button class="tab-btn" onclick="switchTab('statistics')" data-tab="statistics">
+                    <i class="fas fa-chart-bar"></i>
+                    آمار
+                </button>
+            </div>
+
+            <div class="tab-content">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-panel active">
+                    <h2><i class="fas fa-tachometer-alt"></i> داشبورد مدیریت</h2>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-users">0</div>
+                            <div class="stat-label">کل کاربران</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-products">0</div>
+                            <div class="stat-label">کل املاک</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-tickets">0</div>
+                            <div class="stat-label">تیکت‌های فعال</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-3d-requests">0</div>
+                            <div class="stat-label">درخواست‌های 3D</div>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <a href="/admin-tickets" class="action-btn">
+                            <i class="fas fa-ticket-alt"></i>
+                            مدیریت تیکت‌ها
+                        </a>
+                        <a href="/admin-3d-requests" class="action-btn">
+                            <i class="fas fa-cube"></i>
+                            درخواست‌های 3D
+                        </a>
+                        <button class="action-btn" onclick="switchTab('notifications')">
+                            <i class="fas fa-bell"></i>
+                            ارسال اعلان
+                        </button>
+                        <button class="action-btn" onclick="switchTab('statistics')">
+                            <i class="fas fa-chart-bar"></i>
+                            مشاهده آمار
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="users" class="tab-panel">
+                    <h2><i class="fas fa-users"></i> مدیریت کاربران</h2>
+                    <div id="users-content">
+                        <div class="loading">در حال بارگذاری کاربران...</div>
+                    </div>
+                </div>
+
+                <!-- Tickets Tab -->
+                <div id="tickets" class="tab-panel">
+                    <h2><i class="fas fa-ticket-alt"></i> مدیریت تیکت‌ها</h2>
+                    <div class="quick-actions">
+                        <a href="/admin-tickets" class="action-btn">
+                            <i class="fas fa-external-link-alt"></i>
+                            باز کردن پنل تیکت‌ها
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 3D Requests Tab -->
+                <div id="3drequests" class="tab-panel">
+                    <h2><i class="fas fa-cube"></i> درخواست‌های 3D</h2>
+                    <div id="3drequests-content">
+                        <div class="loading">در حال بارگذاری درخواست‌های 3D...</div>
+                    </div>
+                </div>
+
+                <!-- Notifications Tab -->
+                <div id="notifications" class="tab-panel">
+                    <h2><i class="fas fa-bell"></i> مدیریت اعلان‌ها</h2>
+                    <div id="notifications-content">
+                        <div class="loading">در حال بارگذاری اعلان‌ها...</div>
+                    </div>
+                </div>
+
+                <!-- Statistics Tab -->
+                <div id="statistics" class="tab-panel">
+                    <h2><i class="fas fa-chart-bar"></i> آمار سیستم</h2>
+                    <div id="statistics-content">
+                        <div class="loading">در حال بارگذاری آمار...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/editor.js"></script>
+</body>
+</html>

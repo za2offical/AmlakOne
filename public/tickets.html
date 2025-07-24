@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم تیکت - پشتیبانی</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="css/tickets.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button class="back-btn" onclick="window.location.href='/panel'" title="بازگشت به پنل">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                    </button>
+                    <div class="header-title">
+                        <h1><i class="fas fa-ticket-alt"></i> سیستم تیکت پشتیبانی</h1>
+                        <p>مدیریت درخواست‌ها و مشکلات</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showCreateTicketModal()">
+                        <i class="fas fa-plus"></i> تیکت جدید
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <i class="fas fa-ticket-alt"></i>
+                <div class="stat-info">
+                    <span class="stat-number" id="totalTickets">0</span>
+                    <span class="stat-label">کل تیکت‌ها</span>
+                </div>
+            </div>
+            <div class="stat-card open">
+                <i class="fas fa-clock"></i>
+                <div class="stat-info">
+                    <span class="stat-number" id="openTickets">0</span>
+                    <span class="stat-label">باز</span>
+                </div>
+            </div>
+            <div class="stat-card in-progress">
+                <i class="fas fa-spinner"></i>
+                <div class="stat-info">
+                    <span class="stat-number" id="inProgressTickets">0</span>
+                    <span class="stat-label">در حال بررسی</span>
+                </div>
+            </div>
+            <div class="stat-card resolved">
+                <i class="fas fa-check-circle"></i>
+                <div class="stat-info">
+                    <span class="stat-number" id="resolvedTickets">0</span>
+                    <span class="stat-label">حل شده</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="filters-container">
+            <div class="filter-group">
+                <label for="statusFilter">وضعیت:</label>
+                <select id="statusFilter" onchange="loadTickets()">
+                    <option value="">همه</option>
+                    <option value="open">باز</option>
+                    <option value="in_progress">در حال بررسی</option>
+                    <option value="waiting_for_admin">در انتظار پاسخ</option>
+                    <option value="resolved">حل شده</option>
+                    <option value="closed">بسته</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="priorityFilter">اولویت:</label>
+                <select id="priorityFilter" onchange="loadTickets()">
+                    <option value="">همه</option>
+                    <option value="low">کم</option>
+                    <option value="medium">متوسط</option>
+                    <option value="high">زیاد</option>
+                    <option value="urgent">فوری</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="categoryFilter">دسته‌بندی:</label>
+                <select id="categoryFilter" onchange="loadTickets()">
+                    <option value="">همه</option>
+                    <option value="general">عمومی</option>
+                    <option value="technical">فنی</option>
+                    <option value="billing">مالی</option>
+                    <option value="support">پشتیبانی</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tickets-container" id="ticketsContainer">
+            <!-- تیکت‌ها اینجا نمایش داده می‌شوند -->
+        </div>
+
+        <div class="pagination" id="pagination">
+            <!-- پیجینیشن اینجا نمایش داده می‌شود -->
+        </div>
+    </div>
+
+    <!-- Modal ایجاد تیکت جدید -->
+    <div id="createTicketModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ایجاد تیکت جدید</h2>
+                <span class="close" onclick="closeCreateTicketModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="createTicketForm">
+                    <div class="form-group">
+                        <label for="ticketTitle">عنوان تیکت *</label>
+                        <input type="text" id="ticketTitle" required minlength="5" maxlength="100" placeholder="عنوان تیکت خود را وارد کنید">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ticketPriority">اولویت</label>
+                            <select id="ticketPriority">
+                                <option value="medium">متوسط</option>
+                                <option value="low">کم</option>
+                                <option value="high">زیاد</option>
+                                <option value="urgent">فوری</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticketCategory">دسته‌بندی</label>
+                            <select id="ticketCategory">
+                                <option value="general">عمومی</option>
+                                <option value="technical">فنی</option>
+                                <option value="billing">مالی</option>
+                                <option value="support">پشتیبانی</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ticketDescription">توضیحات *</label>
+                        <textarea id="ticketDescription" required minlength="10" maxlength="2000" rows="6" placeholder="جزئیات مشکل یا درخواست خود را توضیح دهید"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeCreateTicketModal()">انصراف</button>
+                        <button type="submit" class="btn btn-primary">ایجاد تیکت</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal جزئیات تیکت -->
+    <div id="ticketDetailsModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="ticketDetailsTitle">جزئیات تیکت</h2>
+                <span class="close" onclick="closeTicketDetailsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="ticket-info" id="ticketInfo">
+                    <!-- اطلاعات تیکت -->
+                </div>
+                <div class="messages-container" id="messagesContainer">
+                    <!-- پیام‌ها -->
+                </div>
+                <div class="message-form" id="messageForm">
+                    <textarea id="newMessage" placeholder="پیام خود را بنویسید..." maxlength="1000"></textarea>
+                    <button class="btn btn-primary" onclick="sendMessage()">ارسال پیام</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/tickets.js"></script>
+</body>
+</html> 

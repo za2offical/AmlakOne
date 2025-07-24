@@ -1,0 +1,76 @@
+modules = ["nodejs-20"]
+[nix]
+channel = "stable-25_05"
+
+[workflows]
+runButton = "Start"
+
+[[workflows.workflow]]
+name = "Start Server"
+author = 45045016
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm start"
+
+[[workflows.workflow]]
+name = "Start Both Servers"
+author = 39313916
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd Show/3D && node server.js"
+
+[[workflows.workflow]]
+name = "Start All Services"
+author = 39313916
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run start-both"
+
+[[workflows.workflow]]
+name = "Complete System"
+author = 39313916
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd Show/3D && node server.js"
+
+[[workflows.workflow]]
+name = "Direct Start"
+author = 39313916
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
+
+[[workflows.workflow]]
+name = "Start"
+author = 39313916
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 5000
+externalPort = 5000

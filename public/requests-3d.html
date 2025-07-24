@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>درخواست 3D - مدیریت املاک</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/requests-3d.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+    <meta name="description" content="درخواست تهیه نمای 3D برای املاک">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <script>
+        // بررسی احراز هویت قبل از نمایش صفحه
+        async function checkAuthBeforeLoad() {
+            try {
+                const response = await fetch('/api/panel/user-info');
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                // اگر احراز هویت موفق بود، ادامه دهید
+                loadPageContent();
+            } catch (error) {
+                console.error('Authentication error:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        function loadPageContent() {
+            // محتوای صفحه را نمایش دهید
+            document.getElementById('loading-auth').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+        }
+
+        // شروع بررسی احراز هویت
+        checkAuthBeforeLoad();
+    </script>
+
+    <div id="loading-auth" style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Vazirmatn', sans-serif;">
+        <div style="text-align: center;">
+            <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+            <p>در حال بررسی احراز هویت...</p>
+        </div>
+    </div>
+
+    <div id="main-content" style="display: none;">
+        <div class="container">
+            <!-- Header -->
+            <header class="page-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <button class="back-btn" onclick="window.location.href='/panel'">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                            </svg>
+                            بازگشت به پنل
+                        </button>
+                    </div>
+                    <div class="header-center">
+                        <h1 class="page-title">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.99.99 0 013 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9z"/>
+                            </svg>
+                            درخواست 3D
+                        </h1>
+                        <p class="page-subtitle">ایجاد درخواست تهیه نمای سه‌بعدی برای املاک شما</p>
+                    </div>
+                    <div class="header-right"></div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Loading -->
+                <div id="loading" class="loading" style="display: none;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" style="animation: spin 1s linear infinite;">
+                        <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>
+                    </svg>
+                    <div>در حال بارگذاری املاک شما...</div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="error" class="error-message" style="display: none;"></div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.99.99 0 013 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9z"/>
+                    </svg>
+                    <h3>هیچ ملکی یافت نشد</h3>
+                    <p>برای ایجاد درخواست 3D، ابتدا باید حداقل یک ملک ثبت کنید</p>
+                    <button class="btn-primary" onclick="window.location.href='/create-product'">
+                        افزودن ملک جدید
+                    </button>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="productsGrid" class="products-grid" style="display: none;">
+                    <!-- Products will be loaded here -->
+                </div>
+
+                <!-- Toggle Button for Active Requests -->
+                <div class="toggle-requests-section">
+                    <div class="section-divider">
+                        <span class="divider-line"></span>
+                        <button id="toggleRequestsBtn" class="btn-outline toggle-btn" onclick="toggleActiveRequests()" style="display: none;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/>
+                            </svg>
+                            <span id="toggleBtnText">مدیریت درخواست‌های من</span>
+                            <svg id="toggleIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="transition: transform 0.3s ease;">
+                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                            </svg>
+                        </button>
+                        <span class="divider-line"></span>
+                    </div>
+                </div>
+
+                <!-- Active Requests Section -->
+                <div id="activeRequestsSection" class="active-requests-section" style="display: none;">
+                    <div class="requests-header">
+                        <h2 class="section-title">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2-7h-3V2h-2v2H8V2H6v2H3c-1.1 0-2.9 2-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM19 20H5V9h14v11z"/>
+                            </svg>
+                            درخواست‌های من
+                        </h2>
+                        <div class="requests-summary">
+                            <span id="requestsCount" class="count-badge">0 درخواست</span>
+                        </div>
+                    </div>
+                    <div id="activeRequestsList" class="active-requests-list">
+                        <!-- Active requests will be loaded here -->
+                    </div>
+                </div>
+            </main>
+
+            <!-- Upload Modal -->
+            <div id="uploadModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>آپلود ویدیو برای نمای 3D</h3>
+                        <button class="close-btn" onclick="closeUploadModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="product-info" id="selectedProductInfo">
+                            <!-- Product info will be displayed here -->
+                        </div>
+
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="upload-area" id="uploadArea">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                                </svg>
+                                <h4>آپلود ویدیو</h4>
+                                <p>فایل ویدیویی خود را انتخاب کنید یا اینجا بکشید</p>
+                                <input type="file" id="videoInput" name="video" accept="video/*" style="display: none;">
+                                <button type="button" class="btn-secondary" onclick="document.getElementById('videoInput').click()">
+                                    انتخاب فایل
+                                </button>
+                            </div>
+
+                            <div id="fileInfo" class="file-info" style="display: none;">
+                                <div class="file-details">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                                    </svg>
+                                    <div>
+                                        <div class="file-name" id="fileName"></div>
+                                        <div class="file-size" id="fileSize"></div>
+                                    </div>
+                                </div>
+                                <button type="button" class="remove-file-btn" onclick="removeSelectedFile()">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="upload-progress" id="uploadProgress" style="display: none;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill"></div>
+                                </div>
+                                <div class="progress-text" id="progressText">0%</div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-secondary" onclick="closeUploadModal()">انصراف</button>
+                        <button class="btn-primary" id="submitBtn" onclick="submitRequest()" disabled>
+                            ارسال درخواست
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div id="successModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header success">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <h3>درخواست با موفقیت ارسال شد</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p>درخواست شما برای تهیه نمای 3D ثبت شد و در حال بررسی است.</p>
+                        <p>نتیجه بررسی از طریق اعلان‌ها به اطلاع شما خواهد رسید.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-primary" onclick="closeSuccessModal()">متوجه شدم</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+
+    <script src="/js/requests-3d.js"></script>
+</body>
+</html>

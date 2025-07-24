@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل کاربری - مدیریت املاک</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/panel.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+    <meta name="description" content="پنل مدیریت املاک - مدیریت آگهی‌های خود">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lalezar&display=swap" rel="stylesheet">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <style>
+        /* Enhanced Mobile Optimizations */
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+            select, textarea, input[type="text"], input[type="password"], 
+            input[type="datetime"], input[type="datetime-local"], 
+            input[type="date"], input[type="month"], input[type="time"], 
+            input[type="week"], input[type="number"], input[type="email"], 
+            input[type="url"], input[type="search"], input[type="tel"], 
+            input[type="color"] {
+                font-size: 16px !important;
+            }
+        }
+
+        /* Responsive Container */
+        .container {
+            width: 100%;
+            max-width: 100vw;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        /* Use CSS custom properties for dynamic viewport */
+        :root {
+            --vh: 1vh;
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+            --safe-area-inset-left: env(safe-area-inset-left);
+            --safe-area-inset-right: env(safe-area-inset-right);
+        }
+
+        .mobile-menu {
+            height: calc(var(--vh, 1vh) * 100);
+            padding-top: var(--safe-area-inset-top);
+        }
+
+        /* Enhanced touch targets */
+        .touch-device button,
+        .touch-device a,
+        .touch-device [role="button"] {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Keyboard navigation styles */
+        .keyboard-navigation *:focus {
+            outline: 2px solid var(--primary) !important;
+            outline-offset: 2px !important;
+        }
+
+        /* Responsive text scaling */
+        @media (max-width: 320px) {
+            html {
+                font-size: 14px;
+            }
+        }
+
+        @media (min-width: 1400px) {
+            html {
+                font-size: 18px;
+            }
+        }
+
+        /* Prevent horizontal scroll */
+        body {
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
+        }
+
+        /* Enhanced loading animation */
+        @keyframes responsiveSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading svg {
+            animation: responsiveSpin 1s linear infinite;
+        }
+
+        /* Responsive image optimization */
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Enhanced focus management */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+    <script src="/js/common.js"></script>
+</head>
+<body class="paper-bg">
+    <div class="container">
+        <!-- Professional Navigation Menu -->
+        <nav class="main-nav">
+            <div class="nav-container">
+                <!-- Logo/Brand -->
+                <div class="nav-brand">
+                    <div class="brand-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                    </div>
+                    <span class="brand-text">پنل املاک</span>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="nav-menu desktop-menu">
+                    <div class="nav-search">
+                        <div class="search-box animated-search">
+                            <button id="searchToggleBtn" class="search-toggle-btn" type="button" tabindex="0" aria-label="جستجو">
+                                <span class="search-icon">
+                                    <svg id="searchSvgIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                    </svg>
+                                </span>
+                            </button>
+                            <input type="text" id="searchInput" class="search-input-collapsed" placeholder="جستجو در املاک..." autocomplete="off" />
+                        </div>
+                    </div>
+
+                    <div class="nav-links">
+                        <a href="/requests-3d" class="nav-link" title="درخواست نمای 3D">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.99.99 0 013 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9z"/>
+                            </svg>
+                            <span>درخواست 3D</span>
+                        </a>
+
+                        <a href="/appointments" class="nav-link" title="مدیریت قرارها">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                            </svg>
+                            <span>قرارها</span>
+                        </a>
+
+                        <a href="/tickets" class="nav-link" title="تیکت پشتیبانی">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                            </svg>
+                            <span>پشتیبانی</span>
+                        </a>
+
+                        <div class="nav-link notification-trigger" onclick="openNotifications()" title="اعلان‌ها">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                            </svg>
+                            <span>اعلان‌ها</span>
+                            <div class="notification-badge" id="notificationBadge" style="display: none;">0</div>
+                        </div>
+                    </div>
+
+                    <div class="nav-profile">
+                        <div class="profile-dropdown">
+                            <div class="profile-trigger" onclick="toggleProfileMenu()">
+                                <div id="profileImageContainer" class="profile-avatar">
+                                    <img id="profileImage" src="" alt="تصویر پروفایل" style="display: none;">
+                                    <div id="profilePlaceholder" class="profile-placeholder">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="profile-info">
+                                    <div class="profile-name">
+                                        <span id="firstName"></span> <span id="lastName"></span>
+                                    </div>
+                                    <div class="profile-role">مدیر املاک</div>
+                                </div>
+                                <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M7 10l5 5 5-5z"/>
+                                </svg>
+                            </div>
+
+                            <div class="profile-menu" id="profileMenu">
+                                <a href="/edit-profile" class="profile-menu-item">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                    ویرایش پروفایل
+                                </a>
+                                <a href="/settings" class="profile-menu-item">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                                    </svg>
+                                    تنظیمات
+                                </a>
+                                <div class="profile-menu-divider"></div>
+                                <button class="profile-menu-item logout-btn" onclick="logout()">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 012 2v2h-2V4H5v16h9v-2h2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V4a2 2 0 012-2h9z"/>
+                                    </svg>
+                                    خروج از حساب
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="منو">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+
+            <!-- Mobile Menu Overlay -->
+            <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <div class="mobile-menu-header">
+                    <div class="mobile-profile">
+                        <div class="mobile-profile-avatar">
+                            <img id="mobileProfileImage" src="" alt="تصویر پروفایل" style="display: none;">
+                            <div id="mobileProfilePlaceholder" class="profile-placeholder">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="mobile-profile-info">
+                            <div class="mobile-profile-name">
+                                <span id="mobileFirstName"></span> <span id="mobileLastName"></span>
+                            </div>
+                            <div class="mobile-profile-role">مدیر املاک</div>
+                        </div>
+                    </div>
+                    <button class="mobile-menu-close" onclick="closeMobileMenu()" aria-label="بستن منو">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.3 5.71a1 1 0 00-1.41 0L12 10.59 7.11 5.7A1 1 0 105.7 7.11L10.59 12l-4.89 4.89a1 1 0 101.41 1.41L12 13.41l4.89 4.89a1 1 0 000-1.4z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="mobile-search">
+                    <div class="mobile-search-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                        <input type="text" id="mobileSearchInput" placeholder="جستجو در املاک..." autocomplete="off" />
+                    </div>
+                </div>
+
+                <div class="mobile-menu-items">
+                    <a href="/requests-3d" class="mobile-menu-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.99.99 0 013 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9z"/>
+                        </svg>
+                        <span>درخواست 3D</span>
+                        <svg class="menu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                        </svg>
+                    </a>
+
+                    <a href="/appointments" class="mobile-menu-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                        </svg>
+                        <span>مدیریت قرارها</span>
+                        <svg class="menu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                        </svg>
+                    </a>
+
+                    <a href="/tickets" class="mobile-menu-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                        </svg>
+                        <span>تیکت پشتیبانی</span>
+                        <svg class="menu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                        </svg>
+                    </a>
+
+                    <div class="mobile-menu-item" onclick="openNotifications(); closeMobileMenu();">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                        </svg>
+                        <span>اعلان‌ها</span>
+                        <div class="mobile-notification-badge" id="mobileNotificationBadge" style="display: none;">0</div>
+                        <svg class="menu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                        </svg>
+                    </div>
+
+                    <div class="mobile-menu-divider"></div>
+
+                    <a href="/edit-profile" class="mobile-menu-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span>ویرایش پروفایل</span>
+                        <svg class="menu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                        </svg>
+                    </a>
+
+                    <a href="/settings" class="mobile-menu-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                        </svg>
+                        <span>تنظیمات</span>
+                        <svg class="menu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                        </svg>
+                    </a>
+
+                    <div class="mobile-menu-divider"></div>
+
+                    <button class="mobile-menu-item logout-item" onclick="logout()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 012 2v2h-2V4H5v16h9v-2h2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V4a2 2 0 012-2h9z"/>
+                        </svg>
+                        <span>خروج از حساب</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <!-- Notification Modal -->
+        <div class="notification-modal" id="notificationModal">
+            <div class="notification-content">
+                <div class="notification-header">
+                    <div class="notification-title">اعلان‌ها</div>
+                    <button class="close-btn" onclick="closeNotifications()" title="بستن">&times;</button>
+                </div>
+                <div class="notification-list" id="notificationList">
+                    <!-- Notifications will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-container" id="statsContainer" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="totalProperties">0</div>
+                    <div class="stat-label">کل املاک</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon today">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="saleProperties">0</div>
+                    <div class="stat-label">املاک فروش</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon upcoming">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="rentProperties">0</div>
+                    <div class="stat-label">املاک اجاره</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon completed">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number" id="activeProperties">0</div>
+                    <div class="stat-label">املاک فعال</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="filters-section center-filters" id="filtersSection" style="display: none;">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">همه</button>
+                <button class="filter-btn" data-filter="sale">فروش</button>
+                <button class="filter-btn" data-filter="rent">اجاره</button>
+                <button class="filter-btn" data-filter="recent">جدیدترین</button>
+            </div>
+        </div>
+
+        <!-- Main Panel -->
+        <main id="userPanel">
+            <div id="loading" class="loading" style="display: none;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" style="animation: spin 1s linear infinite; margin-bottom: 1rem;">
+                    <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>
+                </svg>
+                <div>در حال بارگذاری املاک شما...</div>
+            </div>
+
+            <div id="error" class="error-message" style="display: none;"></div>
+
+            <div id="products" class="product-container"></div>
+        </main>
+
+        <!-- Floating Action Buttons -->
+        <button id="createButton" onclick="window.location.href='/create-product'" title="افزودن ملک جدید">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+        </button>
+
+        <button id="bulkDeleteBtn" class="bulk-delete-btn" style="display: none;" onclick="window.productEditor && window.productEditor.deleteSelectedProducts()" title="حذف املاک انتخاب شده">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/edit-products.js"></script>
+    <script src="/js/panel.js"></script>
+    <script>
+        // Enhanced Notification System
+        let notifications = [];
+        let unreadCount = 0;
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/panel/notifications', { credentials: 'include' });
+                if (response.ok) {
+                    notifications = await response.json();
+                    updateNotificationBadge();
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        async function updateNotificationBadge() {
+            try {
+                const response = await fetch('/api/panel/notifications/unread-count', { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    unreadCount = data.unreadCount;
+                    const badge = document.getElementById('notificationBadge');
+                    if (unreadCount > 0) {
+                        badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating notification badge:', error);
+            }
+        }
+
+        function openNotifications() {
+            const modal = document.getElementById('notificationModal');
+            const list = document.getElementById('notificationList');
+
+            if (notifications.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-notifications">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                        </svg>
+                        <div style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">هیچ اعلانی وجود ندارد</div>
+                        <div style="font-size: 0.875rem; opacity: 0.7;">تمام اعلان‌های شما در اینجا نمایش داده می‌شود</div>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = notifications.map(notification => `
+                    <div class="notification-item ${!notification.isRead ? 'unread' : ''}" onclick="markAsRead('${notification.id}')">
+                        <div class="notification-item-title">${notification.title}</div>
+                        <div class="notification-item-message">${notification.message}</div>
+                        <div class="notification-item-meta">
+                            <span class="notification-item-date">${new Date(notification.sentAt).toLocaleString('fa-IR')}</span>
+                            ${!notification.isRead ? '<span style="color: var(--primary-500); font-size: 0.8rem; font-weight: 600;">جدید</span>' : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            modal.style.display = 'flex';
+            // Add smooth animation
+            requestAnimationFrame(() => {
+                modal.style.opacity = '1';
+            });
+        }
+
+        function closeNotifications() {
+            const modal = document.getElementById('notificationModal');
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        async function markAsRead(notificationId) {
+            try {
+                const response = await fetch(`/api/panel/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const notification = notifications.find(n => n.id === notificationId);
+                    if (notification && !notification.isRead) {
+                        notification.isRead = true;
+                        updateNotificationBadge();
+                        openNotifications(); // Refresh the list
+                    }
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+
+        // Enhanced modal interactions
+        document.getElementById('notificationModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeNotifications();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeNotifications();
+            }
+        });
+
+        // Enhanced loading animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .product-card {
+                animation: fadeInUp 0.6s ease forwards;
+            }
+
+            .product-card:nth-child(even) {
+                animation-delay: 0.1s;
+            }
+
+            .product-card:nth-child(3n) {
+                animation-delay: 0.2s;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotifications();
+            // Refresh notifications every 30 seconds
+            setInterval(loadNotifications, 30000);
+
+            // Add smooth scroll behavior
+            document.documentElement.style.scrollBehavior = 'smooth';
+        });
+
+        // Enhanced error handling with retry functionality
+        window.addEventListener('online', () => {
+            const errorDiv = document.getElementById('error');
+            if (errorDiv.style.display !== 'none') {
+                errorDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color: var(--success-500);">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        اتصال برقرار شد. در حال بارگذاری مجدد...
+                    </div>
+                `;
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                    if (typeof loadProducts === 'function') {
+                        loadProducts();
+                    }
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست پیش‌کش - AmlakOne</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="تست سیستم پیش‌کش محصولات">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="AmlakOne">
+    <meta name="msapplication-TileColor" content="#2563eb">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/icon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/icon-180x180.png">
+    <link rel="mask-icon" href="/images/icons/safari-pinned-tab.svg" color="#2563eb">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .test-card h2 {
+            color: #2563eb;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .status-display {
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .cache-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .cache-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .cache-item h4 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+
+        .cache-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .cache-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 تست پیش‌کش</h1>
+            <p>بررسی سیستم پیش‌کش محصولات</p>
+        </div>
+
+        <div class="test-card">
+            <h2>🚀 شروع پیش‌کش</h2>
+            <p>با کلیک روی دکمه زیر، سیستم شروع به پیش‌کش محصولات محبوب می‌کند:</p>
+            <button class="btn btn-success" onclick="startPreCaching()">شروع پیش‌کش</button>
+            <button class="btn btn-warning" onclick="clearAllCaches()">پاک کردن همه کش‌ها</button>
+        </div>
+
+        <div class="test-card">
+            <h2>📊 وضعیت کش‌ها</h2>
+            <div class="cache-info">
+                <div class="cache-item">
+                    <h4>کش اصلی</h4>
+                    <div class="value" id="mainCacheCount">-</div>
+                </div>
+                <div class="cache-item">
+                    <h4>پیش‌کش</h4>
+                    <div class="value" id="preCacheCount">-</div>
+                </div>
+                <div class="cache-item">
+                    <h4>کش محصولات</h4>
+                    <div class="value" id="productCacheCount">-</div>
+                </div>
+            </div>
+            <button class="btn" onclick="refreshCacheStatus()">بروزرسانی وضعیت</button>
+        </div>
+
+        <div class="test-card">
+            <h2>🔍 تست محصولات</h2>
+            <p>تست کنید که آیا محصولات در کش موجود هستند:</p>
+            <button class="btn" onclick="testProductCache()">تست کش محصولات</button>
+            <button class="btn" onclick="testPreCache()">تست پیش‌کش</button>
+        </div>
+
+        <div class="test-card">
+            <h2>📋 جزئیات کش</h2>
+            <div class="status-display" id="cacheDetails">
+                کلیک روی "بروزرسانی وضعیت" برای مشاهده جزئیات
+            </div>
+        </div>
+
+        <div class="test-card">
+            <h2>🌐 تست آفلاین</h2>
+            <p>برای تست کامل:</p>
+            <ol>
+                <li>ابتدا پیش‌کش را شروع کنید</li>
+                <li>صبر کنید تا کامل شود</li>
+                <li>اینترنت را قطع کنید</li>
+                <li>سعی کنید به صفحات محصولات بروید</li>
+            </ol>
+            <button class="btn" onclick="goToProducts()">برو به محصولات</button>
+        </div>
+    </div>
+
+    <script src="/js/pwa.js"></script>
+    <script src="/js/product-cache.js"></script>
+    <script src="/js/pre-cache.js"></script>
+    <script>
+        // شروع پیش‌کش
+        async function startPreCaching() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'در حال پیش‌کش...';
+            
+            try {
+                await window.startPreCaching();
+                btn.textContent = 'پیش‌کش کامل شد!';
+                btn.className = 'btn btn-success';
+                refreshCacheStatus();
+            } catch (error) {
+                btn.textContent = 'خطا در پیش‌کش';
+                btn.className = 'btn btn-warning';
+                console.error('Pre-caching error:', error);
+            }
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.textContent = 'شروع پیش‌کش';
+                btn.className = 'btn btn-success';
+            }, 3000);
+        }
+
+        // پاک کردن همه کش‌ها
+        async function clearAllCaches() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید همه کش‌ها را پاک کنید؟')) {
+                try {
+                    await window.clearPreCache();
+                    await window.productCache.clearProductCache();
+                    if (pwaManager) {
+                        await pwaManager.clearCache();
+                    }
+                    alert('همه کش‌ها پاک شدند!');
+                    refreshCacheStatus();
+                } catch (error) {
+                    alert('خطا در پاک کردن کش‌ها');
+                    console.error('Clear cache error:', error);
+                }
+            }
+        }
+
+        // بروزرسانی وضعیت کش
+        async function refreshCacheStatus() {
+            try {
+                // وضعیت کش اصلی
+                const mainCacheStatus = await pwaManager.getCacheInfo();
+                document.getElementById('mainCacheCount').textContent = 
+                    mainCacheStatus ? Object.values(mainCacheStatus).reduce((a, b) => a + b, 0) : 0;
+
+                // وضعیت پیش‌کش
+                const preCacheStatus = await window.getPreCacheStatus();
+                document.getElementById('preCacheCount').textContent = 
+                    preCacheStatus ? preCacheStatus.itemCount : 0;
+
+                // وضعیت کش محصولات
+                const productCacheStatus = await window.productCache.getCacheStatus();
+                document.getElementById('productCacheCount').textContent = 
+                    productCacheStatus ? productCacheStatus.itemCount : 0;
+
+                // نمایش جزئیات
+                displayCacheDetails(mainCacheStatus, preCacheStatus, productCacheStatus);
+            } catch (error) {
+                console.error('Error refreshing cache status:', error);
+            }
+        }
+
+        // نمایش جزئیات کش
+        function displayCacheDetails(mainCache, preCache, productCache) {
+            const details = {
+                'کش اصلی': mainCache || 'نامشخص',
+                'پیش‌کش': preCache || 'نامشخص',
+                'کش محصولات': productCache || 'نامشخص'
+            };
+
+            document.getElementById('cacheDetails').textContent = 
+                JSON.stringify(details, null, 2);
+        }
+
+        // تست کش محصولات
+        async function testProductCache() {
+            try {
+                const testUsername = 'a';
+                const hasProducts = await window.productCache.getCachedProducts(testUsername);
+                
+                if (hasProducts) {
+                    alert(`✅ محصولات کاربر ${testUsername} در کش موجود است (${hasProducts.length} محصول)`);
+                } else {
+                    alert(`❌ محصولات کاربر ${testUsername} در کش موجود نیست`);
+                }
+            } catch (error) {
+                alert('خطا در تست کش محصولات');
+                console.error('Test product cache error:', error);
+            }
+        }
+
+        // تست پیش‌کش
+        async function testPreCache() {
+            try {
+                const status = await window.getPreCacheStatus();
+                
+                if (status && status.itemCount > 0) {
+                    alert(`✅ پیش‌کش فعال است (${status.itemCount} آیتم)`);
+                } else {
+                    alert('❌ پیش‌کش خالی است');
+                }
+            } catch (error) {
+                alert('خطا در تست پیش‌کش');
+                console.error('Test pre-cache error:', error);
+            }
+        }
+
+        // رفتن به صفحه محصولات
+        function goToProducts() {
+            window.location.href = '/a/products';
+        }
+
+        // بروزرسانی خودکار وضعیت در بارگذاری صفحه
+        window.addEventListener('load', () => {
+            refreshCacheStatus();
+        });
+    </script>
+</body>
+</html> 

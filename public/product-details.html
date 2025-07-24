@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جزئیات محصول - پنل مدیریت</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/product-details.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+    <meta name="description" content="جزئیات کامل ملک - پنل مدیریت املاک">
+    <meta name="theme-color" content="#3b82f6">
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="/js/common.js"></script>
+</head>
+<body class="paper-bg">
+    <div class="container">
+        <!-- Header Section -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button class="back-btn" onclick="window.location.href='/panel'" title="بازگشت به پنل">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                    </button>
+                    <div class="header-title">
+                        <h1>جزئیات ملک</h1>
+                        <p>مشاهده و مدیریت اطلاعات کامل ملک</p>
+                    </div>
+                </div>
+                
+                <div class="header-actions" id="productActions">
+                    <!-- Action buttons will be injected by JS -->
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading" style="display: none;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" style="animation: spin 1s linear infinite; margin-bottom: 1rem;">
+                <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>
+            </svg>
+            <div>در حال بارگذاری جزئیات ملک...</div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="error-message" style="display: none;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" style="margin-bottom: 1rem; color: var(--error);">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <h3>خطا در بارگذاری</h3>
+            <p>ملک یافت نشد یا دسترسی مجاز نیست.</p>
+        </div>
+
+        <!-- Main Content -->
+        <main id="productContainer" class="product-main" style="display: none;">
+            <!-- Image Gallery Section -->
+            <section class="gallery-section">
+                <div class="gallery-container">
+                    <!-- Main Swiper -->
+                    <div class="main-gallery">
+                        <div class="swiper main-swiper">
+                            <div class="swiper-wrapper" id="swiperMainWrapper">
+                                <!-- Slides will be injected by JS -->
+                            </div>
+                            <div class="swiper-button-next"></div>
+                            <div class="swiper-button-prev"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Thumbnail Swiper -->
+                    <div class="thumbnail-gallery">
+                        <div class="swiper thumb-swiper">
+                            <div class="swiper-wrapper" id="swiperThumbWrapper">
+                                <!-- Thumbnails will be injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Product Information -->
+            <div class="product-content">
+                <!-- Basic Details -->
+                <section class="details-section">
+                    <div class="section-header">
+                        <h2>اطلاعات پایه</h2>
+                        <div class="section-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="details-grid">
+                        <div class="detail-card">
+                            <div class="detail-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">نوع آگهی</div>
+                                <div class="detail-value" id="propertyType">-</div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card">
+                            <div class="detail-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M7 13c1.65 0 3-1.35 3-3S8.65 7 7 7s-3 1.35-3 3 1.35 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">تعداد اتاق خواب</div>
+                                <div class="detail-value" id="bedrooms">-</div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card">
+                            <div class="detail-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">مساحت (متر مربع)</div>
+                                <div class="detail-value" id="area">-</div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card" id="constructionYearCard" style="display: none;">
+                            <div class="detail-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">سال ساخت</div>
+                                <div class="detail-value" id="constructionYear">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Pricing Section -->
+                <section id="pricingSection" class="pricing-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>قیمت‌گذاری</h2>
+                        <div class="section-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="pricing-grid" id="pricingGrid">
+                        <!-- Pricing cards will be injected by JS -->
+                    </div>
+                </section>
+
+                <!-- Facilities Section -->
+                <section id="facilitiesSection" class="facilities-section">
+                    <div class="section-header">
+                        <h2>امکانات</h2>
+                        <div class="section-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="facilities-grid" id="facilitiesGrid">
+                        <!-- Facilities will be injected by JS -->
+                    </div>
+                </section>
+
+                <!-- Private Information -->
+                <section id="privateInfoSection" class="private-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>اطلاعات خصوصی</h2>
+                        <div class="section-icon private">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="private-warning">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <span>این اطلاعات خصوصی فقط برای شما قابل مشاهده است</span>
+                    </div>
+                    
+                    <div class="info-grid" id="privateInfoGrid">
+                        <!-- Private info will be injected by JS -->
+                    </div>
+                </section>
+
+                <!-- Description Section -->
+                <section id="descriptionSection" class="description-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>توضیحات</h2>
+                        <div class="section-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="description-content">
+                        <p id="descriptionText" class="description-text"></p>
+                    </div>
+                </section>
+
+                <!-- Date Information -->
+                <section class="date-section">
+                    <div class="date-info">
+                        <div class="date-item">
+                            <span class="date-label">تاریخ ایجاد:</span>
+                            <span class="date-value" id="createdDate">-</span>
+                        </div>
+                        <div class="date-item">
+                            <span class="date-label">آخرین بروزرسانی:</span>
+                            <span class="date-value" id="updatedDate">-</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal delete-modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>حذف ملک</h3>
+                <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <p>آیا مطمئن هستید که می‌خواهید این ملک را حذف کنید؟ این عملیات غیرقابل بازگشت است.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">انصراف</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">حذف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="/js/product-details.js"></script>
+</body>
+</html>

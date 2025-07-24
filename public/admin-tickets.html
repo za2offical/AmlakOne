@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت تیکت‌ها - پنل ادمین</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="css/admin-tickets.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button class="back-btn" onclick="window.location.href='/editor'" title="بازگشت به پنل ادمین">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                    </button>
+                    <div class="header-title">
+                        <h1><i class="fas fa-ticket-alt"></i> مدیریت تیکت‌ها</h1>
+                        <p>مدیریت و پاسخگویی به درخواست‌های کاربران</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="totalTickets">0</span>
+                    <span class="stat-label">کل تیکت‌ها</span>
+                </div>
+            </div>
+            <div class="stat-card urgent">
+                <div class="stat-icon urgent">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="openTickets">0</span>
+                    <span class="stat-label">باز</span>
+                </div>
+            </div>
+            <div class="stat-card in-progress">
+                <div class="stat-icon in-progress">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" stroke="#f39c12" stroke-width="2" fill="none"/>
+                        <path d="M12 6v6l4 2" stroke="#f39c12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="inProgressTickets">0</span>
+                    <span class="stat-label">در حال بررسی</span>
+                </div>
+            </div>
+            <div class="stat-card waiting">
+                <div class="stat-icon waiting">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" stroke="#3498db" stroke-width="2" fill="none"/>
+                        <path d="M12 8v4l3 3" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="waitingTickets">0</span>
+                    <span class="stat-label">در انتظار پاسخ</span>
+                </div>
+            </div>
+            <div class="stat-card resolved">
+                <div class="stat-icon resolved">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="resolvedTickets">0</span>
+                    <span class="stat-label">حل شده</span>
+                </div>
+            </div>
+            <div class="stat-card closed">
+                <div class="stat-icon closed">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" fill="#f3f4f6"/>
+                        <path d="M15 9l-6 6M9 9l6 6" stroke="#95a5a6" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="closedTickets">0</span>
+                    <span class="stat-label">بسته</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="performance-metrics">
+            <div class="metric-card">
+                <h3>زمان متوسط پاسخ</h3>
+                <div class="metric-value" id="avgResponseTime">0 ساعت</div>
+            </div>
+            <div class="metric-card">
+                <h3>زمان متوسط حل</h3>
+                <div class="metric-value" id="avgResolutionTime">0 ساعت</div>
+            </div>
+        </div>
+
+        <div class="filters-container">
+            <div class="filter-group">
+                <label for="statusFilter">وضعیت:</label>
+                <select id="statusFilter" onchange="loadTickets()">
+                    <option value="">همه</option>
+                    <option value="open">باز</option>
+                    <option value="in_progress">در حال بررسی</option>
+                    <option value="waiting_for_admin">در انتظار پاسخ</option>
+                    <option value="resolved">حل شده</option>
+                    <option value="closed">بسته</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="priorityFilter">اولویت:</label>
+                <select id="priorityFilter" onchange="loadTickets()">
+                    <option value="">همه</option>
+                    <option value="low">کم</option>
+                    <option value="medium">متوسط</option>
+                    <option value="high">زیاد</option>
+                    <option value="urgent">فوری</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="categoryFilter">دسته‌بندی:</label>
+                <select id="categoryFilter" onchange="loadTickets()">
+                    <option value="">همه</option>
+                    <option value="general">عمومی</option>
+                    <option value="technical">فنی</option>
+                    <option value="billing">مالی</option>
+                    <option value="support">پشتیبانی</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="assignedFilter">تخصیص:</label>
+                <select id="assignedFilter" onchange="loadTickets()">
+                    <option value="">همه</option>
+                    <option value="unassigned">تخصیص نیافته</option>
+                    <option value="admin">تخصیص داده شده</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sortBy">مرتب‌سازی:</label>
+                <select id="sortBy" onchange="loadTickets()">
+                    <option value="createdAt">تاریخ ایجاد</option>
+                    <option value="updatedAt">آخرین بروزرسانی</option>
+                    <option value="priority">اولویت</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tickets-container" id="ticketsContainer">
+            <!-- تیکت‌ها اینجا نمایش داده می‌شوند -->
+        </div>
+
+        <div class="pagination" id="pagination">
+            <!-- پیجینیشن اینجا نمایش داده می‌شود -->
+        </div>
+    </div>
+
+    <!-- Modal جزئیات تیکت -->
+    <div id="ticketDetailsModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="ticketDetailsTitle">جزئیات تیکت</h2>
+                <span class="close" onclick="closeTicketDetailsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="ticket-actions-bar">
+                    <div class="action-group">
+                        <label for="statusSelect">وضعیت:</label>
+                        <select id="statusSelect" onchange="updateTicketStatus()">
+                            <option value="open">باز</option>
+                            <option value="in_progress">در حال بررسی</option>
+                            <option value="waiting_for_user">در انتظار کاربر</option>
+                            <option value="resolved">حل شده</option>
+                            <option value="closed">بسته</option>
+                        </select>
+                    </div>
+                    <div class="action-group">
+                        <label for="prioritySelect">اولویت:</label>
+                        <select id="prioritySelect" onchange="updateTicketPriority()">
+                            <option value="low">کم</option>
+                            <option value="medium">متوسط</option>
+                            <option value="high">زیاد</option>
+                            <option value="urgent">فوری</option>
+                        </select>
+                    </div>
+                    <div class="action-group">
+                        <label for="assignSelect">تخصیص:</label>
+                        <select id="assignSelect" onchange="assignTicket()">
+                            <option value="">تخصیص نیافته</option>
+                            <option value="admin">ادمین</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteTicket()">
+                        <i class="fas fa-trash"></i> حذف تیکت
+                    </button>
+                </div>
+                
+                <div class="ticket-info" id="ticketInfo">
+                    <!-- اطلاعات تیکت -->
+                </div>
+                
+                <div class="messages-container" id="messagesContainer">
+                    <!-- پیام‌ها -->
+                </div>
+                
+                <div class="message-form" id="messageForm">
+                    <div class="message-input-group">
+                        <textarea id="newMessage" placeholder="پیام خود را بنویسید..." maxlength="1000"></textarea>
+                        <div class="message-options">
+                            <label>
+                                <input type="checkbox" id="isInternalMessage"> پیام داخلی (فقط برای ادمین‌ها)
+                            </label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendMessage()">ارسال پیام</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal تغییر وضعیت -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>تغییر وضعیت تیکت</h2>
+                <span class="close" onclick="closeStatusModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="statusNote">یادداشت (اختیاری):</label>
+                    <textarea id="statusNote" placeholder="یادداشت خود را وارد کنید..." rows="4"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="closeStatusModal()">انصراف</button>
+                    <button class="btn btn-primary" onclick="confirmStatusChange()">تأیید تغییر</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin-tickets.js"></script>
+</body>
+</html> 

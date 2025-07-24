@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آفلاین - AmlakOne</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .offline-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .offline-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: #f3f4f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: #6b7280;
+        }
+
+        .offline-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+
+        .offline-message {
+            font-size: 16px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .retry-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .retry-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .retry-btn:active {
+            transform: translateY(0);
+        }
+
+        .offline-features {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .feature-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+
+        .feature-list {
+            list-style: none;
+            text-align: right;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            color: #6b7280;
+            position: relative;
+            padding-right: 25px;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            position: absolute;
+            right: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .connection-status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .connection-status.online {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        .connection-status.offline {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .offline-container {
+                padding: 30px 20px;
+            }
+            
+            .offline-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 50px;
+            }
+            
+            .offline-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">
+            📶
+        </div>
+        
+        <h1 class="offline-title">شما آفلاین هستید</h1>
+        
+        <p class="offline-message">
+            اتصال به اینترنت شما قطع شده است. لطفاً اتصال خود را بررسی کرده و دوباره تلاش کنید.
+        </p>
+        
+        <button class="retry-btn" onclick="checkConnection()">
+            تلاش مجدد
+        </button>
+        
+        <div id="connectionStatus" class="connection-status"></div>
+        
+        <div class="offline-features">
+            <h3 class="feature-title">ویژگی‌های آفلاین:</h3>
+            <ul class="feature-list">
+                <li>دسترسی به صفحات کش شده</li>
+                <li>مشاهده محصولات ذخیره شده</li>
+                <li>کار با فرم‌های آماده</li>
+                <li>دسترسی به تنظیمات برنامه</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function checkConnection() {
+            const statusDiv = document.getElementById('connectionStatus');
+            const retryBtn = document.querySelector('.retry-btn');
+            
+            if (navigator.onLine) {
+                statusDiv.textContent = 'اتصال برقرار شد! در حال انتقال...';
+                statusDiv.className = 'connection-status online';
+                retryBtn.disabled = true;
+                retryBtn.textContent = 'در حال انتقال...';
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                statusDiv.textContent = 'هنوز آفلاین هستید. لطفاً اتصال اینترنت خود را بررسی کنید.';
+                statusDiv.className = 'connection-status offline';
+                
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // گوش دادن به تغییرات وضعیت اتصال
+        window.addEventListener('online', () => {
+            checkConnection();
+        });
+
+        window.addEventListener('offline', () => {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.textContent = 'اتصال به اینترنت قطع شد.';
+            statusDiv.className = 'connection-status offline';
+        });
+
+        // بررسی خودکار اتصال هر 5 ثانیه
+        setInterval(() => {
+            if (navigator.onLine) {
+                checkConnection();
+            }
+        }, 5000);
+
+        // نمایش وضعیت اولیه
+        if (navigator.onLine) {
+            checkConnection();
+        }
+    </script>
+</body>
+</html> 

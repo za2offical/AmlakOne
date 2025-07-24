@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست PWA - AmlakOne</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="صفحه تست PWA برای AmlakOne">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="AmlakOne">
+    <meta name="msapplication-TileColor" content="#2563eb">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/icon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/icon-180x180.png">
+    <link rel="mask-icon" href="/images/icons/safari-pinned-tab.svg" color="#2563eb">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .test-card h2 {
+            color: #2563eb;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .test-item:last-child {
+            border-bottom: none;
+        }
+
+        .test-label {
+            font-weight: 500;
+        }
+
+        .test-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+        }
+
+        .online {
+            background: #10b981;
+        }
+
+        .offline {
+            background: #ef4444;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            position: relative;
+            padding-right: 25px;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            position: absolute;
+            right: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .test-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="connectionStatus" class="connection-status">
+        <span id="statusText">بررسی اتصال...</span>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🧪 تست PWA</h1>
+            <p>بررسی ویژگی‌های Progressive Web App</p>
+        </div>
+
+        <div class="test-card">
+            <h2>📱 قابلیت نصب</h2>
+            <div class="test-item">
+                <span class="test-label">Manifest File</span>
+                <span class="test-status status-info" id="manifestStatus">در حال بررسی...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">Service Worker</span>
+                <span class="test-status status-info" id="swStatus">در حال بررسی...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">HTTPS</span>
+                <span class="test-status status-info" id="httpsStatus">در حال بررسی...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">آیکون‌ها</span>
+                <span class="test-status status-info" id="iconsStatus">در حال بررسی...</span>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <h2>🌐 کارکرد آفلاین</h2>
+            <div class="test-item">
+                <span class="test-label">وضعیت اتصال</span>
+                <span class="test-status status-info" id="connectionTestStatus">در حال بررسی...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">کش فایل‌ها</span>
+                <span class="test-status status-info" id="cacheStatus">در حال بررسی...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-label">صفحه آفلاین</span>
+                <span class="test-status status-info" id="offlinePageStatus">در حال بررسی...</span>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <h2>⚙️ ویژگی‌های PWA</h2>
+            <ul class="feature-list">
+                <li>قابلیت نصب روی دستگاه</li>
+                <li>کارکرد آفلاین</li>
+                <li>به‌روزرسانی خودکار</li>
+                <li>کش هوشمند</li>
+                <li>اعلان‌های push (آینده)</li>
+                <li>Background Sync (آینده)</li>
+            </ul>
+        </div>
+
+        <div class="test-card">
+            <h2>🔧 ابزارهای تست</h2>
+            <button class="btn" onclick="runAllTests()">اجرای همه تست‌ها</button>
+            <button class="btn btn-secondary" onclick="clearCache()">پاک کردن کش</button>
+            <button class="btn btn-success" onclick="checkUpdates()">بررسی به‌روزرسانی</button>
+            <button class="btn" onclick="goToMainApp()">رفتن به برنامه اصلی</button>
+        </div>
+    </div>
+
+    <script src="/js/pwa.js"></script>
+    <script>
+        // تست‌های PWA
+        function runAllTests() {
+            testManifest();
+            testServiceWorker();
+            testHTTPS();
+            testIcons();
+            testConnection();
+            testCache();
+            testOfflinePage();
+        }
+
+        function testManifest() {
+            fetch('/manifest.json')
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('manifestStatus').textContent = 'موفق';
+                        document.getElementById('manifestStatus').className = 'test-status status-success';
+                    } else {
+                        throw new Error('Manifest not found');
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('manifestStatus').textContent = 'خطا';
+                    document.getElementById('manifestStatus').className = 'test-status status-error';
+                });
+        }
+
+        function testServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration()
+                    .then(registration => {
+                        if (registration) {
+                            document.getElementById('swStatus').textContent = 'فعال';
+                            document.getElementById('swStatus').className = 'test-status status-success';
+                        } else {
+                            document.getElementById('swStatus').textContent = 'غیرفعال';
+                            document.getElementById('swStatus').className = 'test-status status-warning';
+                        }
+                    });
+            } else {
+                document.getElementById('swStatus').textContent = 'پشتیبانی نمی‌شود';
+                document.getElementById('swStatus').className = 'test-status status-error';
+            }
+        }
+
+        function testHTTPS() {
+            if (location.protocol === 'https:') {
+                document.getElementById('httpsStatus').textContent = 'فعال';
+                document.getElementById('httpsStatus').className = 'test-status status-success';
+            } else {
+                document.getElementById('httpsStatus').textContent = 'غیرفعال';
+                document.getElementById('httpsStatus').className = 'test-status status-error';
+            }
+        }
+
+        function testIcons() {
+            const icon = new Image();
+            icon.onload = () => {
+                document.getElementById('iconsStatus').textContent = 'موجود';
+                document.getElementById('iconsStatus').className = 'test-status status-success';
+            };
+            icon.onerror = () => {
+                document.getElementById('iconsStatus').textContent = 'مشکل';
+                document.getElementById('iconsStatus').className = 'test-status status-warning';
+            };
+            icon.src = '/images/icons/icon.svg';
+        }
+
+        function testConnection() {
+            const status = navigator.onLine ? 'آنلاین' : 'آفلاین';
+            const className = navigator.onLine ? 'status-success' : 'status-warning';
+            document.getElementById('connectionTestStatus').textContent = status;
+            document.getElementById('connectionTestStatus').className = `test-status ${className}`;
+        }
+
+        function testCache() {
+            if ('caches' in window) {
+                caches.keys()
+                    .then(cacheNames => {
+                        if (cacheNames.length > 0) {
+                            document.getElementById('cacheStatus').textContent = 'فعال';
+                            document.getElementById('cacheStatus').className = 'test-status status-success';
+                        } else {
+                            document.getElementById('cacheStatus').textContent = 'خالی';
+                            document.getElementById('cacheStatus').className = 'test-status status-warning';
+                        }
+                    });
+            } else {
+                document.getElementById('cacheStatus').textContent = 'پشتیبانی نمی‌شود';
+                document.getElementById('cacheStatus').className = 'test-status status-error';
+            }
+        }
+
+        function testOfflinePage() {
+            fetch('/offline.html')
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('offlinePageStatus').textContent = 'موجود';
+                        document.getElementById('offlinePageStatus').className = 'test-status status-success';
+                    } else {
+                        throw new Error('Offline page not found');
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('offlinePageStatus').textContent = 'مشکل';
+                    document.getElementById('offlinePageStatus').className = 'test-status status-error';
+                });
+        }
+
+        function clearCache() {
+            if ('caches' in window) {
+                caches.keys()
+                    .then(cacheNames => {
+                        return Promise.all(
+                            cacheNames.map(cacheName => caches.delete(cacheName))
+                        );
+                    })
+                    .then(() => {
+                        alert('کش با موفقیت پاک شد!');
+                        testCache();
+                    });
+            } else {
+                alert('کش پشتیبانی نمی‌شود!');
+            }
+        }
+
+        function checkUpdates() {
+            if (pwaManager && pwaManager.swRegistration) {
+                pwaManager.checkForUpdates();
+                alert('بررسی به‌روزرسانی انجام شد!');
+            } else {
+                alert('Service Worker در دسترس نیست!');
+            }
+        }
+
+        function goToMainApp() {
+            window.location.href = '/login';
+        }
+
+        // به‌روزرسانی وضعیت اتصال
+        function updateConnectionStatus() {
+            const statusDiv = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (navigator.onLine) {
+                statusDiv.className = 'connection-status online';
+                statusText.textContent = 'آنلاین';
+            } else {
+                statusDiv.className = 'connection-status offline';
+                statusText.textContent = 'آفلاین';
+            }
+        }
+
+        // اجرای تست‌ها در بارگذاری صفحه
+        window.addEventListener('load', () => {
+            runAllTests();
+            updateConnectionStatus();
+        });
+
+        // گوش دادن به تغییرات وضعیت اتصال
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+    </script>
+</body>
+</html> 

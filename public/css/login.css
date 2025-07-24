@@ -1,0 +1,361 @@
+
+/* فونت‌های فارسی */
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+
+/* ریست و تنظیمات پایه */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    direction: rtl;
+    overflow-x: hidden;
+}
+
+/* کانتینر اصلی */
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+/* کارت لاگین */
+.login-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 40px 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    background-size: 200% 100%;
+    animation: gradient 3s ease infinite;
+}
+
+@keyframes gradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* هدر */
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.login-header p {
+    color: #718096;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* فرم */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* گروه ورودی */
+.input-group {
+    position: relative;
+}
+
+.input-group label {
+    display: block;
+    color: #4a5568;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    transition: color 0.2s ease;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    background: #fff;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.input-group input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.input-group input:focus + .password-toggle {
+    color: #667eea;
+}
+
+.input-group:focus-within label {
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+.input-group input:focus + .password-toggle + .input-highlight,
+.input-group input:focus + .input-highlight {
+    transform: scaleX(1);
+}
+
+.input-highlight {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transform: scaleX(0);
+    transition: transform 0.2s ease;
+    border-radius: 1px;
+}
+
+/* Password wrapper */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    padding-left: 50px;
+}
+
+.password-toggle {
+    position: absolute;
+    left: 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #718096;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-toggle:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.password-toggle:focus {
+    outline: none;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.eye-icon {
+    transition: all 0.2s ease;
+}
+
+/* دکمه ورود */
+.login-btn {
+    position: relative;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+.login-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+.login-btn.loading {
+    pointer-events: none;
+}
+
+.login-btn.success {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+}
+
+.login-btn.error {
+    background: linear-gradient(135deg, #f56565, #e53e3e);
+}
+
+.btn-text {
+    transition: opacity 0.3s ease;
+}
+
+.btn-loader {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* پیام خطا */
+.error-message {
+    display: none;
+    background: #fed7d7;
+    color: #c53030;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-top: 15px;
+    border-right: 4px solid #f56565;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ریسپانسیو */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 15px;
+    }
+    
+    .login-card {
+        padding: 30px 20px;
+    }
+    
+    .login-header h1 {
+        font-size: 24px;
+    }
+    
+    .input-group input {
+        padding: 10px 14px;
+        font-size: 16px; /* جلوگیری از زوم در iOS */
+    }
+}
+
+/* بهینه‌سازی عملکرد */
+.login-card,
+.login-btn,
+.input-group input {
+    will-change: transform;
+}
+
+/* حالت کاهش انیمیشن */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .login-card::before {
+        animation: none;
+        background: #667eea;
+    }
+}
+
+/* تم تیره (اختیاری) */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    }
+    
+    .login-card {
+        background: rgba(26, 32, 44, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .login-header h1 {
+        color: #f7fafc;
+    }
+    
+    .login-header p {
+        color: #a0aec0;
+    }
+    
+    .input-group label {
+        color: #e2e8f0;
+    }
+    
+    .input-group input {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #f7fafc;
+    }
+    
+    .input-group input:focus {
+        border-color: #667eea;
+        background: #374151;
+    }
+    
+    .error-message {
+        background: rgba(245, 101, 101, 0.1);
+        color: #feb2b2;
+    }
+}

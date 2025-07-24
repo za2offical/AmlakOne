@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ویرایش پروفایل</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/edit-profile.css">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button class="back-btn" onclick="window.location.href='/panel'" title="بازگشت به پنل">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                    </button>
+                    <div class="header-title">
+                        <h1>ویرایش پروفایل</h1>
+                        <p>بروزرسانی اطلاعات شخصی</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="card">
+            <div id="editProfile">
+            <div id="currentInfo">
+                <h3>اطلاعات فعلی</h3>
+                <p>نام کاربری: <span id="currentUsername"></span></p>
+                <p>شماره تماس: <span id="currentPhone"></span></p>
+                <p>استان فعالیت: <span id="currentProvince"></span></p>
+                <p>محله فعالیت: <span id="currentNeighborhood"></span></p>
+                <div id="currentImageContainer">
+                    <p>عکس پروفایل فعلی:</p>
+                    <img id="currentImage" style="max-width: 100px; border-radius: 50%; display: none;">
+                    <p id="noImageText" style="color: #999;">عکس پروفایلی موجود نیست</p>
+                </div>
+            </div>
+
+            <form id="updateForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="newUsername">نام کاربری جدید:</label>
+                    <input type="text" id="newUsername" 
+                           required minlength="3" 
+                           pattern="[a-zA-Z0-9_]+" 
+                           title="نام کاربری فقط می‌تواند شامل حروف، اعداد و زیرخط باشد"
+                           placeholder="نام کاربری جدید را وارد کنید">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">شماره تماس:</label>
+                    <input type="tel" id="phone" name="phone" 
+                           pattern="09\d{9}" 
+                           placeholder="09123456789" 
+                           required>
+                    <small style="color: #666;">فرمت: 09XXXXXXXXX</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="province">استان فعالیت:</label>
+                    <select id="province" name="province" required>
+                        <option value="">انتخاب استان</option>
+                        <option value="تهران">تهران</option>
+                        <option value="اصفهان">اصفهان</option>
+                        <option value="خراسان رضوی">خراسان رضوی</option>
+                        <option value="فارس">فارس</option>
+                        <option value="خوزستان">خوزستان</option>
+                        <option value="مازندران">مازندران</option>
+                        <option value="گیلان">گیلان</option>
+                        <option value="آذربایجان شرقی">آذربایجان شرقی</option>
+                        <option value="کرمان">کرمان</option>
+                        <option value="البرز">البرز</option>
+                        <option value="همدان">همدان</option>
+                        <option value="کرج">کرج</option>
+                        <option value="سایر">سایر</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="neighborhood">محله فعالیت:</label>
+                    <input type="text" id="neighborhood" name="neighborhood" 
+                           placeholder="نام محله را وارد کنید" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="profileImage">عکس پروفایل (اختیاری):</label>
+                    <div class="file-upload">
+                        <input type="file" id="profileImage" name="profileImage" accept="image/*">
+                        <div class="file-upload-btn">
+                            انتخاب عکس پروفایل
+                        </div>
+                        <span class="file-name">هیچ فایلی انتخاب نشده</span>
+                    </div>
+                    <small style="color: #666;">حداکثر سایز: 2 مگابایت</small>
+                    <div id="imagePreview"></div>
+                </div>
+
+                <button type="submit">بروزرسانی اطلاعات</button>
+            </form>
+
+            <div id="message"></div>
+            <button class="back-button" onclick="goBackToPanel()">بازگشت به پنل</button>
+        </div>
+    </div>
+
+    <script src="/js/edit-profile.js"></script>
+</body>
+</html>

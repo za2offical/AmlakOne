@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جزئیات محصول - AmlakOne</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="جزئیات کامل محصول املاک">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="AmlakOne">
+    <meta name="msapplication-TileColor" content="#2563eb">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/icon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/icon-180x180.png">
+    <link rel="mask-icon" href="/images/icons/safari-pinned-tab.svg" color="#2563eb">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <link rel="stylesheet" href="/css/public-product-details.css">
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="/js/pwa.js"></script>
+</head>
+<body>
+    <div id="loading" class="loading">
+        <p>در حال بارگذاری جزئیات محصول...</p>
+    </div>
+
+    <div id="error" class="error" style="display: none;">
+        <p>محصول یافت نشد یا خطا در بارگذاری جزئیات.</p>
+    </div>
+
+    <!-- Modal برای نمایش تصاویر بزرگ -->
+    <div id="imageModal" class="image-modal">
+        <span class="modal-close" id="modalClose">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" class="modal-image" alt="تصویر بزرگ">
+            <div class="modal-prev modal-nav" id="modalPrev">❮</div>
+            <div class="modal-next modal-nav" id="modalNext">❯</div>
+            <div class="modal-counter" id="modalCounter"></div>
+        </div>
+    </div>
+
+    <div id="productContainer" class="product-container" style="display: none;">
+        <div class="product-header">
+            <a href="#" id="backButton" class="back-button">← بازگشت به محصولات</a>
+            <div class="owner-info" id="ownerInfo"></div>
+            <h1 class="product-title">جزئیات ملک</h1>
+        </div>
+
+        <div class="image-gallery">
+            <!-- Swiper main slider -->
+            <div class="swiper main-swiper">
+                <div class="swiper-wrapper" id="swiperMainWrapper">
+                    <!-- Slides will be injected by JS -->
+                </div>
+                <!-- Add navigation -->
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+            <!-- Swiper thumbnails -->
+            <div class="swiper thumb-swiper">
+                <div class="swiper-wrapper" id="swiperThumbWrapper">
+                    <!-- Thumbnails will be injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <div class="product-details">
+            <div class="details-grid">
+                <div class="detail-card">
+                    <div class="detail-label">نوع آگهی</div>
+                    <div class="detail-value" id="propertyType">-</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-label">تعداد اتاق خواب</div>
+                    <div class="detail-value" id="bedrooms">-</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-label">مساحت (متر مربع)</div>
+                    <div class="detail-value" id="area">-</div>
+                </div>
+                <div class="detail-card" id="constructionYearCard" style="display: none;">
+                    <div class="detail-label">سال ساخت</div>
+                    <div class="detail-value" id="constructionYear">-</div>
+                </div>
+            </div>
+
+            <!-- قیمت‌گذاری -->
+            <div id="pricingSection" style="margin: 20px 0; display: none;">
+                <h3 class="section-title">قیمت‌گذاری</h3>
+                <div class="pricing-grid" id="pricingGrid">
+                </div>
+            </div>
+
+            <!-- امکانات -->
+            <div id="facilitiesSection" style="margin: 20px 0;">
+                <h3 class="section-title">امکانات</h3>
+                <div class="facilities-grid" id="facilitiesGrid">
+                </div>
+            </div>
+
+            <!-- توضیحات -->
+            <div id="descriptionSection" class="description-section" style="display: none;">
+                <h3 class="section-title">توضیحات</h3>
+                <p id="descriptionText" class="description-text"></p>
+            </div>
+
+            <div class="date-info">
+                <strong>تاریخ افزودن:</strong> <span id="createdDate">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="/js/product-cache.js"></script>
+    <script src="/js/pre-cache.js"></script>
+    <script src="/js/smart-cache.js"></script>
+    <script src="/js/public-product-details.js"></script>
+</body>
+</html>

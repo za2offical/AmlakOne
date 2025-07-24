@@ -31,7 +31,7 @@ app.use(express.static('public'));
 app.use('/profile-img', express.static(path.join(__dirname, 'data', 'profile-img')));
 
 // Serve static files from public3D directory for 3D viewer
-app.use('/3d', express.static(path.join(__dirname, 'public3D')));
+app.use(express.static(path.join(__dirname, 'public3D')));
 
 // PWA Routes
 app.get('/manifest.json', (req, res) => {

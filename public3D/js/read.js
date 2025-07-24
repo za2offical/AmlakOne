@@ -73,7 +73,7 @@ export class WallReader {
     }
 
     // Load wall data from JSON file
-    async loadWallData(jsonPath = "/3d/data/home.json") {
+    async loadWallData(jsonPath = "/data/home.json") {
         try {
             console.log(`📁 Loading data from: ${jsonPath}`);
             const response = await fetch(jsonPath);

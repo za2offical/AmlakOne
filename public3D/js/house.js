@@ -160,7 +160,7 @@ class OptimizedHouseViewer {
 
             // Attempt to load door model
             try {
-                const doorGltf = await this.gltfLoader.loadAsync("/models/Nice Door.glb");
+                const doorGltf = await this.gltfLoader.loadAsync("/3d/models/Nice Door.glb");
                 this.doorModel = doorGltf.scene;
                 this.setupModelShadows(this.doorModel);
                 console.log('🚪 Door model loaded successfully');
@@ -173,7 +173,7 @@ class OptimizedHouseViewer {
 
             // Attempt to load window model
             try {
-                const windowGltf = await this.gltfLoader.loadAsync("/models/Window Large.glb");
+                const windowGltf = await this.gltfLoader.loadAsync("/3d/models/Window Large.glb");
                 this.windowModel = windowGltf.scene;
                 this.setupModelShadows(this.windowModel);
                 console.log('🪟 Window model loaded successfully');
@@ -220,7 +220,7 @@ class OptimizedHouseViewer {
             if (!houseData) {
                 // Load default data
                 try {
-                    houseData = await this.wallReader.loadWallData("/data/home.json");
+                    houseData = await this.wallReader.loadWallData("/3d/data/home.json");
                 } catch (error) {
                     console.log('⚠️ Default data not found, creating fallback');
                     houseData = this.createFallbackData();

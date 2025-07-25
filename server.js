@@ -225,8 +225,9 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🏠 3D House Viewer running at http://localhost:${PORT}`);
+    console.log(`🏠 3D House Viewer running at http://0.0.0.0:${PORT}`);
     console.log('🌐 Server accessible on all network interfaces');
     console.log('📁 Serving static files from public3D/ directory');
     console.log('📊 Available projects:', getAvailableJsonFiles().length);
+    console.log('🔗 Access your app at: https://your-repl-name.your-username.repl.co');
 });

@@ -22,15 +22,28 @@ router.post('/verify', async (req, res) => {
         }
 
         // بررسی اعتبار admin
-        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-            const token = generateToken({ username: ADMIN_USERNAME });
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 24 * 60 * 60 * 1000 // 24 ساعت
-            });
-            return res.json({ success: true, isAdmin: true });
+        if (username === ADMIN_USERNAME) {
+            // بررسی پسورد admin از فایل users.json
+            const users = await readUsers();
+            const adminUser = users.find(u => u.username === username);
+            
+            let isAdminValid = false;
+            if (adminUser && adminUser.hashedPassword) {
+                isAdminValid = await comparePassword(password, adminUser.hashedPassword);
+            } else if (password === ADMIN_PASSWORD) {
+                isAdminValid = true;
+            }
+            
+            if (isAdminValid) {
+                const token = generateToken({ username: ADMIN_USERNAME });
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'strict',
+                    maxAge: 24 * 60 * 60 * 1000 // 24 ساعت
+                });
+                return res.json({ success: true, isAdmin: true });
+            }
         }
 
         // بررسی اعتبار کاربر عادی

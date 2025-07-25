@@ -3,7 +3,7 @@ modules = ["nodejs-20"]
 channel = "stable-25_05"
 
 [workflows]
-runButton = "Run Both Servers"
+runButton = "Run 3D Viewer"
 
 [[workflows.workflow]]
 name = "Start Server"
@@ -75,6 +75,15 @@ mode = "parallel"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node index.js"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+
+[[workflows.workflow]]
+name = "Run 3D Viewer"
+author = 39313916
+mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

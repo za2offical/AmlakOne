@@ -427,8 +427,10 @@ body {
     border-right: 4px solid #667eea;
     box-shadow: 
         inset 2px 0 8px rgba(102, 126, 234, 0.15),
-        2px 0 12px rgba(102, 126, 234, 0.1);
+        2px 0 12px rgba(102, 126, 234, 0.1),
+        4px 0 15px rgba(102, 126, 234, 0.3);
     transition: all 0.3s ease;
+    animation: borderGlow 3s ease-in-out infinite alternate;
 }
 
 .detail-item:hover {
@@ -436,8 +438,23 @@ body {
     box-shadow: 
         inset 2px 0 12px rgba(102, 126, 234, 0.25),
         2px 0 16px rgba(102, 126, 234, 0.15),
-        0 0 20px rgba(102, 126, 234, 0.1);
+        4px 0 25px rgba(102, 126, 234, 0.5);
     transform: translateX(-2px);
+}
+
+@keyframes borderGlow {
+    0% {
+        box-shadow: 
+            inset 2px 0 8px rgba(102, 126, 234, 0.15),
+            2px 0 12px rgba(102, 126, 234, 0.1),
+            4px 0 15px rgba(102, 126, 234, 0.2);
+    }
+    100% {
+        box-shadow: 
+            inset 2px 0 8px rgba(102, 126, 234, 0.15),
+            2px 0 12px rgba(102, 126, 234, 0.1),
+            4px 0 20px rgba(102, 126, 234, 0.4);
+    }
 }
 
 .detail-label {

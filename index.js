@@ -82,7 +82,7 @@ app.get('/create-profile', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.redirect('/login');
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/edit-profile', (req, res) => {

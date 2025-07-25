@@ -229,6 +229,28 @@
                     return result;
                 } catch (error) {
                     console.error('❌ Error loading project data:', error);
+                    
+                    // Fallback: try to load JSON file directly
+                    try {
+                        console.log(`🔄 Trying direct file load: /data/${name}-${id}.json`);
+                        const directResponse = await fetch(`/data/${name}-${id}.json`);
+                        if (directResponse.ok) {
+                            const jsonData = await directResponse.json();
+                            console.log('✅ Direct file load successful');
+                            return {
+                                success: true,
+                                data: jsonData,
+                                projectInfo: {
+                                    name: name,
+                                    id: id,
+                                    filename: `${name}-${id}.json`
+                                }
+                            };
+                        }
+                    } catch (fallbackError) {
+                        console.error('❌ Fallback also failed:', fallbackError);
+                    }
+                    
                     return null;
                 }
             }

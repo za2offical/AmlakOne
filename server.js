@@ -6,6 +6,18 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Enable CORS for all routes
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
+
 // Enable JSON parsing for file uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -59,35 +71,48 @@ app.get('/api/project/:name/:id', (req, res) => {
     console.log(`📁 Looking for file: ${filePath}`);
     console.log(`📄 File exists: ${fs.existsSync(filePath)}`);
     
+    // Set content type header
+    res.setHeader('Content-Type', 'application/json');
+    
     try {
         if (!fs.existsSync(filePath)) {
             console.log(`❌ File not found: ${filename}`);
+            const availableFiles = getAvailableJsonFiles().map(p => p.filename);
+            console.log(`📋 Available files: ${availableFiles.join(', ')}`);
+            
             return res.status(404).json({
                 success: false,
                 message: `Project not found: ${filename}`,
-                filePath: filePath,
-                availableFiles: getAvailableJsonFiles().map(p => p.filename)
+                requestedPath: filePath,
+                availableFiles: availableFiles
             });
         }
         
-        const jsonData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const rawData = fs.readFileSync(filePath, 'utf8');
+        const jsonData = JSON.parse(rawData);
         console.log(`✅ Successfully loaded project data for: ${filename}`);
+        console.log(`📊 Data contains: ${Object.keys(jsonData).join(', ')}`);
         
-        res.json({
+        const response = {
             success: true,
             data: jsonData,
             projectInfo: {
                 name: name,
                 id: id,
-                filename: filename
+                filename: filename,
+                loadedAt: new Date().toISOString()
             }
-        });
+        };
+        
+        res.status(200).json(response);
+        
     } catch (error) {
         console.error('❌ Error loading project data:', error);
         res.status(500).json({
             success: false,
             message: 'Error loading project data',
-            error: error.message
+            error: error.message,
+            filename: filename
         });
     }
 });

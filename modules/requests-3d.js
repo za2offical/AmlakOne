@@ -99,7 +99,19 @@ router.get('/my-requests', async (req, res) => {
             request.id.startsWith(`${username}-`)
         );
 
-        res.json(userRequests);
+        // اطمینان از بازگشت تمام فیلدها شامل URL
+        const safeRequests = userRequests.map(request => ({
+            id: request.id,
+            username: request.username,
+            productId: request.productId,
+            videoPath: request.videoPath,
+            status: request.status,
+            url: request.url || null,
+            submittedAt: request.submittedAt,
+            updatedAt: request.updatedAt
+        }));
+
+        res.json(safeRequests);
     } catch (error) {
         console.error('Error fetching 3D requests:', error);
         res.status(500).json({ error: 'Internal server error' });

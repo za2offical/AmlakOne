@@ -314,9 +314,20 @@ function displayActiveRequests() {
         // پیدا کردن اطلاعات محصول
         const product = allProducts.find(p => p.id === request.productId);
         
-        // تولید لینک برای درخواست‌های تایید شده
+        // تولید لینک برای درخواست‌های تایید شده از 3D/data.json
         const approved3DLink = request.status === 'تایید شده' && request.url ? 
             request.url : null;
+            
+        // Debug logging
+        if (request.status === 'تایید شده') {
+            console.log('Approved request data:', {
+                id: request.id,
+                status: request.status,
+                url: request.url,
+                hasUrl: !!request.url,
+                approved3DLink: approved3DLink
+            });
+        }
 
         requestCard.innerHTML = `
             <div class="request-header">
@@ -350,7 +361,7 @@ function displayActiveRequests() {
                         <span class="detail-label">فایل ویدیو:</span>
                         <span class="detail-value">آپلود شده</span>
                     </div>
-                    ${request.status === 'تایید شده' ? `
+                    ${request.status === 'تایید شده' && approved3DLink ? `
                     <div class="detail-row">
                         <span class="detail-label">لینک نمای 3D:</span>
                         <div class="link-display">
@@ -368,6 +379,11 @@ function displayActiveRequests() {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                    ` : request.status === 'تایید شده' ? `
+                    <div class="detail-row">
+                        <span class="detail-label">لینک نمای 3D:</span>
+                        <span class="detail-value">در حال آماده‌سازی...</span>
                     </div>
                     ` : ''}
                 </div>

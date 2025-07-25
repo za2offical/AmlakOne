@@ -168,12 +168,16 @@ async function loadProducts() {
     const userInfo = await getUserInfo(username);
 
     // به‌روزرسانی عنوان صفحه
-    document.getElementById('pageTitle').textContent = `محصولات ${userInfo.name}`;
+    document.getElementById('pageTitle').textContent = userInfo.name;
 
-    // نمایش شماره تماس در صورت وجود
+    // نمایش آیکون تماس در صورت وجود شماره
     const contactElement = document.getElementById('userContact');
     if (userInfo.phone) {
-        contactElement.textContent = `تماس: ${userInfo.phone}`;
+        contactElement.style.display = 'flex';
+        contactElement.title = `تماس: ${userInfo.phone}`;
+        contactElement.onclick = () => {
+            window.location.href = `tel:${userInfo.phone}`;
+        };
     } else {
         contactElement.style.display = 'none';
     }
@@ -213,9 +217,9 @@ async function loadProducts() {
     }
 }
 
-// نمایش درباره ما
-function showAboutUs() {
-    alert('درباره ما: این سایت برای نمایش محصولات املاک طراحی شده است.');
+// رفتن به صفحه اصلی
+function goHome() {
+    window.location.href = '/';
 }
 
 // بارگذاری محصولات هنگام لود صفحه

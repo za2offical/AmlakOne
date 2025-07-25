@@ -52,20 +52,70 @@ body {
     margin-top: 3px;
 }
 
-.about-us-btn {
+.user-contact {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.contact-icon {
+    width: 24px;
+    height: 24px;
+    background-color: #28a745;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
+    transition: all 0.3s ease;
+    animation: softGlow 2s ease-in-out infinite alternate;
+}
+
+.contact-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(40, 167, 69, 0.6);
+}
+
+.contact-icon svg {
+    width: 14px;
+    height: 14px;
+    color: white;
+}
+
+@keyframes softGlow {
+    0% {
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(40, 167, 69, 0.5);
+    }
+}
+
+.home-btn {
     background-color: #007bff;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 0.9rem;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-family: inherit;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
 
-.about-us-btn:hover {
+.home-btn:hover {
     background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+.home-btn svg {
+    width: 20px;
+    height: 20px;
 }
 
 .filter-container {
@@ -537,10 +587,25 @@ body {
         font-size: 1.3rem;
     }
     
-    .about-us-btn {
+    .home-btn {
+        width: 40px;
+        height: 40px;
         align-self: flex-end;
-        padding: 8px 16px;
-        font-size: 0.85rem;
+    }
+    
+    .home-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .contact-icon {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .contact-icon svg {
+        width: 12px;
+        height: 12px;
     }
     
     .products-grid {

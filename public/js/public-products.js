@@ -170,14 +170,18 @@ async function loadProducts() {
     // به‌روزرسانی عنوان صفحه
     document.getElementById('pageTitle').textContent = userInfo.name;
 
-    // نمایش آیکون تماس در صورت وجود شماره
+    // نمایش آیکون و شماره تماس در صورت وجود
     const contactElement = document.getElementById('userContact');
+    const phoneNumberElement = document.getElementById('phoneNumber');
+    
     if (userInfo.phone) {
         contactElement.style.display = 'flex';
-        contactElement.title = `تماس: ${userInfo.phone}`;
+        phoneNumberElement.textContent = userInfo.phone;
         contactElement.onclick = () => {
-            window.location.href = `tel:${userInfo.phone}`;
+            showCallConfirmModal(userInfo.phone);
         };
+        // ذخیره شماره برای استفاده در مودال
+        window.currentPhoneNumber = userInfo.phone;
     } else {
         contactElement.style.display = 'none';
     }
@@ -221,6 +225,42 @@ async function loadProducts() {
 function goHome() {
     window.location.href = '/';
 }
+
+// نمایش مودال تایید تماس
+function showCallConfirmModal(phoneNumber) {
+    const modal = document.getElementById('callConfirmModal');
+    const modalPhoneNumber = document.getElementById('modalPhoneNumber');
+    const confirmBtn = document.getElementById('confirmCallBtn');
+    
+    modalPhoneNumber.textContent = phoneNumber;
+    confirmBtn.onclick = () => {
+        window.location.href = `tel:${phoneNumber}`;
+        closeCallModal();
+    };
+    
+    modal.style.display = 'flex';
+    // افکت fade in
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+}
+
+// بستن مودال تایید تماس
+function closeCallModal() {
+    const modal = document.getElementById('callConfirmModal');
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+
+// بستن مودال با کلیک خارج از آن
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('callConfirmModal');
+    if (e.target === modal) {
+        closeCallModal();
+    }
+});
 
 // بارگذاری محصولات هنگام لود صفحه
 window.addEventListener('load', loadProducts);

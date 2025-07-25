@@ -408,3 +408,427 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏠 نمایشگر سه‌بعدی خانه</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .viewer-container {
+            height: 600px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+        
+        .viewer-container.loading {
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+            transform: translateY(-2px);
+        }
+        
+        .project-list {
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .project-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .project-item:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+            transform: translateX(5px);
+        }
+        
+        .project-name {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .project-id {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+        }
+        
+        .status.success {
+            background: #28a745;
+        }
+        
+        .status.error {
+            background: #dc3545;
+        }
+        
+        .status.info {
+            background: #17a2b8;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .json-viewer {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        .json-key {
+            color: #63b3ed;
+        }
+        
+        .json-string {
+            color: #68d391;
+        }
+        
+        .json-number {
+            color: #f6ad55;
+        }
+        
+        .json-boolean {
+            color: #fc8181;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 نمایشگر سه‌بعدی خانه</h1>
+            <p>نمایش طرح‌های معماری بر اساس داده‌های JSON</p>
+        </div>
+        
+        <div id="status" class="status hidden"></div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="loadAvailableProjects()">
+                📋 نمایش پروژه‌های موجود
+            </button>
+            <button class="btn btn-success" onclick="loadDefaultProject()">
+                🏠 بارگذاری پروژه پیش‌فرض
+            </button>
+            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleFileUpload(event)">
+            <button class="btn btn-primary" onclick="document.getElementById('jsonFileInput').click()">
+                📁 آپلود فایل JSON
+            </button>
+        </div>
+        
+        <div id="viewer" class="viewer-container">
+            <div>
+                <h3>🔍 آماده نمایش داده‌های JSON</h3>
+                <p>لطفاً یکی از گزینه‌های بالا را انتخاب کنید</p>
+            </div>
+        </div>
+        
+        <div id="projectList" class="project-list hidden"></div>
+        
+        <div id="jsonDisplay" class="json-viewer hidden"></div>
+    </div>
+
+    <script type="module">
+        let currentProjectData = null;
+        
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.classList.remove('hidden');
+            
+            setTimeout(() => {
+                status.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Load available projects
+        window.loadAvailableProjects = async function() {
+            try {
+                showStatus('🔄 در حال بارگذاری لیست پروژه‌ها...', 'info');
+                
+                const response = await fetch('/api/projects');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('📋 Available projects:', data);
+                
+                if (data.success && data.projects && data.projects.length > 0) {
+                    displayProjectList(data.projects);
+                    showStatus(`✅ ${data.projects.length} پروژه یافت شد`, 'success');
+                } else {
+                    showStatus('❌ هیچ پروژه‌ای یافت نشد', 'error');
+                    document.getElementById('projectList').innerHTML = '<p>هیچ پروژه‌ای در دایرکتوری data موجود نیست</p>';
+                }
+            } catch (error) {
+                console.error('❌ Error loading projects:', error);
+                showStatus('❌ خطا در بارگذاری پروژه‌ها: ' + error.message, 'error');
+            }
+        };
+        
+        // Display project list
+        function displayProjectList(projects) {
+            const projectList = document.getElementById('projectList');
+            projectList.innerHTML = '';
+            
+            projects.forEach(project => {
+                const projectItem = document.createElement('div');
+                projectItem.className = 'project-item';
+                projectItem.innerHTML = `
+                    <div class="project-name">📁 ${project.name}</div>
+                    <div class="project-id">🔖 ID: ${project.id}</div>
+                    <div class="project-id">📄 فایل: ${project.filename}</div>
+                `;
+                
+                projectItem.onclick = () => loadProject(project.name, project.id);
+                projectList.appendChild(projectItem);
+            });
+            
+            projectList.classList.remove('hidden');
+        }
+        
+        // Load specific project
+        window.loadProject = async function(name, id) {
+            try {
+                showStatus(`🔄 در حال بارگذاری پروژه ${name}/${id}...`, 'info');
+                
+                const response = await fetch(`/api/project/${name}/${id}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('📄 Project data:', result);
+                
+                if (result.success && result.data) {
+                    currentProjectData = result.data;
+                    displayJsonData(result.data);
+                    showStatus(`✅ پروژه ${name}/${id} بارگذاری شد`, 'success');
+                } else {
+                    throw new Error(result.message || 'خطا در بارگذاری داده‌ها');
+                }
+            } catch (error) {
+                console.error('❌ Error loading project:', error);
+                showStatus('❌ خطا در بارگذاری پروژه: ' + error.message, 'error');
+            }
+        };
+        
+        // Load default project
+        window.loadDefaultProject = async function() {
+            try {
+                showStatus('🔄 در حال بارگذاری پروژه پیش‌فرض...', 'info');
+                
+                const response = await fetch('/data/home.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('🏠 Default project loaded:', data);
+                
+                currentProjectData = data;
+                displayJsonData(data);
+                showStatus('✅ پروژه پیش‌فرض بارگذاری شد', 'success');
+            } catch (error) {
+                console.error('❌ Error loading default project:', error);
+                showStatus('❌ خطا در بارگذاری پروژه پیش‌فرض: ' + error.message, 'error');
+            }
+        };
+        
+        // Handle file upload
+        window.handleFileUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.name.endsWith('.json')) {
+                showStatus('❌ لطفاً فقط فایل‌های JSON انتخاب کنید', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    currentProjectData = data;
+                    displayJsonData(data);
+                    showStatus(`✅ فایل ${file.name} بارگذاری شد`, 'success');
+                } catch (error) {
+                    console.error('❌ Error parsing JSON:', error);
+                    showStatus('❌ خطا در پردازش فایل JSON', 'error');
+                }
+            };
+            reader.readAsText(file);
+        };
+        
+        // Display JSON data
+        function displayJsonData(data) {
+            const viewer = document.getElementById('viewer');
+            const jsonDisplay = document.getElementById('jsonDisplay');
+            
+            // Update viewer
+            viewer.innerHTML = `
+                <div>
+                    <h3>📊 داده‌های پروژه بارگذاری شد</h3>
+                    <p>🧱 دیوارها: ${data.walls ? data.walls.length : 0}</p>
+                    <p>🚪 درها: ${data.doors ? data.doors.length : 0}</p>
+                    <p>🪟 پنجره‌ها: ${data.windows ? data.windows.length : 0}</p>
+                    <p>📐 ابعاد شبکه: ${data.metadata ? data.metadata.gridSize || 'نامشخص' : 'نامشخص'}</p>
+                </div>
+            `;
+            
+            // Display formatted JSON
+            jsonDisplay.innerHTML = syntaxHighlight(JSON.stringify(data, null, 2));
+            jsonDisplay.classList.remove('hidden');
+            
+            console.log('📊 Project data summary:', {
+                walls: data.walls ? data.walls.length : 0,
+                doors: data.doors ? data.doors.length : 0,
+                windows: data.windows ? data.windows.length : 0,
+                metadata: data.metadata || 'None'
+            });
+        }
+        
+        // Syntax highlighting for JSON
+        function syntaxHighlight(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+        
+        // Initial load
+        console.log('🚀 3D House Viewer initialized');
+        console.log('📍 Server running on port 5000');
+        showStatus('🏠 نمایشگر سه‌بعدی آماده است', 'success');
+    </script>
+</body>
+</html>

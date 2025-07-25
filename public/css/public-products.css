@@ -607,14 +607,19 @@ body {
         gap: 10px;
     }
     
-    .header h1 {
-        font-size: 1.3rem;
+    .header-content {
+        order: 2;
     }
     
     .home-btn {
+        order: 1;
         width: 40px;
         height: 40px;
         align-self: flex-end;
+    }
+    
+    .header h1 {
+        font-size: 1.3rem;
     }
     
     .home-btn svg {

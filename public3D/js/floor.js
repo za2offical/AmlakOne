@@ -2,8 +2,8 @@ export class FloorDetector {
     constructor() {
         this.rooms = [];
         this.floorPolygons = [];
-        this.scale = 0.024; // Double scale matching WallReader
-        this.floorHeight = 0.1;
+        this.scale = 0.02; // Match WallReader scale exactly
+        this.floorHeight = 0.2; // Match wall thickness
         this.tolerance = 8; // Improved tolerance for better accuracy
         this.debugMode = false;
     }
@@ -436,8 +436,8 @@ export class FloorDetector {
     // Coordinate conversion
     convertTo3D(x2d, y2d) {
         // Use same conversion as WallReader for consistency
-        const centerX = this.calculateCenterX();
-        const centerY = this.calculateCenterY();
+        const centerX = 900; // Match WallReader default center
+        const centerY = 330; // Match WallReader default center
 
         return {
             x: (x2d - centerX) * this.scale,
@@ -447,31 +447,11 @@ export class FloorDetector {
     }
 
     calculateCenterX() {
-        if (this.rooms.length === 0) return 900; // Fallback
-        
-        const allX = this.rooms.flatMap(room => 
-            room.polygon?.map(point => point.x) || []
-        );
-        
-        if (allX.length === 0) return 900;
-        
-        const minX = Math.min(...allX);
-        const maxX = Math.max(...allX);
-        return (minX + maxX) / 2;
+        return 900; // Fixed center matching WallReader
     }
 
     calculateCenterY() {
-        if (this.rooms.length === 0) return 330; // Fallback
-        
-        const allY = this.rooms.flatMap(room => 
-            room.polygon?.map(point => point.y) || []
-        );
-        
-        if (allY.length === 0) return 330;
-        
-        const minY = Math.min(...allY);
-        const maxY = Math.max(...allY);
-        return (minY + maxY) / 2;
+        return 330; // Fixed center matching WallReader
     }
 
     // Fallback space creation

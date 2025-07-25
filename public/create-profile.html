@@ -1,10 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="fa">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تکمیل پروفایل</title>
+    <link rel="icon" type="image/jpeg" href="/AmlakOne-logo.jpg">
     <style>
         body {
             font-family: 'Tahoma', sans-serif;
@@ -229,7 +229,7 @@
         document.getElementById('profileImage').addEventListener('change', function(e) {
             const file = e.target.files[0];
             const preview = document.getElementById('imagePreview');
-            
+
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -250,24 +250,24 @@
         // ارسال فرم
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const submitBtn = document.getElementById('submitBtn');
             const messageDiv = document.getElementById('message');
-            
+
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
-            
+
             // بررسی فارسی بودن نام
             if (!validatePersianText(firstName)) {
                 messageDiv.innerHTML = '<div class="error">نام باید به فارسی نوشته شود</div>';
                 return;
             }
-            
+
             if (!validatePersianText(lastName)) {
                 messageDiv.innerHTML = '<div class="error">نام خانوادگی باید به فارسی نوشته شود</div>';
                 return;
             }
-            
+
             submitBtn.disabled = true;
             submitBtn.textContent = 'در حال ارسال...';
             messageDiv.innerHTML = '';
@@ -279,7 +279,7 @@
             formData.append('phone', document.getElementById('phone').value);
             formData.append('province', document.getElementById('province').value);
             formData.append('neighborhood', document.getElementById('neighborhood').value);
-            
+
             const profileImage = document.getElementById('profileImage').files[0];
             if (profileImage) {
                 formData.append('profileImage', profileImage);
@@ -316,7 +316,7 @@
             try {
                 const response = await fetch('/api/create-profile/check-completion');
                 const data = await response.json();
-                
+
                 if (data.completed) {
                     // اگر پروفایل تکمیل شده، به پنل هدایت کن
                     window.location.href = '/panel';

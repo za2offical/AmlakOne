@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مدیریت قرارهای ملکی - پنل کاربری</title>
     <link rel="stylesheet" href="/css/appointments.css">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+    <link rel="icon" type="image/jpeg" href="/AmlakOne-logo.jpg">
     <meta name="description" content="مدیریت قرارهای ملکی - ثبت و مدیریت قرارهای ملاقات با مشتریان">
     <meta name="theme-color" content="#3b82f6">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +29,7 @@
                         <p>ثبت و مدیریت قرارهای ملاقات با مشتریان</p>
                     </div>
                 </div>
-                
+
                 <div class="header-actions">
                     <button class="btn btn-primary" onclick="openNewAppointmentModal()" id="newAppointmentBtn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -54,7 +54,7 @@
                     <div class="stat-label">کل قرارها</div>
                 </div>
             </div>
-            
+
             <div class="stat-card">
                 <div class="stat-icon today">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -66,7 +66,7 @@
                     <div class="stat-label">قرارهای امروز</div>
                 </div>
             </div>
-            
+
             <div class="stat-card">
                 <div class="stat-icon upcoming">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -78,7 +78,7 @@
                     <div class="stat-label">قرارهای آینده</div>
                 </div>
             </div>
-            
+
             <div class="stat-card">
                 <div class="stat-icon completed">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -100,7 +100,7 @@
                 </svg>
                 <input type="text" id="searchInput" placeholder="جستجو در قرارها..." />
             </div>
-            
+
             <div class="filter-buttons">
                 <button class="filter-btn active" data-filter="all">همه</button>
                 <button class="filter-btn" data-filter="scheduled">برنامه‌ریزی شده</button>
@@ -131,7 +131,7 @@
                 <h2>ثبت قرار جدید</h2>
                 <button class="close-btn" onclick="closeNewAppointmentModal()">&times;</button>
             </div>
-            
+
             <form id="newAppointmentForm" class="appointment-form">
                 <div class="form-group">
                     <label for="propertySelect">انتخاب ملک *</label>
@@ -145,7 +145,7 @@
                         <label for="clientName">نام مشتری *</label>
                         <input type="text" id="clientName" required placeholder="نام و نام خانوادگی">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="clientPhone">شماره تلفن *</label>
                         <input type="tel" id="clientPhone" required placeholder="09123456789">
@@ -157,7 +157,7 @@
                         <label for="appointmentDate">تاریخ قرار *</label>
                         <input type="text" id="appointmentDate" data-jdp required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="appointmentTime">ساعت قرار *</label>
                         <input type="text" id="appointmentTime" required pattern="^([01]?\d|2[0-3]):[0-5]\d$" maxlength="5" placeholder="مثال: 14:30">
@@ -195,10 +195,10 @@
                 <h2>ویرایش قرار</h2>
                 <button class="close-btn" onclick="closeEditAppointmentModal()">&times;</button>
             </div>
-            
+
             <form id="editAppointmentForm" class="appointment-form">
                 <input type="hidden" id="editAppointmentId">
-                
+
                 <div class="form-group">
                     <label for="editPropertySelect">انتخاب ملک *</label>
                     <select id="editPropertySelect" required>
@@ -211,7 +211,7 @@
                         <label for="editClientName">نام مشتری *</label>
                         <input type="text" id="editClientName" required placeholder="نام و نام خانوادگی">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="editClientPhone">شماره تلفن *</label>
                         <input type="tel" id="editClientPhone" required placeholder="09123456789">
@@ -223,7 +223,7 @@
                         <label for="editAppointmentDate">تاریخ قرار *</label>
                         <input type="text" id="editAppointmentDate" data-jdp required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="editAppointmentTime">ساعت قرار *</label>
                         <input type="text" id="editAppointmentTime" required pattern="^([01]?\d|2[0-3]):[0-5]\d$" maxlength="5" placeholder="مثال: 14:30">
@@ -241,7 +241,7 @@
                             <option value="other">سایر</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="editStatus">وضعیت</label>
                         <select id="editStatus">
@@ -277,4 +277,4 @@
     <script src="https://unpkg.com/imask"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.1.0/dist/jalaali.min.js"></script>
 </body>
-</html> 
+</html>

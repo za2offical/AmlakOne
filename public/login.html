@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ورود به سیستم - AmlakOne</title>
-    
+
     <!-- PWA Meta Tags -->
     <meta name="description" content="سیستم جامع مدیریت املاک و محصولات">
     <meta name="theme-color" content="#2563eb">
@@ -14,16 +13,17 @@
     <meta name="apple-mobile-web-app-title" content="AmlakOne">
     <meta name="msapplication-TileColor" content="#2563eb">
     <meta name="msapplication-config" content="/browserconfig.xml">
-    
+
     <!-- PWA Icons -->
+    <link rel="icon" type="image/jpeg" href="/AmlakOne-logo.jpg">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/icon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/icon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/icon-180x180.png">
     <link rel="mask-icon" href="/images/icons/safari-pinned-tab.svg" color="#2563eb">
-    
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
-    
+
     <link rel="stylesheet" href="/css/login.css">
     <script src="/js/common.js"></script>
     <script src="/js/pwa.js"></script>
@@ -35,14 +35,14 @@
                 <h1>خوش آمدید</h1>
                 <p>برای ادامه وارد حساب کاربری خود شوید</p>
             </div>
-            
+
             <form id="loginForm" class="login-form">
                 <div class="input-group">
                     <label for="username">نام کاربری</label>
                     <input type="text" id="username" required autocomplete="username">
                     <span class="input-highlight"></span>
                 </div>
-                
+
                 <div class="input-group">
                     <label for="password">رمز عبور</label>
                     <div class="password-wrapper">
@@ -57,13 +57,13 @@
                     </div>
                     <span class="input-highlight"></span>
                 </div>
-                
+
                 <button type="submit" class="login-btn">
                     <span class="btn-text">ورود</span>
                     <div class="btn-loader"></div>
                 </button>
             </form>
-            
+
             <div class="error-message" id="errorMessage"></div>
         </div>
     </div>
@@ -74,7 +74,7 @@
             const passwordInput = document.getElementById('password');
             const eyeOpen = this.querySelectorAll('.eye-open');
             const eyeClosed = this.querySelectorAll('.eye-closed');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 eyeOpen.forEach(el => el.style.display = 'none');
@@ -88,12 +88,12 @@
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const submitBtn = e.target.querySelector('.login-btn');
             const btnText = submitBtn.querySelector('.btn-text');
             const loader = submitBtn.querySelector('.btn-loader');
             const errorDiv = document.getElementById('errorMessage');
-            
+
             // نمایش لودر
             submitBtn.classList.add('loading');
             btnText.style.opacity = '0';
@@ -138,7 +138,7 @@
                 errorDiv.textContent = error.message || 'خطا در ورود به سیستم';
                 errorDiv.style.display = 'block';
                 submitBtn.classList.add('error');
-                
+
                 setTimeout(() => {
                     submitBtn.classList.remove('error');
                 }, 2000);

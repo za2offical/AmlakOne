@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مدیریت کاربران</title>
+    <link rel="icon" type="image/jpeg" href="/AmlakOne-logo.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -411,7 +412,7 @@
             <h2>پنل مدیریت</h2>
             <button class="logout-btn" id="logoutBtn">خروج</button>
         </div>
-        
+
         <div class="tabs">
             <div class="tab active" onclick="switchTab('users')">کاربران</div>
             <div class="tab" onclick="switchTab('notifications')">اعلان‌ها</div>
@@ -502,11 +503,11 @@
             // Update tab buttons
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
-            
+
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(tabName + '-tab').classList.add('active');
-            
+
             // Load content based on tab
             if (tabName === 'users') {
                 loadUsers();
@@ -642,37 +643,37 @@
                 const notifications = await response.json();
                 const notificationsList = document.getElementById('notifications');
                 notificationsList.innerHTML = '';
-                
+
                 if (notifications.length === 0) {
                     notificationsList.innerHTML = '<li style="text-align: center; color: var(--text-light); padding: 20px;">هیچ اعلانی ارسال نشده است</li>';
                     return;
                 }
-                
+
                 notifications.forEach(notification => {
                     const li = document.createElement('li');
                     li.className = 'notification-item';
-                    
+
                     const info = document.createElement('div');
                     info.className = 'notification-info';
-                    
+
                     const title = document.createElement('div');
                     title.className = 'notification-title';
                     title.textContent = notification.title;
-                    
+
                     const message = document.createElement('div');
                     message.className = 'notification-message';
                     message.textContent = notification.message;
-                    
+
                     const meta = document.createElement('div');
                     meta.className = 'notification-meta';
                     const sentDate = new Date(notification.sentAt).toLocaleString('fa-IR');
                     meta.textContent = `ارسال شده در ${sentDate} توسط ${notification.sentBy}`;
-                    
+
                     info.appendChild(title);
                     info.appendChild(message);
                     info.appendChild(meta);
                     li.appendChild(info);
-                    
+
                     // دکمه حذف
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = 'delete-btn';
@@ -765,7 +766,7 @@
                     successMsg.style.display = 'block';
                     document.getElementById('notificationForm').reset();
                     loadNotifications();
-                    
+
                     // Hide success message after 3 seconds
                     setTimeout(() => {
                         successMsg.style.display = 'none';

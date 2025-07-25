@@ -1,5 +1,7 @@
 import { FloorDetector } from './floor.js';
 
+console.log('✅ WallReader module loaded successfully');
+
 export class WallReader {
     constructor() {
         this.walls = [];

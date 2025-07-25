@@ -202,7 +202,7 @@
     const userData = checkAuth();
     userData.then(user => {
         if (user && user.username) {
-            const publicUrl = `/${user.username}/${productId}-n`;
+            const publicUrl = `/${user.username}/${productId}`;
             window.open(publicUrl, '_blank');
         }
     });
@@ -218,8 +218,8 @@
             return;
         }
 
-        const publicUrl = `${window.location.origin}/${userData.username}/${productId}-n`;
-        
+        const publicUrl = `${window.location.origin}/${userData.username}/${productId}`;
+
         // بررسی پشتیبانی از Web Share API
         if (navigator.share) {
             try {
@@ -304,7 +304,7 @@
     const input = document.getElementById('shareUrlInput');
     input.select();
     input.setSelectionRange(0, 99999);
-    
+
     try {
         document.execCommand('copy');
         showSuccessMessage('لینک کپی شد');
@@ -771,7 +771,7 @@
     }
   }, { passive: true });
 
-  // Enhanced double-tap prevention with better timing
+  // Enhanced double-tapprevention with better timing
   document.addEventListener('touchend', function(event) {
     const now = Date.now();
     if (now - lastTouchEnd <= 300) {

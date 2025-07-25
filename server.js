@@ -55,15 +55,24 @@ app.get('/api/project/:name/:id', (req, res) => {
     const filename = `${name}-${id}.json`;
     const filePath = path.join(__dirname, 'public3D', 'data', filename);
     
+    console.log(`🔍 API Request for project: ${name}/${id}`);
+    console.log(`📁 Looking for file: ${filePath}`);
+    console.log(`📄 File exists: ${fs.existsSync(filePath)}`);
+    
     try {
         if (!fs.existsSync(filePath)) {
+            console.log(`❌ File not found: ${filename}`);
             return res.status(404).json({
                 success: false,
-                message: 'Project not found'
+                message: `Project not found: ${filename}`,
+                filePath: filePath,
+                availableFiles: getAvailableJsonFiles().map(p => p.filename)
             });
         }
         
         const jsonData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        console.log(`✅ Successfully loaded project data for: ${filename}`);
+        
         res.json({
             success: true,
             data: jsonData,
@@ -74,10 +83,11 @@ app.get('/api/project/:name/:id', (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error loading project data:', error);
+        console.error('❌ Error loading project data:', error);
         res.status(500).json({
             success: false,
-            message: 'Error loading project data'
+            message: 'Error loading project data',
+            error: error.message
         });
     }
 });
@@ -174,6 +184,27 @@ app.post('/api/upload-json', (req, res) => {
         res.status(500).json({ 
             success: false, 
             message: 'Server error processing JSON data' 
+        });
+    }
+});
+
+// Debug endpoint to check what files exist
+app.get('/debug/files', (req, res) => {
+    const dataDir = path.join(__dirname, 'public3D', 'data');
+    try {
+        const files = fs.readdirSync(dataDir);
+        res.json({
+            success: true,
+            dataDirectory: dataDir,
+            files: files,
+            jsonFiles: files.filter(f => f.endsWith('.json')),
+            availableProjects: getAvailableJsonFiles()
+        });
+    } catch (error) {
+        res.json({
+            success: false,
+            error: error.message,
+            dataDirectory: dataDir
         });
     }
 });

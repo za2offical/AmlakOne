@@ -155,15 +155,23 @@
 
             async init() {
                 try {
+                    console.log('🚀 Starting 3D House Viewer initialization...');
+                    
                     // Get project info from URL
                     const urlPath = window.location.pathname;
                     const pathParts = urlPath.split('/').filter(part => part);
+
+                    console.log('📍 URL Path parts:', pathParts);
 
                     if (pathParts.length !== 2) {
                         throw new Error('Invalid URL format. Expected: /name/id');
                     }
 
                     const [name, id] = pathParts;
+                    console.log(`🎯 Attempting to load project: ${name}/${id}`);
+
+                    // Initialize 3D scene first
+                    this.initThreeJS();
 
                     // Load project data
                     const projectData = await this.loadProjectData(name, id);
@@ -177,9 +185,6 @@
                     // Update UI with project info
                     this.updateProjectInfo();
 
-                    // Initialize 3D scene
-                    this.initThreeJS();
-
                     // Process and render the house
                     await this.renderHouse(projectData.data);
 
@@ -191,19 +196,31 @@
 
                 } catch (error) {
                     console.error('❌ Error initializing viewer:', error);
+                    
+                    // Initialize 3D scene even if data loading fails
+                    if (!this.scene) {
+                        this.initThreeJS();
+                    }
+                    
                     this.showError('Failed to load project: ' + error.message);
                 }
             }
 
             async loadProjectData(name, id) {
                 try {
+                    console.log(`🔄 Loading project data for: ${name}/${id}`);
                     const response = await fetch(`/api/project/${name}/${id}`);
 
+                    console.log(`📡 API Response status: ${response.status}`);
+
                     if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('❌ API Error Response:', errorText);
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
 
                     const result = await response.json();
+                    console.log('✅ API Response data:', result);
 
                     if (!result.success) {
                         throw new Error(result.message || 'Unknown error');
@@ -211,7 +228,7 @@
 
                     return result;
                 } catch (error) {
-                    console.error('Error loading project data:', error);
+                    console.error('❌ Error loading project data:', error);
                     return null;
                 }
             }

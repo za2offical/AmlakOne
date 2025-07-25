@@ -803,8 +803,8 @@
   right: 0.75rem;
   display: flex;
   gap: 0.5rem;
-  opacity: 0;
-  visibility: hidden;
+  opacity: 1;
+  visibility: visible;
   transition: all 0.3s ease;
   z-index: 10;
 }
@@ -815,7 +815,7 @@
 }
 
 .action-btn {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.9);
   border: none;
   border-radius: 50%;
   width: 36px;
@@ -825,7 +825,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   color: var(--primary);
 }

@@ -142,6 +142,7 @@
         productElement.dataset.productId = product.id;
         productElement.onclick = (e) => {
             if (e.target.closest('.product-checkbox') ||
+                e.target.closest('.product-actions') ||
                 (window.productEditor && window.productEditor.isMultiSelectMode)) {
                 return;
             }
@@ -170,6 +171,18 @@
         productElement.innerHTML = `
             <div class="product-card-header">
                 ${imageSection}
+                <div class="product-actions">
+                    <button class="action-btn view-btn" onclick="viewProduct('${product.id}')" title="مشاهده عمومی">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                        </svg>
+                    </button>
+                    <button class="action-btn share-btn" onclick="shareProduct('${product.id}')" title="اشتراک‌گذاری">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <div class="product-info">
                 <p><strong>تعداد اتاق خواب:</strong> ${product.bedrooms}</p>
@@ -181,6 +194,150 @@
 
         productsContainer.appendChild(productElement);
     });
+  }
+
+  // مشاهده محصول در صفحه عمومی
+  function viewProduct(productId) {
+    // دریافت نام کاربری از اطلاعات کاربر
+    const userData = checkAuth();
+    userData.then(user => {
+        if (user && user.username) {
+            const publicUrl = `/${user.username}/${productId}-n`;
+            window.open(publicUrl, '_blank');
+        }
+    });
+  }
+
+  // اشتراک‌گذاری محصول
+  async function shareProduct(productId) {
+    try {
+        // دریافت نام کاربری از اطلاعات کاربر
+        const userData = await checkAuth();
+        if (!userData || !userData.username) {
+            showError('خطا در دریافت اطلاعات کاربر');
+            return;
+        }
+
+        const publicUrl = `${window.location.origin}/${userData.username}/${productId}-n`;
+        
+        // بررسی پشتیبانی از Web Share API
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'مشاهده این ملک',
+                    text: 'این ملک را در وب‌سایت املاک مشاهده کنید',
+                    url: publicUrl
+                });
+            } catch (error) {
+                // اگر کاربر اشتراک‌گذاری را لغو کرد، خطا نمایش نده
+                if (error.name !== 'AbortError') {
+                    fallbackShare(publicUrl);
+                }
+            }
+        } else {
+            // روش جایگزین برای مرورگرهای بدون پشتیبانی از Web Share API
+            fallbackShare(publicUrl);
+        }
+    } catch (error) {
+        console.error('Error sharing product:', error);
+        showError('خطا در اشتراک‌گذاری محصول');
+    }
+  }
+
+  // روش جایگزین اشتراک‌گذاری
+  function fallbackShare(url) {
+    // کپی کردن لینک در کلیپ‌بورد
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+            showSuccessMessage('لینک محصول در کلیپ‌بورد کپی شد');
+        }).catch(() => {
+            showShareModal(url);
+        });
+    } else {
+        showShareModal(url);
+    }
+  }
+
+  // نمایش مودال اشتراک‌گذاری
+  function showShareModal(url) {
+    const modal = document.createElement('div');
+    modal.className = 'share-modal';
+    modal.innerHTML = `
+        <div class="share-modal-content">
+            <div class="share-modal-header">
+                <h3>اشتراک‌گذاری محصول</h3>
+                <button class="close-btn" onclick="this.closest('.share-modal').remove()">&times;</button>
+            </div>
+            <div class="share-modal-body">
+                <p>لینک محصول:</p>
+                <div class="share-url-container">
+                    <input type="text" value="${url}" readonly class="share-url-input" id="shareUrlInput">
+                    <button class="copy-btn" onclick="copyShareUrl()">کپی</button>
+                </div>
+                <div class="share-buttons">
+                    <a href="https://telegram.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent('مشاهده این ملک')}" target="_blank" class="share-platform-btn telegram">
+                        تلگرام
+                    </a>
+                    <a href="https://wa.me/?text=${encodeURIComponent('مشاهده این ملک: ' + url)}" target="_blank" class="share-platform-btn whatsapp">
+                        واتساپ
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent('مشاهده این ملک')}" target="_blank" class="share-platform-btn twitter">
+                        توییتر
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // بستن مودال با کلیک روی پس‌زمینه
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+  }
+
+  // کپی کردن URL اشتراک‌گذاری
+  function copyShareUrl() {
+    const input = document.getElementById('shareUrlInput');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    
+    try {
+        document.execCommand('copy');
+        showSuccessMessage('لینک کپی شد');
+        document.querySelector('.share-modal').remove();
+    } catch (error) {
+        showError('خطا در کپی کردن لینک');
+    }
+  }
+
+  // نمایش پیام موفقیت
+  function showSuccessMessage(message) {
+    const toast = document.createElement('div');
+    toast.className = 'success-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--success);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        animation: slideInRight 0.3s ease;
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
   }
 
   // تنظیم فیلترها

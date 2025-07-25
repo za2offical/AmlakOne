@@ -3,7 +3,7 @@ modules = ["nodejs-20"]
 channel = "stable-25_05"
 
 [workflows]
-runButton = "Start"
+runButton = "Run Both Servers"
 
 [[workflows.workflow]]
 name = "Start Server"
@@ -66,6 +66,19 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node index.js"
+
+[[workflows.workflow]]
+name = "Run Both Servers"
+author = 39313916
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd Show/3D && node server.js"
 
 [[ports]]
 localPort = 3000

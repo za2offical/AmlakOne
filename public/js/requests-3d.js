@@ -494,6 +494,78 @@ function removeSelectedFile() {
     window.selectedVideoFile = null;
 }
 
+// نمایش انیمیشن بارگذاری زیبا
+function showUploadLoadingOverlay() {
+    // ایجاد overlay اگر وجود ندارد
+    if (!document.getElementById('uploadLoadingOverlay')) {
+        const overlay = document.createElement('div');
+        overlay.id = 'uploadLoadingOverlay';
+        overlay.className = 'upload-loading-overlay';
+        overlay.innerHTML = `
+            <div class="upload-loading-content">
+                <div class="upload-dots-container">
+                    <div class="upload-dot"></div>
+                    <div class="upload-dot"></div>
+                    <div class="upload-dot"></div>
+                </div>
+                <div class="upload-loading-text">در حال ارسال درخواست...</div>
+                <div class="upload-loading-description">لطفاً صبر کنید، درخواست شما در حال پردازش است</div>
+                
+                <div class="upload-progress-ring" style="display: none;">
+                    <svg>
+                        <defs>
+                            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="progress-circle" cx="40" cy="40" r="36"></circle>
+                        <circle class="progress-bar-circle" cx="40" cy="40" r="36"></circle>
+                    </svg>
+                    <div class="upload-progress-percentage">0%</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+    
+    const overlay = document.getElementById('uploadLoadingOverlay');
+    overlay.classList.add('show');
+}
+
+// مخفی کردن انیمیشن بارگذاری
+function hideUploadLoadingOverlay() {
+    const overlay = document.getElementById('uploadLoadingOverlay');
+    if (overlay) {
+        overlay.classList.remove('show');
+    }
+}
+
+// به‌روزرسانی پیشرفت آپلود
+function updateUploadProgress(percentage) {
+    const overlay = document.getElementById('uploadLoadingOverlay');
+    if (overlay) {
+        const dotsContainer = overlay.querySelector('.upload-dots-container');
+        const progressRing = overlay.querySelector('.upload-progress-ring');
+        const progressBar = overlay.querySelector('.progress-bar-circle');
+        const progressText = overlay.querySelector('.upload-progress-percentage');
+        const loadingText = overlay.querySelector('.upload-loading-text');
+        
+        if (percentage > 0) {
+            // تغییر به حالت نمایش درصد
+            dotsContainer.style.display = 'none';
+            progressRing.style.display = 'block';
+            loadingText.textContent = 'در حال آپلود فایل...';
+            
+            // محاسبه stroke-dashoffset برای نمایش پیشرفت
+            const circumference = 2 * Math.PI * 36;
+            const offset = circumference - (percentage / 100) * circumference;
+            progressBar.style.strokeDashoffset = offset;
+            progressText.textContent = Math.round(percentage) + '%';
+        }
+    }
+}
+
 // ارسال درخواست
 async function submitRequest() {
     if (!selectedProductId || !window.selectedVideoFile) {
@@ -502,14 +574,13 @@ async function submitRequest() {
     }
 
     const submitBtn = document.getElementById('submitBtn');
-    const uploadProgress = document.getElementById('uploadProgress');
-    const progressFill = document.getElementById('progressFill');
-    const progressText = document.getElementById('progressText');
 
     try {
         submitBtn.disabled = true;
         submitBtn.textContent = 'در حال ارسال...';
-        uploadProgress.style.display = 'block';
+        
+        // نمایش انیمیشن زیبا
+        showUploadLoadingOverlay();
 
         const formData = new FormData();
         formData.append('productId', selectedProductId);
@@ -521,13 +592,13 @@ async function submitRequest() {
         xhr.upload.addEventListener('progress', (e) => {
             if (e.lengthComputable) {
                 const percentComplete = (e.loaded / e.total) * 100;
-                progressFill.style.width = percentComplete + '%';
-                progressText.textContent = Math.round(percentComplete) + '%';
+                updateUploadProgress(percentComplete);
             }
         });
 
         // تنظیم پاسخ
         xhr.addEventListener('load', () => {
+            hideUploadLoadingOverlay();
             if (xhr.status === 201) {
                 const response = JSON.parse(xhr.responseText);
                 closeUploadModal();
@@ -541,6 +612,7 @@ async function submitRequest() {
         });
 
         xhr.addEventListener('error', () => {
+            hideUploadLoadingOverlay();
             showError('خطا در ارسال فایل. لطفاً دوباره تلاش کنید.');
         });
 
@@ -549,11 +621,11 @@ async function submitRequest() {
 
     } catch (error) {
         console.error('Error submitting request:', error);
+        hideUploadLoadingOverlay();
         showError('خطا در ارسال درخواست. لطفاً دوباره تلاش کنید.');
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'ارسال درخواست';
-        uploadProgress.style.display = 'none';
     }
 }
 

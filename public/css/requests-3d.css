@@ -1080,6 +1080,201 @@
     margin-top: 1rem;
 }
 
+/* Beautiful Loading Animation */
+.upload-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.upload-loading-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.upload-loading-content {
+    text-align: center;
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.upload-dots-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    height: 60px;
+}
+
+.upload-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    box-shadow: 
+        0 4px 15px rgba(59, 130, 246, 0.4),
+        0 0 20px rgba(59, 130, 246, 0.2);
+    animation: uploadDotBounce 1.5s ease-in-out infinite;
+    transform: translateY(0);
+}
+
+.upload-dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.upload-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.upload-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes uploadDotBounce {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        box-shadow: 
+            0 4px 15px rgba(59, 130, 246, 0.4),
+            0 0 20px rgba(59, 130, 246, 0.2);
+    }
+    30% {
+        transform: translateY(-20px);
+        box-shadow: 
+            0 8px 25px rgba(59, 130, 246, 0.6),
+            0 0 30px rgba(59, 130, 246, 0.4);
+    }
+}
+
+.upload-loading-text {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+    animation: textFade 2s ease-in-out infinite;
+}
+
+.upload-loading-description {
+    font-size: 0.9rem;
+    color: #6b7280;
+    max-width: 280px;
+    line-height: 1.5;
+}
+
+@keyframes textFade {
+    0%, 100% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Progress Ring Animation */
+.upload-progress-ring {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+}
+
+.upload-progress-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.upload-progress-ring .progress-circle {
+    fill: none;
+    stroke: #e5e7eb;
+    stroke-width: 4;
+}
+
+.upload-progress-ring .progress-bar-circle {
+    fill: none;
+    stroke: url(#progressGradient);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 251.2;
+    stroke-dashoffset: 251.2;
+    transition: stroke-dashoffset 0.3s ease;
+}
+
+.upload-progress-percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1rem;
+    font-weight: 700;
+    color: #3b82f6;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .upload-dots-container {
+        gap: 6px;
+        margin-bottom: 20px;
+        height: 50px;
+    }
+    
+    .upload-dot {
+        width: 10px;
+        height: 10px;
+    }
+    
+    @keyframes uploadDotBounce {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+        30% {
+            transform: translateY(-15px);
+        }
+    }
+    
+    .upload-loading-text {
+        font-size: 1rem;
+    }
+    
+    .upload-loading-description {
+        font-size: 0.85rem;
+        max-width: 250px;
+        padding: 0 1rem;
+    }
+    
+    .upload-progress-ring {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 16px;
+    }
+    
+    .upload-progress-percentage {
+        font-size: 0.875rem;
+    }
+}
+
 .progress-bar {
     width: 100%;
     height: 0.5rem;

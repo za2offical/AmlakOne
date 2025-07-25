@@ -578,7 +578,7 @@
             </div>
             <button class="minimize-btn" onclick="UIHelpers.togglePanel('control-panel')">−</button>
         </div>
-        
+
         <div class="control-section">
             <div class="section-title">Camera Controls</div>
             <div class="control-item">
@@ -636,7 +636,7 @@
             <div class="panel-icon">📊</div>
             Project Stats
         </div>
-        
+
         <div class="stats-grid">
             <div class="stat-item">
                 <div class="stat-value" id="walls-count">0</div>
@@ -655,7 +655,7 @@
                 <div class="stat-label">Windows</div>
             </div>
         </div>
-        
+
         <div class="stats-details" id="stats-details">
             Total Floor Area: 0 m²<br>
             Exterior Walls: 0 | Interior Walls: 0<br>
@@ -669,7 +669,7 @@
             <div class="panel-icon">📁</div>
             Load House Data
         </div>
-        
+
         <div class="upload-zone" id="upload-zone">
             <input type="file" id="file-input" accept=".json">
             <div class="upload-icon">📄</div>
@@ -709,11 +709,11 @@
             updateLoadingProgress: function(percentage, details) {
                 const progressBar = document.getElementById('progress-bar');
                 const loadingDetails = document.getElementById('loading-details');
-                
+
                 if (progressBar) {
                     progressBar.style.width = `${percentage}%`;
                 }
-                
+
                 if (details && loadingDetails) {
                     loadingDetails.textContent = details;
                 }
@@ -731,19 +731,19 @@
                 const statusIcon = document.getElementById('status-icon');
                 const statusText = document.getElementById('status-text');
                 const statusDetails = document.getElementById('status-details');
-                
+
                 const icons = {
                     success: '✅',
                     warning: '⚠️',
                     error: '❌',
                     info: 'ℹ️'
                 };
-                
+
                 statusMessage.className = `status-message show ${type}`;
                 statusIcon.textContent = icons[type] || icons.info;
                 statusText.textContent = message;
                 statusDetails.textContent = details;
-                
+
                 setTimeout(() => {
                     statusMessage.classList.remove('show');
                 }, 4000);
@@ -755,7 +755,7 @@
                 const doorsCount = document.getElementById('doors-count');
                 const windowsCount = document.getElementById('windows-count');
                 const statsDetails = document.getElementById('stats-details');
-                
+
                 if (houseData) {
                     const walls = houseData.walls?.length || 0;
                     const rooms = houseData.rooms?.length || 0;
@@ -764,12 +764,12 @@
                     const floorArea = houseData.rooms?.reduce((sum, r) => sum + (r.area || 0), 0) || 0;
                     const exteriorWalls = houseData.walls?.filter(w => w.type?.type === 'exterior')?.length || 0;
                     const interiorWalls = walls - exteriorWalls;
-                    
+
                     if (wallsCount) wallsCount.textContent = walls;
                     if (roomsCount) roomsCount.textContent = rooms;
                     if (doorsCount) doorsCount.textContent = doors;
                     if (windowsCount) windowsCount.textContent = windows;
-                    
+
                     if (statsDetails) {
                         statsDetails.innerHTML = `
                             Total Floor Area: ${floorArea.toFixed(1)} m²<br>
@@ -795,16 +795,16 @@
                 let lastTime = performance.now();
                 let frameCount = 0;
                 let fps = 0;
-                
+
                 const updateFPS = () => {
                     frameCount++;
                     const currentTime = performance.now();
-                    
+
                     if (currentTime - lastTime >= 1000) {
                         fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
                         frameCount = 0;
                         lastTime = currentTime;
-                        
+
                         const fpsCounter = document.getElementById('fps-counter');
                         if (fpsCounter) {
                             fpsCounter.textContent = fps;
@@ -812,10 +812,10 @@
                                                   fps >= 30 ? 'var(--warning-color)' : 'var(--error-color)';
                         }
                     }
-                    
+
                     requestAnimationFrame(updateFPS);
                 };
-                
+
                 updateFPS();
             }
         };
@@ -824,32 +824,32 @@
         function setupFileUpload() {
             const fileInput = document.getElementById('file-input');
             const uploadZone = document.getElementById('upload-zone');
-            
+
             if (!fileInput || !uploadZone) return;
-            
+
             // File input change handler
             fileInput.addEventListener('change', handleFileSelect);
-            
+
             // Drag and drop handlers
             uploadZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadZone.classList.add('dragover');
             });
-            
+
             uploadZone.addEventListener('dragleave', () => {
                 uploadZone.classList.remove('dragover');
             });
-            
+
             uploadZone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 uploadZone.classList.remove('dragover');
-                
+
                 const files = e.dataTransfer.files;
                 if (files.length > 0) {
                     handleFile(files[0]);
                 }
             });
-            
+
             uploadZone.addEventListener('click', () => {
                 fileInput.click();
             });
@@ -871,26 +871,26 @@
                 );
                 return;
             }
-            
+
             UIHelpers.showStatusMessage(
                 'Reading file...', 
                 'info', 
                 `Processing ${file.name}`
             );
-            
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const jsonData = JSON.parse(e.target.result);
-                    
+
                     // Validate JSON structure
                     if (!jsonData.walls || !Array.isArray(jsonData.walls)) {
                         throw new Error('Invalid JSON format: walls array required');
                     }
-                    
+
                     // Store data globally for the house viewer
                     window.uploadedHouseData = jsonData;
-                    
+
                     // Load the new house data
                     if (window.houseViewer) {
                         window.houseViewer.loadCustomData(jsonData);
@@ -909,7 +909,7 @@
                     );
                 }
             };
-            
+
             reader.onerror = function() {
                 UIHelpers.showStatusMessage(
                     'Error reading file', 
@@ -917,14 +917,14 @@
                     'Could not read the selected file'
                 );
             };
-            
+
             reader.readAsText(file);
         }
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (!window.houseViewer) return;
-            
+
             switch(e.key.toLowerCase()) {
                 case 'r':
                     if (window.houseViewer.controls) {
@@ -946,7 +946,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             setupFileUpload();
             UIHelpers.startFPSCounter();
-            
+
             // Start loading the house viewer
             import('./js/house.js').then(() => {
                 console.log('✅ 3D House Viewer initialized successfully');

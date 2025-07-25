@@ -3,7 +3,7 @@ import * as THREE from 'three';
 export class DoorsAndWindows {
     constructor() {
         console.log('🚪🪟 Initializing Doors and Windows system...');
-
+        
         // Enhanced materials for realistic rendering
         this.materials = {
             glass: new THREE.MeshPhysicalMaterial({
@@ -19,34 +19,34 @@ export class DoorsAndWindows {
                 clearcoatRoughness: 0.1,
                 ior: 1.5
             }),
-
+            
             windowFrame: new THREE.MeshStandardMaterial({
                 color: 0x4a4a4a,
                 roughness: 0.6,
                 metalness: 0.4,
                 envMapIntensity: 0.5
             }),
-
+            
             doorWood: new THREE.MeshStandardMaterial({
                 color: 0x8b4513,
                 roughness: 0.8,
                 metalness: 0.1,
                 bumpScale: 0.1
             }),
-
+            
             doorFrame: new THREE.MeshStandardMaterial({
                 color: 0x654321,
                 roughness: 0.7,
                 metalness: 0.2
             }),
-
+            
             doorHandle: new THREE.MeshStandardMaterial({
                 color: 0xc0c0c0,
                 roughness: 0.3,
                 metalness: 0.8,
                 envMapIntensity: 1.0
             }),
-
+            
             windowSill: new THREE.MeshStandardMaterial({
                 color: 0xe0e0e0,
                 roughness: 0.6,
@@ -83,7 +83,7 @@ export class DoorsAndWindows {
             // Glass panels with subdivisions
             const glassWidth = (width - frameThickness) / 2;
             const glassHeight = (height - frameThickness) / 2;
-
+            
             // Create 4 glass panels for more realistic look
             const glassPositions = [
                 { x: -glassWidth/2, y: glassHeight/2 },   // Top left
@@ -118,7 +118,7 @@ export class DoorsAndWindows {
             sill.receiveShadow = true;
 
             windowGroup.add(frame, hDivider, vDivider, sill);
-
+            
             // Add metadata
             windowGroup.userData = {
                 type: 'window',
@@ -161,7 +161,7 @@ export class DoorsAndWindows {
             // Door panels (decorative)
             const panelWidth = width * 0.8;
             const panelHeight = height * 0.35;
-
+            
             for (let i = 0; i < 2; i++) {
                 const panelGeometry = new THREE.BoxGeometry(panelWidth, panelHeight, depth * 0.1);
                 const panel = new THREE.Mesh(panelGeometry, this.materials.doorWood);
@@ -191,7 +191,7 @@ export class DoorsAndWindows {
             }
 
             doorGroup.add(frame, door, handle);
-
+            
             // Add metadata
             doorGroup.userData = {
                 type: 'door',
@@ -225,7 +225,7 @@ export class DoorsAndWindows {
 
             // Glass panels
             const glassGeometry = new THREE.BoxGeometry(panelWidth, height - frameThickness * 2, depth * 0.3);
-
+            
             const leftPanel = new THREE.Mesh(glassGeometry, this.materials.glass);
             leftPanel.position.set(-width / 4, 0, depth * 0.35);
             leftPanel.receiveShadow = true;
@@ -241,10 +241,10 @@ export class DoorsAndWindows {
 
             // Top and bottom tracks
             const trackGeometry = new THREE.BoxGeometry(width, frameThickness * 0.5, depth);
-
+            
             const topTrack = new THREE.Mesh(trackGeometry, this.materials.windowFrame);
             topTrack.position.y = height / 2;
-
+            
             const bottomTrack = new THREE.Mesh(trackGeometry, this.materials.windowFrame);
             bottomTrack.position.y = -height / 2;
 
@@ -258,7 +258,7 @@ export class DoorsAndWindows {
             }
 
             slidingGroup.add(frame, leftPanel, rightPanel, divider, topTrack, bottomTrack);
-
+            
             slidingGroup.userData = {
                 type: 'sliding_door',
                 dimensions: { width, height, depth },
@@ -298,13 +298,13 @@ export class DoorsAndWindows {
                 for (let row = 0; row < rows; row++) {
                     const glassGeometry = new THREE.BoxGeometry(glassWidth, glassHeight, depth * 0.3);
                     const glass = new THREE.Mesh(glassGeometry, this.materials.glass);
-
+                    
                     glass.position.set(
                         (col - 0.5) * panelWidth,
                         (row - rows/2 + 0.5) * (glassHeight + frameThickness * 0.5),
                         depth * 0.35
                     );
-
+                    
                     glass.receiveShadow = true;
                     frenchGroup.add(glass);
                 }
@@ -342,7 +342,7 @@ export class DoorsAndWindows {
             rightHandle.castShadow = true;
 
             frenchGroup.add(frame, leftHandle, rightHandle);
-
+            
             frenchGroup.userData = {
                 type: 'french_window',
                 dimensions: { width, height, depth },
@@ -361,53 +361,53 @@ export class DoorsAndWindows {
     // Fallback simple door
     createFallbackDoor(width = 1.0, height = 2.2, depth = 0.05) {
         const doorGroup = new THREE.Group();
-
+        
         const frameGeometry = new THREE.BoxGeometry(width + 0.1, height + 0.1, depth + 0.02);
         const frame = new THREE.Mesh(frameGeometry, this.materials.doorFrame);
-
+        
         const doorGeometry = new THREE.BoxGeometry(width, height, depth);
         const door = new THREE.Mesh(doorGeometry, this.materials.doorWood);
         door.position.z = 0.01;
-
+        
         doorGroup.add(frame, door);
         doorGroup.userData = { type: 'simple_door', fallback: true };
-
+        
         return doorGroup;
     }
 
     // Fallback simple window
     createFallbackWindow(width = 1.2, height = 1.2, depth = 0.1) {
         const windowGroup = new THREE.Group();
-
+        
         const frameGeometry = new THREE.BoxGeometry(width + 0.1, height + 0.1, depth);
         const frame = new THREE.Mesh(frameGeometry, this.materials.windowFrame);
-
+        
         const glassGeometry = new THREE.BoxGeometry(width, height, depth * 0.3);
         const glass = new THREE.Mesh(glassGeometry, this.materials.glass);
         glass.position.z = depth * 0.35;
-
+        
         windowGroup.add(frame, glass);
         windowGroup.userData = { type: 'simple_window', fallback: true };
-
+        
         return windowGroup;
     }
 
     // Position element with precise alignment
     positionElement(element, position, rotation = { x: 0, y: 0, z: 0 }) {
         if (!element || !position) return element;
-
+        
         element.position.set(
             position.x || 0,
             position.y || 0,
             position.z || 0
         );
-
+        
         element.rotation.set(
             rotation.x || 0,
             rotation.y || 0,
             rotation.z || 0
         );
-
+        
         // Update shadows
         element.traverse((child) => {
             if (child.isMesh) {
@@ -415,7 +415,7 @@ export class DoorsAndWindows {
                 child.receiveShadow = true;
             }
         });
-
+        
         return element;
     }
 
@@ -436,7 +436,7 @@ export class DoorsAndWindows {
     // Create door based on specifications
     createDoorBySpec(spec) {
         const { width = 1.0, height = 2.2, depth = 0.05, type = 'enhanced_door' } = spec;
-
+        
         switch (type) {
             case 'sliding_door':
                 return this.createSlidingDoor(width, height, depth);
@@ -449,7 +449,7 @@ export class DoorsAndWindows {
     // Create window based on specifications
     createWindowBySpec(spec) {
         const { width = 1.2, height = 1.2, depth = 0.1, type = 'enhanced_window' } = spec;
-
+        
         switch (type) {
             case 'french_window':
                 return this.createFrenchWindow(width, height, depth);
@@ -476,28 +476,28 @@ export class DoorsAndWindows {
             },
             default: {} // Use existing colors
         };
-
+        
         const themeColors = themes[theme] || themes.default;
-
+        
         Object.keys(themeColors).forEach(materialKey => {
             if (this.materials[materialKey]) {
                 Object.assign(this.materials[materialKey], themeColors[materialKey]);
             }
         });
-
+        
         console.log(`🎨 Updated materials to ${theme} theme`);
     }
 
     // Dispose of materials and geometries (for memory management)
     dispose() {
         console.log('🧹 Disposing doors and windows materials...');
-
+        
         Object.values(this.materials).forEach(material => {
             if (material.dispose) {
                 material.dispose();
             }
         });
-
+        
         console.log('✅ Doors and windows materials disposed');
     }
 }

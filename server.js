@@ -95,8 +95,18 @@ app.get('/api/project/:name/:id', (req, res) => {
 // Dynamic route for project viewing
 app.get('/:name/:id', (req, res) => {
     const { name, id } = req.params;
+    
+    // Skip API routes and debug routes
+    if (name === 'api' || name === 'debug' || name === 'health') {
+        return res.status(404).send('Not Found');
+    }
+    
     const filename = `${name}-${id}.json`;
     const filePath = path.join(__dirname, 'public3D', 'data', filename);
+    
+    console.log(`🔍 Route request for: ${name}/${id}`);
+    console.log(`📁 Looking for file: ${filePath}`);
+    console.log(`📄 File exists: ${fs.existsSync(filePath)}`);
     
     // Check if the JSON file exists
     if (fs.existsSync(filePath)) {
@@ -109,6 +119,10 @@ app.get('/:name/:id', (req, res) => {
                 <body>
                     <h1>Project Not Found</h1>
                     <p>The project ${name}/${id} was not found.</p>
+                    <p>Available projects:</p>
+                    <ul>
+                        ${getAvailableJsonFiles().map(p => `<li><a href="/${p.route}">${p.name}/${p.id}</a></li>`).join('')}
+                    </ul>
                     <a href="/">Back to Home</a>
                 </body>
             </html>

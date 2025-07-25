@@ -313,9 +313,6 @@ function displayActiveRequests() {
 
         // پیدا کردن اطلاعات محصول
         const product = allProducts.find(p => p.id === request.productId);
-        
-        // فقط نمایش لینک موجود در data.json - بدون تولید خودکار
-        const approved3DLink = request.status === 'تایید شده' && request.url ? request.url : null;
 
         requestCard.innerHTML = `
             <div class="request-header">
@@ -349,18 +346,18 @@ function displayActiveRequests() {
                         <span class="detail-label">فایل ویدیو:</span>
                         <span class="detail-value">آپلود شده</span>
                     </div>
-                    ${request.status === 'تایید شده' && approved3DLink ? `
+                    ${request.status === 'تایید شده' && request.url ? `
                     <div class="detail-row">
                         <span class="detail-label">لینک نمای 3D:</span>
                         <div class="link-display">
-                            <input type="text" class="link-input" value="${approved3DLink}" readonly onclick="this.select()">
+                            <input type="text" class="link-input" value="${request.url}" readonly onclick="this.select()">
                             <div class="action-buttons">
-                                <button class="btn-icon copy-btn" onclick="copyLink('${approved3DLink}')" title="کپی لینک 3D">
+                                <button class="btn-icon copy-btn" onclick="copyLink('${request.url}')" title="کپی لینک 3D">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
                                     </svg>
                                 </button>
-                                <button class="btn-icon visit-btn" onclick="window.open('${approved3DLink}', '_blank')" title="مشاهده نمای 3D">
+                                <button class="btn-icon visit-btn" onclick="window.open('${request.url}', '_blank')" title="مشاهده نمای 3D">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
                                     </svg>

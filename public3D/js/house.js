@@ -15,13 +15,13 @@ class OptimizedHouseViewer {
             frameCount: 0,
             lastTime: performance.now()
         };
-        
+
         this.init();
         this.loadModels();
 
         // Global access
         window.houseViewer = this;
-        
+
         // Debug functions
         window.setDoorPosition = (doorIndex, settings) => this.setIndividualPosition('door', doorIndex, settings);
         window.setWindowPosition = (windowIndex, settings) => this.setIndividualPosition('window', windowIndex, settings);
@@ -31,7 +31,7 @@ class OptimizedHouseViewer {
 
     init() {
         console.log('🏠 Initializing Optimized House Viewer...');
-        
+
         // Update loading progress
         window.UIHelpers?.updateLoadingProgress(10, 'Setting up 3D scene...');
 
@@ -59,17 +59,17 @@ class OptimizedHouseViewer {
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        
+
         // Enhanced shadow settings
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.renderer.shadowMap.autoUpdate = true;
-        
+
         // Color and tone mapping
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.0;
-        
+
         document.body.appendChild(this.renderer.domElement);
 
         // Enhanced orbit controls
@@ -97,7 +97,7 @@ class OptimizedHouseViewer {
         this.setupPerformanceMonitoring();
 
         window.UIHelpers?.updateLoadingProgress(30, 'Loading 3D models...');
-        
+
         // Start render loop
         this.animate();
     }
@@ -116,7 +116,7 @@ class OptimizedHouseViewer {
         const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
         mainLight.position.set(20, 25, 15);
         mainLight.castShadow = true;
-        
+
         // High-resolution shadow map
         mainLight.shadow.mapSize.width = 4096;
         mainLight.shadow.mapSize.height = 4096;
@@ -271,7 +271,7 @@ class OptimizedHouseViewer {
     // Method to load custom data from uploaded file
     loadCustomData(jsonData) {
         console.log('📁 Loading custom house data...');
-        
+
         // Clear existing house
         this.clearScene();
 
@@ -284,7 +284,7 @@ class OptimizedHouseViewer {
             this.createHouseFromData(processedData);
             window.UIHelpers?.updateStats(processedData);
             this.resetCamera();
-            
+
             window.UIHelpers?.showStatusMessage(
                 "Custom house data loaded!", 
                 "success", 
@@ -383,7 +383,7 @@ class OptimizedHouseViewer {
             // Fallback floor creation
             houseData.rooms.forEach((room, index) => {
                 if (!room.floorDimensions || !room.floorPosition) return;
-                
+
                 const floorGeometry = new THREE.BoxGeometry(
                     room.floorDimensions.width,
                     room.floorDimensions.height,
@@ -531,14 +531,14 @@ class OptimizedHouseViewer {
                 materials.exteriorWall : materials.interiorWall;
 
             const wallMesh = new THREE.Mesh(wallGeometry, material);
-            
+
             // Precise positioning
             wallMesh.position.set(
                 wall.center3D.x,
                 wall.center3D.y,
                 wall.center3D.z
             );
-            
+
             // Accurate rotation
             wallMesh.rotation.set(
                 wall.rotation.x,
@@ -720,7 +720,7 @@ class OptimizedHouseViewer {
 
     createFallbackHouse() {
         console.log('🏠 Creating fallback house...');
-        
+
         const house = new THREE.Group();
         house.userData.isHouseElement = true;
 
@@ -763,7 +763,7 @@ class OptimizedHouseViewer {
 
         house.add(floor, wall1, wall2, wall3, wall4);
         this.scene.add(house);
-        
+
         console.log('✅ Fallback house created');
     }
 
@@ -790,7 +790,7 @@ class OptimizedHouseViewer {
         // Performance monitoring
         this.performanceStats.frameCount++;
         const now = performance.now();
-        
+
         if (now - this.performanceStats.lastTime >= 1000) {
             const fps = Math.round((this.performanceStats.frameCount * 1000) / (now - this.performanceStats.lastTime));
             this.performanceStats.averageFPS = fps;
@@ -805,7 +805,7 @@ class OptimizedHouseViewer {
     // Debug and utility functions
     showAllPositions() {
         if (!this.currentHouseData) return;
-        
+
         console.log('📍 Showing all positions:');
         console.log('Walls:', this.currentHouseData.walls.map((w, i) => ({
             index: i,
@@ -813,7 +813,7 @@ class OptimizedHouseViewer {
             end2D: w.end2D || { x: w.x2, y: w.y2 },
             center3D: w.center3D
         })));
-        
+
         if (this.currentHouseData.doors) {
             console.log('Doors:', this.currentHouseData.doors.map((d, i) => ({
                 index: i,
@@ -821,7 +821,7 @@ class OptimizedHouseViewer {
                 position3D: d.position3D
             })));
         }
-        
+
         if (this.currentHouseData.windows) {
             console.log('Windows:', this.currentHouseData.windows.map((w, i) => ({
                 index: i,

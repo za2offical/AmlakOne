@@ -22,6 +22,12 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Request logging middleware
+app.use((req, res, next) => {
+    console.log(`📡 ${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
+
 // Serve static files from public3D directory
 app.use(express.static(path.join(__dirname, 'public3D')));
 
@@ -267,6 +273,18 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🏠 3D House Viewer running at http://0.0.0.0:${PORT}`);
     console.log('🌐 Server accessible on all network interfaces');
     console.log('📁 Serving static files from public3D/ directory');
-    console.log('📊 Available projects:', getAvailableJsonFiles().length);
+    
+    const availableProjects = getAvailableJsonFiles();
+    console.log('📊 Available projects:', availableProjects.length);
+    
+    if (availableProjects.length > 0) {
+        console.log('📋 Projects found:');
+        availableProjects.forEach(project => {
+            console.log(`  - ${project.name}/${project.id} (${project.filename})`);
+        });
+    } else {
+        console.log('⚠️ No project files found in public3D/data/');
+    }
+    
     console.log('🔗 Access your app at: https://your-repl-name.your-username.repl.co');
 });

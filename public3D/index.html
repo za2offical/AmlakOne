@@ -154,6 +154,12 @@
             }
 
             async init() {
+                // Set a timeout for initialization
+                const initTimeout = setTimeout(() => {
+                    console.error('❌ Initialization timeout');
+                    this.showError('Loading timeout - please refresh the page');
+                }, 10000); // 10 second timeout
+
                 try {
                     console.log('🚀 Starting 3D House Viewer initialization...');
                     
@@ -173,8 +179,13 @@
                     // Initialize 3D scene first
                     this.initThreeJS();
 
-                    // Load project data
-                    const projectData = await this.loadProjectData(name, id);
+                    // Load project data with timeout
+                    const projectData = await Promise.race([
+                        this.loadProjectData(name, id),
+                        new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Data loading timeout')), 8000)
+                        )
+                    ]);
 
                     if (!projectData) {
                         throw new Error('Failed to load project data');
@@ -192,9 +203,11 @@
                     this.loadingEl.style.display = 'none';
                     this.uiOverlay.style.display = 'block';
 
+                    clearTimeout(initTimeout);
                     console.log('✅ 3D House Viewer initialized successfully');
 
                 } catch (error) {
+                    clearTimeout(initTimeout);
                     console.error('❌ Error initializing viewer:', error);
                     
                     // Initialize 3D scene even if data loading fails
@@ -209,8 +222,30 @@
             async loadProjectData(name, id) {
                 try {
                     console.log(`🔄 Loading project data for: ${name}/${id}`);
-                    const response = await fetch(`/api/project/${name}/${id}`);
+                    
+                    // First try direct file load
+                    try {
+                        console.log(`🔄 Trying direct file load: /data/${name}-${id}.json`);
+                        const directResponse = await fetch(`/data/${name}-${id}.json`);
+                        if (directResponse.ok) {
+                            const jsonData = await directResponse.json();
+                            console.log('✅ Direct file load successful');
+                            return {
+                                success: true,
+                                data: jsonData,
+                                projectInfo: {
+                                    name: name,
+                                    id: id,
+                                    filename: `${name}-${id}.json`
+                                }
+                            };
+                        }
+                    } catch (directError) {
+                        console.log('⚠️ Direct file load failed, trying API...');
+                    }
 
+                    // Try API as fallback
+                    const response = await fetch(`/api/project/${name}/${id}`);
                     console.log(`📡 API Response status: ${response.status}`);
 
                     if (!response.ok) {
@@ -230,25 +265,25 @@
                 } catch (error) {
                     console.error('❌ Error loading project data:', error);
                     
-                    // Fallback: try to load JSON file directly
+                    // Final fallback: try home.json
                     try {
-                        console.log(`🔄 Trying direct file load: /data/${name}-${id}.json`);
-                        const directResponse = await fetch(`/data/${name}-${id}.json`);
-                        if (directResponse.ok) {
-                            const jsonData = await directResponse.json();
-                            console.log('✅ Direct file load successful');
+                        console.log(`🔄 Trying fallback: /data/home.json`);
+                        const fallbackResponse = await fetch(`/data/home.json`);
+                        if (fallbackResponse.ok) {
+                            const jsonData = await fallbackResponse.json();
+                            console.log('✅ Fallback file load successful');
                             return {
                                 success: true,
                                 data: jsonData,
                                 projectInfo: {
-                                    name: name,
-                                    id: id,
-                                    filename: `${name}-${id}.json`
+                                    name: 'Demo',
+                                    id: 'home',
+                                    filename: 'home.json'
                                 }
                             };
                         }
                     } catch (fallbackError) {
-                        console.error('❌ Fallback also failed:', fallbackError);
+                        console.error('❌ All fallbacks failed:', fallbackError);
                     }
                     
                     return null;

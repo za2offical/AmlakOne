@@ -35,16 +35,15 @@ async function loadUserProducts() {
         const userInfo = await checkAuth();
         if (!userInfo) return;
 
-        // پاک کردن کش قدیمی
-        clearCachedData();
-
-        // بارگذاری محصولات با force refresh
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/api/requests-3d/user-products?_t=${timestamp}`, {
-            cache: 'no-cache',
+        // بارگذاری محصولات با داده‌های زنده - هیچ کش‌ای استفاده نمی‌شود
+        const timestamp = Date.now() + Math.random(); // اطمینان از یکتا بودن
+        const response = await fetch(`/api/requests-3d/user-products?live=${timestamp}`, {
+            method: 'GET',
+            cache: 'no-store', // هیچ‌گاه کش نکن
             headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
             }
         });
         
@@ -191,31 +190,22 @@ function displayProducts(products) {
 // بارگذاری درخواست‌های فعال
 async function loadActiveRequests() {
     try {
-        console.log('Loading active requests...'); // Debug log
-        // اضافه کردن timestamp برای جلوگیری از کش
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/api/requests-3d/my-requests?_t=${timestamp}`, {
-            cache: 'no-cache',
+        console.log('Loading live active requests...'); // Debug log
+        // داده‌های کاملاً زنده - هیچ کش‌ای نیست
+        const timestamp = Date.now() + Math.random();
+        const response = await fetch(`/api/requests-3d/my-requests?live=${timestamp}`, {
+            method: 'GET',
+            cache: 'no-store',
             headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
             }
         });
         if (response.ok) {
             activeRequests = await response.json();
-            console.log('Active requests loaded:', activeRequests); // Debug log
+            console.log('Live active requests loaded:', activeRequests); // Debug log
             console.log('Number of active requests:', activeRequests.length); // Debug log
-            
-            // پاک کردن کش محلی
-            if (localStorage.getItem('activeRequests')) {
-                localStorage.removeItem('activeRequests');
-            }
-            
-            // ذخیره داده‌های جدید در کش محلی
-            localStorage.setItem('activeRequests', JSON.stringify({
-                data: activeRequests,
-                timestamp: timestamp
-            }));
             
             displayActiveRequests();
             // به‌روزرسانی نمایش محصولات با وضعیت جدید
@@ -655,30 +645,13 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// پاک کردن کش‌های محلی
-function clearCachedData() {
-    try {
-        // پاک کردن کش localStorage
-        localStorage.removeItem('activeRequests');
-        localStorage.removeItem('userProducts');
-        localStorage.removeItem('amlakone_user_behavior');
-        
-        // پاک کردن کش sessionStorage
-        sessionStorage.clear();
-        
-        console.log('Local cache cleared');
-    } catch (error) {
-        console.error('Error clearing cache:', error);
-    }
-}
-
 // تابع refresh دستی
 function forceRefresh() {
-    clearCachedData();
-    location.reload(true);
+    console.log('Force refreshing live data...');
+    loadUserProducts();
 }
 
-// اضافه کردن دکمه refresh در صورت نیاز
+// اضافه کردن دکمه refresh
 function addRefreshButton() {
     const header = document.querySelector('.header-right');
     if (header && !document.getElementById('refreshBtn')) {
@@ -689,7 +662,7 @@ function addRefreshButton() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
             </svg>
-            بروزرسانی
+            بروزرسانی زنده
         `;
         refreshBtn.onclick = forceRefresh;
         header.appendChild(refreshBtn);
@@ -700,4 +673,15 @@ function addRefreshButton() {
 document.addEventListener('DOMContentLoaded', () => {
     addRefreshButton();
     loadUserProducts();
+    
+    // سیستم به‌روزرسانی خودکار هر 10 ثانیه
+    setInterval(() => {
+        console.log('Auto-refreshing data...');
+        loadActiveRequests(); // فقط درخواست‌ها را به‌روزرسانی می‌کند
+        
+        // اگر درخواست‌ها تغییر کرده باشند، محصولات را هم به‌روزرسانی کن
+        if (allProducts.length > 0) {
+            displayProducts(allProducts);
+        }
+    }, 10000); // هر 10 ثانیه
 });

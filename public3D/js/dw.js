@@ -501,6 +501,3 @@ export class DoorsAndWindows {
         console.log('✅ Doors and windows materials disposed');
     }
 }
-// Load 3D models
-        const doorModelPath = '/models/Nice Door.glb';
-        const windowModelPath = '/models/Window Large.glb';

@@ -22,7 +22,7 @@ let currentModalIndex = 0;
 // تنظیم تصویر اصلی
 function setMainImage(imageUrl, index = 0) {
     const container = document.getElementById('mainImageContainer');
-    container.innerHTML = `<img src="${imageUrl}" alt="تصویر محصول ${index + 1}" class="main-image" onclick="openModal(${index})" onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>تصویر در دسترس نیست</div>'">`;
+    container.innerHTML = `<img src="${imageUrl}" alt="تصویر آگهی ${index + 1}" class="main-image" onclick="openModal(${index})" onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>تصویر در دسترس نیست</div>'">`;
     
     // به‌روزرسانی thumbnail های فعال
     document.querySelectorAll('.thumbnail').forEach((thumb, i) => {

@@ -109,6 +109,10 @@
   justify-content: center;
 }
 
+.nav-link svg {
+  color: var(--primary);
+}
+
 .nav-link:hover {
   background: var(--primary-50);
   color: var(--primary-dark);

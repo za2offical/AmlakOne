@@ -314,20 +314,8 @@ function displayActiveRequests() {
         // پیدا کردن اطلاعات محصول
         const product = allProducts.find(p => p.id === request.productId);
         
-        // تولید لینک برای درخواست‌های تایید شده از 3D/data.json
-        const approved3DLink = request.status === 'تایید شده' && request.url ? 
-            request.url : null;
-            
-        // Debug logging
-        if (request.status === 'تایید شده') {
-            console.log('Approved request data:', {
-                id: request.id,
-                status: request.status,
-                url: request.url,
-                hasUrl: !!request.url,
-                approved3DLink: approved3DLink
-            });
-        }
+        // فقط نمایش لینک موجود در data.json - بدون تولید خودکار
+        const approved3DLink = request.status === 'تایید شده' && request.url ? request.url : null;
 
         requestCard.innerHTML = `
             <div class="request-header">

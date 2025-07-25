@@ -126,6 +126,48 @@
       "updated_at": "2025-07-25T05:51:19.387Z",
       "salePrice": 5000000000,
       "pricePerMeter": 55555556
+    },
+    {
+      "id": "1753482288911",
+      "propertyType": "rent",
+      "bedrooms": 3,
+      "area": 89,
+      "constructionYear": 1388,
+      "images": [
+        "/images/img-Ali/product-1753482288722-0.jpg",
+        "/images/img-Ali/product-1753482288785-1.jpg",
+        "/images/img-Ali/product-1753482288845-2.jpg",
+        "/images/img-Ali/product-1753482336554-307951166.jpg"
+      ],
+      "facilities": {
+        "parking": true,
+        "storage": true,
+        "elevator": true,
+        "balcony": false,
+        "parquet": false,
+        "westernToilet": false
+      },
+      "privateInfo": {
+        "propertyAddress": "",
+        "ownerName": "",
+        "ownerPhone": "",
+        "propertyNumber": "",
+        "tenantName": "",
+        "tenantPhone": ""
+      },
+      "description": "",
+      "created_at": "2025-07-25T22:24:48.911Z",
+      "updated_at": "2025-07-25T22:25:36.891Z",
+      "deposit": 1250000000,
+      "monthlyRent": 9000000,
+      "allowConversion": false,
+      "propertyAddress": "",
+      "ownerName": "",
+      "ownerPhone": "",
+      "propertyNumber": "",
+      "tenantName": "",
+      "tenantPhone": "",
+      "mainImage": "/images/img-Ali/product-1753482288722-0.jpg"
     }
   ]
 }

@@ -30,7 +30,7 @@
   },
   {
     "username": "zii",
-    "hashedPassword": "$2b$10$D9ztzb8wBNjWhhQKLRcpTefWQKGSz4eesUFFRTNLPY1gS6lClU5Vm",
+    "hashedPassword": "$2a$10$Urcnw9d3rrwMdMJVdA.k0uRt6TrcvMpsxg81W1/WvFwXn/FJK3btG",
     "created_at": "2025-06-02T13:12:23.646Z",
     "firstName": "ابوالفضل",
     "lastName": "آقابیگی",
@@ -40,7 +40,9 @@
     "neighborhood": "شت",
     "profileImagePath": "/profile-img/zii.jpg",
     "profileCompleted": true,
-    "updated_at": "2025-06-06T20:38:58.715Z"
+    "updated_at": "2025-07-25T08:48:37.674Z",
+    "failedLoginAttempts": 0,
+    "lockoutUntil": null
   },
   {
     "username": "masi",

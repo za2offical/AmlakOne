@@ -67,6 +67,23 @@ function modalNextImage() {
     openModal(currentModalIndex);
 }
 
+// نمایش دکمه 3D در صورت وجود
+function display3DButton(product) {
+    const view3DSection = document.getElementById('view3DSection');
+    
+    if (product.has3D && product.url3D) {
+        view3DSection.innerHTML = `
+            <a href="${product.url3D}" target="_blank" class="view-3d-button" rel="noopener noreferrer">
+                <div class="view-3d-icon">🏠</div>
+                <span class="view-3d-text">مشاهده تور مجازی 3D</span>
+            </a>
+        `;
+        view3DSection.style.display = 'block';
+    } else {
+        view3DSection.style.display = 'none';
+    }
+}
+
 // ایجاد گالری تصاویر با اسلایدر حرفه‌ای Swiper
 function createImageGallery(images) {
     const mainWrapper = document.getElementById('swiperMainWrapper');
@@ -264,6 +281,9 @@ function displayProduct(product) {
 
     // ایجاد گالری تصاویر
     createImageGallery(product.images);
+
+    // نمایش دکمه 3D
+    display3DButton(product);
 
     // نمایش محصول
     document.getElementById('loading').style.display = 'none';

@@ -70,6 +70,38 @@ async function getProductDetails(username, productId) {
     }
 }
 
+// بررسی وجود درخواست 3D تایید شده
+async function getApproved3DRequest(username, productId) {
+    try {
+        const dataPath = path.join(__dirname, '..', '3D', 'data.json');
+        
+        try {
+            await fs.access(dataPath);
+        } catch {
+            return null;
+        }
+
+        const data = await fs.readFile(dataPath, 'utf8');
+        const requestsData = JSON.parse(data);
+
+        if (!requestsData.requests || !Array.isArray(requestsData.requests)) {
+            return null;
+        }
+
+        // پیدا کردن درخواست تایید شده برای این محصول
+        const request = requestsData.requests.find(r => 
+            r.username === username && 
+            r.productId === productId && 
+            r.status === 'تایید شده'
+        );
+
+        return request || null;
+    } catch (error) {
+        console.error('Error checking 3D request:', error);
+        return null;
+    }
+}
+
 // دریافت جزئیات محصول برای نمایش عمومی
 router.get('/:username/:productId', async (req, res) => {
     try {
@@ -85,6 +117,9 @@ router.get('/:username/:productId', async (req, res) => {
         if (!product) {
             return res.status(404).json({ error: 'Product not found' });
         }
+
+        // بررسی وجود درخواست 3D تایید شده
+        const approved3DRequest = await getApproved3DRequest(username, productId);
 
         // آماده‌سازی داده‌های امن برای نمایش عمومی
         const safeProduct = {
@@ -104,7 +139,9 @@ router.get('/:username/:productId', async (req, res) => {
             facilities: product.facilities || {},
             description: product.description || '',
             created_at: product.created_at,
-            owner: username
+            owner: username,
+            has3D: !!approved3DRequest,
+            url3D: approved3DRequest ? approved3DRequest.url : null
         };
 
         res.json(safeProduct);

@@ -151,6 +151,7 @@ router.post('/submit-request', async (req, res) => {
                 productId: productId,
                 videoPath: path.join('3D', sanitize(username), videoFileName),
                 status: 'در حال بررسی',
+                url: null,
                 submittedAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };

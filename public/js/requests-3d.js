@@ -294,8 +294,8 @@ function displayActiveRequests() {
         const product = allProducts.find(p => p.id === request.productId);
         
         // تولید لینک برای درخواست‌های تایید شده
-        const approved3DLink = request.status === 'تایید شده' ? 
-            `${window.location.origin}/${request.username}/${request.productId}-3d` : null;
+        const approved3DLink = request.status === 'تایید شده' && request.url ? 
+            request.url : null;
 
         requestCard.innerHTML = `
             <div class="request-header">

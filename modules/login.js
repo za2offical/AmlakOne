@@ -23,18 +23,41 @@ router.post('/verify', async (req, res) => {
 
         // بررسی اعتبار admin
         if (username === ADMIN_USERNAME) {
-            // بررسی پسورد admin از فایل users.json
+            console.log('Admin login attempt for username:', username);
             const users = await readUsers();
             const adminUser = users.find(u => u.username === username);
             
             let isAdminValid = false;
-            if (adminUser && adminUser.hashedPassword) {
-                isAdminValid = await comparePassword(password, adminUser.hashedPassword);
-            } else if (password === ADMIN_PASSWORD) {
+            
+            if (adminUser) {
+                if (adminUser.hashedPassword) {
+                    // اگر پسورد هش شده باشد
+                    isAdminValid = await comparePassword(password, adminUser.hashedPassword);
+                } else if (adminUser.password) {
+                    // اگر پسورد ساده باشد
+                    isAdminValid = password === adminUser.password;
+                }
+            }
+            
+            // اگر در فایل نبود، با پسورد پیش‌فرض مقایسه کن
+            if (!isAdminValid && password === ADMIN_PASSWORD) {
                 isAdminValid = true;
             }
             
             if (isAdminValid) {
+                // ریست کردن تلاش‌های ناموفق ادمین اگر وجود داشته باشد
+                if (adminUser) {
+                    adminUser.failedLoginAttempts = 0;
+                    adminUser.lockoutUntil = null;
+                    const userIndex = users.findIndex(u => u.username === username);
+                    users[userIndex] = adminUser;
+                    await require('fs').promises.writeFile(
+                        require('path').join(__dirname, '../data/users.json'),
+                        JSON.stringify(users, null, 2),
+                        'utf8'
+                    );
+                }
+                
                 const token = generateToken({ username: ADMIN_USERNAME });
                 res.cookie('token', token, {
                     httpOnly: true,
@@ -43,6 +66,8 @@ router.post('/verify', async (req, res) => {
                     maxAge: 24 * 60 * 60 * 1000 // 24 ساعت
                 });
                 return res.json({ success: true, isAdmin: true });
+            } else {
+                return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' });
             }
         }
 

@@ -35,8 +35,19 @@ async function loadUserProducts() {
         const userInfo = await checkAuth();
         if (!userInfo) return;
 
-        // بارگذاری محصولات
-        const response = await fetch('/api/requests-3d/user-products');
+        // پاک کردن کش قدیمی
+        clearCachedData();
+
+        // بارگذاری محصولات با force refresh
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/requests-3d/user-products?_t=${timestamp}`, {
+            cache: 'no-cache',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        });
+        
         if (response.status === 401) {
             window.location.href = '/login';
             return;
@@ -181,11 +192,31 @@ function displayProducts(products) {
 async function loadActiveRequests() {
     try {
         console.log('Loading active requests...'); // Debug log
-        const response = await fetch('/api/requests-3d/my-requests');
+        // اضافه کردن timestamp برای جلوگیری از کش
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/requests-3d/my-requests?_t=${timestamp}`, {
+            cache: 'no-cache',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        });
         if (response.ok) {
             activeRequests = await response.json();
             console.log('Active requests loaded:', activeRequests); // Debug log
             console.log('Number of active requests:', activeRequests.length); // Debug log
+            
+            // پاک کردن کش محلی
+            if (localStorage.getItem('activeRequests')) {
+                localStorage.removeItem('activeRequests');
+            }
+            
+            // ذخیره داده‌های جدید در کش محلی
+            localStorage.setItem('activeRequests', JSON.stringify({
+                data: activeRequests,
+                timestamp: timestamp
+            }));
+            
             displayActiveRequests();
             // به‌روزرسانی نمایش محصولات با وضعیت جدید
             if (allProducts.length > 0) {
@@ -624,7 +655,49 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// پاک کردن کش‌های محلی
+function clearCachedData() {
+    try {
+        // پاک کردن کش localStorage
+        localStorage.removeItem('activeRequests');
+        localStorage.removeItem('userProducts');
+        localStorage.removeItem('amlakone_user_behavior');
+        
+        // پاک کردن کش sessionStorage
+        sessionStorage.clear();
+        
+        console.log('Local cache cleared');
+    } catch (error) {
+        console.error('Error clearing cache:', error);
+    }
+}
+
+// تابع refresh دستی
+function forceRefresh() {
+    clearCachedData();
+    location.reload(true);
+}
+
+// اضافه کردن دکمه refresh در صورت نیاز
+function addRefreshButton() {
+    const header = document.querySelector('.header-right');
+    if (header && !document.getElementById('refreshBtn')) {
+        const refreshBtn = document.createElement('button');
+        refreshBtn.id = 'refreshBtn';
+        refreshBtn.className = 'back-btn';
+        refreshBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </svg>
+            بروزرسانی
+        `;
+        refreshBtn.onclick = forceRefresh;
+        header.appendChild(refreshBtn);
+    }
+}
+
 // بارگذاری اولیه
 document.addEventListener('DOMContentLoaded', () => {
+    addRefreshButton();
     loadUserProducts();
 });

@@ -23,7 +23,7 @@ let currentModalIndex = 0;
 function setMainImage(imageUrl, index = 0) {
     const container = document.getElementById('mainImageContainer');
     container.innerHTML = `<img src="${imageUrl}" alt="تصویر آگهی ${index + 1}" class="main-image" onclick="openModal(${index})" onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>تصویر در دسترس نیست</div>'">`;
-    
+
     // به‌روزرسانی thumbnail های فعال
     document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
         thumb.classList.toggle('active', i === index);
@@ -33,16 +33,16 @@ function setMainImage(imageUrl, index = 0) {
 // باز کردن مودال
 function openModal(index = 0) {
     if (!modalImages || modalImages.length === 0) return;
-    
+
     currentModalIndex = index;
     const modal = document.getElementById('imageModal');
     const modalImage = document.getElementById('modalImage');
     const modalCounter = document.getElementById('modalCounter');
-    
+
     modalImage.src = modalImages[currentModalIndex];
     modalCounter.textContent = `${currentModalIndex + 1} از ${modalImages.length}`;
     modal.style.display = 'block';
-    
+
     // مخفی/نمایش دکمه‌های ناوبری
     document.getElementById('modalPrev').style.display = modalImages.length > 1 ? 'flex' : 'none';
     document.getElementById('modalNext').style.display = modalImages.length > 1 ? 'flex' : 'none';
@@ -70,7 +70,7 @@ function modalNextImage() {
 // نمایش دکمه 3D در صورت وجود
 function display3DButton(product) {
     const view3DSection = document.getElementById('view3DSection');
-    
+
     if (product.has3D && product.url3D) {
         view3DSection.innerHTML = `
             <a href="${product.url3D}" target="_blank" class="view-3d-button" rel="noopener noreferrer">
@@ -196,7 +196,7 @@ function displayPricing(product) {
             pricingGrid.appendChild(pricePerMeterCard);
         }
     }
-    
+
     // بررسی قیمت اجاره (مستقل از نوع ملک)
     if (product.deposit) {
         hasPricing = true;
@@ -219,17 +219,17 @@ function displayPricing(product) {
         `;
         pricingGrid.appendChild(rentCard);
     }
-    
+
     if (product.allowConversion) {
         hasPricing = true;
         const conversionCard = document.createElement('div');
-        conversionCard.className = 'detail-card conversion-info';
+        conversionCard.className = 'detail-card conversion-info conversion-available';
         let conversionText = 'امکان تبدیل ودیعه به اجاره';
-        
+
         if (product.conversionDeductAmount && product.conversionAddAmount) {
             conversionText += `<br><small>کاهش ${formatPrice(product.conversionDeductAmount)} از ودیعه<br>اضافه ${formatPrice(product.conversionAddAmount)} به اجاره</small>`;
         }
-        
+
         conversionCard.innerHTML = `
             <div class="detail-label">تبدیل ودیعه</div>
             <div class="detail-value">${conversionText}</div>
@@ -265,13 +265,13 @@ function showCallConfirmModal(phoneNumber) {
     const modal = document.getElementById('callConfirmModal');
     const modalPhoneNumber = document.getElementById('modalPhoneNumber');
     const confirmBtn = document.getElementById('confirmCallBtn');
-    
+
     modalPhoneNumber.textContent = phoneNumber;
     confirmBtn.onclick = () => {
         window.location.href = `tel:${phoneNumber}`;
         closeCallModal();
     };
-    
+
     modal.style.display = 'flex';
     setTimeout(() => {
         modal.classList.add('show');
@@ -305,7 +305,7 @@ async function displayProduct(product) {
     // نمایش آیکون و شماره تماس در صورت وجود
     const contactElement = document.getElementById('userContact');
     const phoneNumberElement = document.getElementById('phoneNumber');
-    
+
     if (userInfo.phone) {
         contactElement.style.display = 'flex';
         phoneNumberElement.textContent = userInfo.phone;
@@ -315,23 +315,23 @@ async function displayProduct(product) {
     } else {
         contactElement.style.display = 'none';
     }
-    
+
     // تنظیم دکمه بازگشت
     document.getElementById('backButton').href = `/${product.owner}/products`;
-    
+
     // تنظیم جزئیات
     const propertyTypeText = product.propertyType === 'sale' ? 'فروش' : 
                            product.propertyType === 'rent' ? 'اجاره' : '-';
     document.getElementById('propertyType').textContent = propertyTypeText;
     document.getElementById('bedrooms').textContent = product.bedrooms;
     document.getElementById('area').textContent = product.area;
-    
+
     // سال ساخت
     if (product.constructionYear) {
         document.getElementById('constructionYear').textContent = product.constructionYear;
         document.getElementById('constructionYearCard').style.display = 'block';
     }
-    
+
     document.getElementById('createdDate').textContent = formatDate(product.created_at);
 
     // نمایش قیمت‌گذاری
@@ -362,7 +362,7 @@ async function displayProduct(product) {
 // بارگذاری جزئیات محصول
 async function loadProductDetails() {
     const { username, productId } = getInfoFromUrl();
-    
+
     if (!username || !productId) {
         document.getElementById('error').style.display = 'block';
         document.getElementById('loading').style.display = 'none';
@@ -371,7 +371,7 @@ async function loadProductDetails() {
 
     try {
         const response = await fetch(`/api/public-details/${username}/${productId}`);
-        
+
         if (!response.ok) {
             throw new Error('محصول یافت نشد');
         }

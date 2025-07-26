@@ -140,6 +140,100 @@
   border: 2px solid white;
 }
 
+/* Special AI Button */
+.nav-link.special-ai {
+  position: relative;
+  background: linear-gradient(135deg, #8b5cf6, #a855f7, #9333ea);
+  color: white !important;
+  border-radius: 12px;
+  box-shadow: 
+    0 0 20px rgba(139, 92, 246, 0.4),
+    0 0 40px rgba(139, 92, 246, 0.2),
+    0 4px 15px rgba(139, 92, 246, 0.3);
+  animation: aiGlow 2s ease-in-out infinite alternate;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  overflow: visible;
+}
+
+.nav-link.special-ai:hover {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6, #7c3aed);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 0 25px rgba(139, 92, 246, 0.6),
+    0 0 50px rgba(139, 92, 246, 0.3),
+    0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.nav-link.special-ai svg {
+  color: white !important;
+}
+
+.nav-link.special-ai .special-badge {
+  position: absolute;
+  top: -8px;
+  right: -5px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #92400e;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1.5px solid #fff;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+  white-space: nowrap;
+  z-index: 10;
+}
+
+@keyframes aiGlow {
+  0% {
+    box-shadow: 
+      0 0 20px rgba(139, 92, 246, 0.3),
+      0 0 40px rgba(139, 92, 246, 0.15),
+      0 4px 15px rgba(139, 92, 246, 0.25);
+  }
+  100% {
+    box-shadow: 
+      0 0 25px rgba(139, 92, 246, 0.5),
+      0 0 50px rgba(139, 92, 246, 0.25),
+      0 4px 15px rgba(139, 92, 246, 0.35);
+  }
+}
+
+/* Mobile special AI button */
+.mobile-menu-item.special-ai-mobile {
+  position: relative;
+  background: linear-gradient(135deg, #8b5cf6, #a855f7, #9333ea);
+  color: white !important;
+  border-radius: 12px;
+  margin: 0 1rem;
+  box-shadow: 
+    0 0 15px rgba(139, 92, 246, 0.4),
+    0 0 30px rgba(139, 92, 246, 0.2);
+  animation: aiGlow 2s ease-in-out infinite alternate;
+}
+
+.mobile-menu-item.special-ai-mobile:hover {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6, #7c3aed);
+  color: white !important;
+}
+
+.mobile-menu-item.special-ai-mobile svg {
+  color: white !important;
+}
+
+.mobile-menu-item.special-ai-mobile .special-badge-mobile {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #92400e;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid #fff;
+  box-shadow: 0 1px 4px rgba(251, 191, 36, 0.4);
+  margin-right: auto;
+  margin-left: 0.5rem;
+}
+
 /* Profile Dropdown */
 .nav-profile {
   position: relative;

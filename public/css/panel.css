@@ -150,9 +150,10 @@
     0 0 20px rgba(139, 92, 246, 0.4),
     0 0 40px rgba(139, 92, 246, 0.2),
     0 4px 15px rgba(139, 92, 246, 0.3);
-  animation: aiGlow 2s ease-in-out infinite alternate;
   border: 1px solid rgba(168, 85, 247, 0.3);
   overflow: visible;
+  min-width: auto;
+  padding: 0.75rem 1.25rem;
 }
 
 .nav-link.special-ai:hover {
@@ -168,35 +169,26 @@
   color: white !important;
 }
 
-.nav-link.special-ai .special-badge {
-  position: absolute;
-  top: -8px;
-  right: -5px;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #92400e;
-  font-size: 0.65rem;
-  font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 6px;
-  border: 1.5px solid #fff;
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+.nav-link.special-ai span {
   white-space: nowrap;
-  z-index: 10;
+  font-size: 0.95rem;
 }
 
-@keyframes aiGlow {
-  0% {
-    box-shadow: 
-      0 0 20px rgba(139, 92, 246, 0.3),
-      0 0 40px rgba(139, 92, 246, 0.15),
-      0 4px 15px rgba(139, 92, 246, 0.25);
-  }
-  100% {
-    box-shadow: 
-      0 0 25px rgba(139, 92, 246, 0.5),
-      0 0 50px rgba(139, 92, 246, 0.25),
-      0 4px 15px rgba(139, 92, 246, 0.35);
-  }
+.nav-link.special-ai .special-badge {
+  position: absolute;
+  top: -6px;
+  right: -3px;
+  background: #fde047;
+  color: #854d0e;
+  font-size: 0.55rem;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid #fff;
+  box-shadow: 0 1px 4px rgba(253, 224, 71, 0.5);
+  white-space: nowrap;
+  z-index: 10;
+  line-height: 1.2;
 }
 
 /* Mobile special AI button */
@@ -209,7 +201,6 @@
   box-shadow: 
     0 0 15px rgba(139, 92, 246, 0.4),
     0 0 30px rgba(139, 92, 246, 0.2);
-  animation: aiGlow 2s ease-in-out infinite alternate;
 }
 
 .mobile-menu-item.special-ai-mobile:hover {
@@ -221,17 +212,22 @@
   color: white !important;
 }
 
+.mobile-menu-item.special-ai-mobile span:first-of-type {
+  white-space: nowrap;
+}
+
 .mobile-menu-item.special-ai-mobile .special-badge-mobile {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #92400e;
-  font-size: 0.6rem;
+  background: #fde047;
+  color: #854d0e;
+  font-size: 0.5rem;
   font-weight: 800;
-  padding: 2px 5px;
-  border-radius: 4px;
+  padding: 1px 3px;
+  border-radius: 3px;
   border: 1px solid #fff;
-  box-shadow: 0 1px 4px rgba(251, 191, 36, 0.4);
+  box-shadow: 0 1px 3px rgba(253, 224, 71, 0.5);
   margin-right: auto;
   margin-left: 0.5rem;
+  line-height: 1.2;
 }
 
 /* Profile Dropdown */

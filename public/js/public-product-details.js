@@ -378,11 +378,55 @@ async function loadProductDetails() {
 
         const product = await response.json();
         displayProduct(product);
+        updateOpenGraphMeta(product);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('productContainer').style.display = 'block';
 
     } catch (error) {
         console.error('خطا در بارگذاری محصول:', error);
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error').style.display = 'block';
+    }
+}
+
+// Function to update Open Graph meta tags
+function updateOpenGraphMeta(product) {
+    const title = product.type || 'جزئیات ملک';
+    const description = product.description || 'مشاهده جزئیات کامل این ملک';
+    let imageUrl = '/AmlakOne-logo.jpg'; // Default image
+
+    // Use first product image if available
+    if (product.images && product.images.length > 0) {
+        imageUrl = product.images[0];
+    }
+
+    // Update or create meta tags
+    updateMetaTag('og:title', title + ' - AmlakOne');
+    updateMetaTag('og:description', description);
+    updateMetaTag('og:image', window.location.origin + imageUrl);
+    updateMetaTag('twitter:title', title + ' - AmlakOne');
+    updateMetaTag('twitter:description', description);
+    updateMetaTag('twitter:image', window.location.origin + imageUrl);
+
+    // Update page title
+    document.title = title + ' - AmlakOne';
+}
+
+function updateMetaTag(property, content) {
+    let meta = document.querySelector(`meta[property="${property}"]`) || 
+               document.querySelector(`meta[name="${property}"]`);
+
+    if (meta) {
+        meta.setAttribute('content', content);
+    } else {
+        meta = document.createElement('meta');
+        if (property.startsWith('og:')) {
+            meta.setAttribute('property', property);
+        } else {
+            meta.setAttribute('name', property);
+        }
+        meta.setAttribute('content', content);
+        document.head.appendChild(meta);
     }
 }
 

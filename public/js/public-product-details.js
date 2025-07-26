@@ -39,32 +39,75 @@ function openModal(index = 0) {
     const modalImage = document.getElementById('modalImage');
     const modalCounter = document.getElementById('modalCounter');
 
+    // نمایش مودال با انیمیشن
+    modal.style.display = 'block';
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+
     modalImage.src = modalImages[currentModalIndex];
     modalCounter.textContent = `${currentModalIndex + 1} از ${modalImages.length}`;
-    modal.style.display = 'block';
 
     // مخفی/نمایش دکمه‌های ناوبری
     document.getElementById('modalPrev').style.display = modalImages.length > 1 ? 'flex' : 'none';
     document.getElementById('modalNext').style.display = modalImages.length > 1 ? 'flex' : 'none';
+    
+    // جلوگیری از اسکرول در بک‌گراند
+    document.body.style.overflow = 'hidden';
 }
 
 // بستن مودال
 function closeModal() {
-    document.getElementById('imageModal').style.display = 'none';
+    const modal = document.getElementById('imageModal');
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }, 400);
 }
 
 // تصویر قبلی در مودال
 function modalPrevImage() {
     if (modalImages.length <= 1) return;
-    currentModalIndex = (currentModalIndex - 1 + modalImages.length) % modalImages.length;
-    openModal(currentModalIndex);
+    
+    const modalImage = document.getElementById('modalImage');
+    const modalCounter = document.getElementById('modalCounter');
+    
+    // انیمیشن خروج
+    modalImage.style.opacity = '0';
+    modalImage.style.transform = 'scale(0.95)';
+    
+    setTimeout(() => {
+        currentModalIndex = (currentModalIndex - 1 + modalImages.length) % modalImages.length;
+        modalImage.src = modalImages[currentModalIndex];
+        modalCounter.textContent = `${currentModalIndex + 1} از ${modalImages.length}`;
+        
+        // انیمیشن ورود
+        modalImage.style.opacity = '1';
+        modalImage.style.transform = 'scale(1)';
+    }, 150);
 }
 
 // تصویر بعدی در مودال
 function modalNextImage() {
     if (modalImages.length <= 1) return;
-    currentModalIndex = (currentModalIndex + 1) % modalImages.length;
-    openModal(currentModalIndex);
+    
+    const modalImage = document.getElementById('modalImage');
+    const modalCounter = document.getElementById('modalCounter');
+    
+    // انیمیشن خروج
+    modalImage.style.opacity = '0';
+    modalImage.style.transform = 'scale(0.95)';
+    
+    setTimeout(() => {
+        currentModalIndex = (currentModalIndex + 1) % modalImages.length;
+        modalImage.src = modalImages[currentModalIndex];
+        modalCounter.textContent = `${currentModalIndex + 1} از ${modalImages.length}`;
+        
+        // انیمیشن ورود
+        modalImage.style.opacity = '1';
+        modalImage.style.transform = 'scale(1)';
+    }, 150);
 }
 
 // نمایش دکمه 3D در صورت وجود
@@ -98,7 +141,7 @@ function createImageGallery(images) {
     }
 
     images.forEach((img, idx) => {
-        mainWrapper.innerHTML += `<div class='swiper-slide'><img src='${img}' alt='تصویر ${idx+1}' class='main-image' onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>تصویری در دسترس نیست</div>'"></div>`;
+        mainWrapper.innerHTML += `<div class='swiper-slide'><img src='${img}' alt='تصویر ${idx+1}' class='main-image' onclick='openModal(${idx})' onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>تصویری در دسترس نیست</div>'"></div>`;
         thumbWrapper.innerHTML += `<div class='swiper-slide'><img src='${img}' alt='تصویر کوچک ${idx+1}' class='thumbnail'></div>`;
     });
 

@@ -2,10 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const path = require('path');
 const { readUsers } = require('./auth');
 
 const plansFilePath = path.join(__dirname, '../data/plans.json');
+const usersFilePath = path.join(__dirname, '../data/users.json');
 
 // خواندن فایل plans.json
 async function readPlans() {
@@ -45,6 +47,7 @@ async function syncPlansWithUsers() {
           updated_at: new Date().toISOString()
         };
         hasChanges = true;
+        console.log(`کاربر جدید ${user.username} به plans اضافه شد`);
       }
     }
     
@@ -54,18 +57,60 @@ async function syncPlansWithUsers() {
       if (!currentUsernames.includes(username)) {
         delete plans[username];
         hasChanges = true;
+        console.log(`کاربر ${username} از plans حذف شد`);
       }
     }
     
     // اگر تغییری ایجاد شده، فایل را ذخیره کن
     if (hasChanges) {
       await writePlans(plans);
+      console.log('فایل plans.json به‌روزرسانی شد');
     }
     
     return plans;
   } catch (error) {
     console.error('خطا در هماهنگ‌سازی plans با users:', error);
     throw error;
+  }
+}
+
+// رصد تغییرات فایل users.json و همگام‌سازی خودکار
+function startFileWatcher() {
+  try {
+    // بررسی وجود فایل قبل از شروع رصد
+    if (!fsSync.existsSync(usersFilePath)) {
+      console.log('فایل users.json موجود نیست، رصدگر منتظر ایجاد فایل است...');
+    }
+
+    // رصد تغییرات فایل users.json
+    const watcher = fsSync.watch(usersFilePath, { persistent: true }, async (eventType, filename) => {
+      if (eventType === 'change' || eventType === 'rename') {
+        console.log(`تغییر در فایل users.json تشخیص داده شد (${eventType})`);
+        
+        // کمی تاخیر برای اطمینان از تکمیل نوشتن فایل
+        setTimeout(async () => {
+          try {
+            await syncPlansWithUsers();
+            console.log('همگام‌سازی خودکار plans با users انجام شد');
+          } catch (error) {
+            console.error('خطا در همگام‌سازی خودکار:', error);
+          }
+        }, 100);
+      }
+    });
+
+    console.log('رصدگر فایل users.json شروع شد - plans به صورت خودکار همگام‌سازی می‌شود');
+    
+    // همگام‌سازی اولیه
+    syncPlansWithUsers().then(() => {
+      console.log('همگام‌سازی اولیه plans انجام شد');
+    }).catch(error => {
+      console.error('خطا در همگام‌سازی اولیه:', error);
+    });
+
+    return watcher;
+  } catch (error) {
+    console.error('خطا در شروع رصدگر فایل:', error);
   }
 }
 
@@ -160,6 +205,9 @@ router.post('/plans/sync', async (req, res) => {
   }
 });
 
+// شروع خودکار رصدگر فایل
+const fileWatcher = startFileWatcher();
+
 module.exports = {
   router,
   readPlans,
@@ -167,5 +215,7 @@ module.exports = {
   syncPlansWithUsers,
   getUserLevel,
   setUserLevel,
-  getAllPlans
+  getAllPlans,
+  startFileWatcher,
+  fileWatcher
 };

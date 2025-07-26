@@ -17,7 +17,7 @@ const { router: adminTicketsRouter } = require('./modules/admin-tickets');
 const { router: appointmentsRouter } = require('./modules/appointments');
 const { router: ticketingRouter } = require('./modules/ticketing');
 const { router: signupRouter } = require('./modules/signup');
-const { router: plansRouter } = require('./modules/plans');
+const { router: plansRouter, checkUserLimit, incrementUserProductCount } = require('./modules/plans');
 const authModule = require('./modules/auth');
 const { router: requests3dRouter } = require('./modules/requests-3d');
 

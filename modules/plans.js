@@ -67,22 +67,40 @@ async function initializeUserLevels() {
     }
 }
 
+// محاسبه تعداد واقعی محصولات کاربر
+async function calculateUserProductCount(username) {
+    try {
+        const userProducts = await readUserProducts(username);
+        return userProducts.products ? userProducts.products.length : 0;
+    } catch (error) {
+        return 0;
+    }
+}
+
 // بررسی محدودیت کاربر
 async function checkUserLimit(username) {
     const users = await readUsers();
-    const user = users.find(u => u.username === username);
+    const userIndex = users.findIndex(u => u.username === username);
 
-    if (!user || !user.profileCompleted) {
+    if (userIndex === -1 || !users[userIndex].profileCompleted) {
         return { canCreate: false, error: 'پروفایل شما تکمیل نشده است' };
     }
 
-    // اطمینان از وجود level
-    if (!user.hasOwnProperty('level')) {
-        user.level = 0;
-        user.totalProductsCreated = 0;
+    // اطمینان از وجود level و همگام‌سازی با تعداد واقعی محصولات
+    if (!users[userIndex].hasOwnProperty('level')) {
+        users[userIndex].level = 0;
+        users[userIndex].totalProductsCreated = await calculateUserProductCount(username);
         await writeUsers(users);
+    } else {
+        // همگام‌سازی تعداد محصولات با فایل
+        const actualCount = await calculateUserProductCount(username);
+        if (users[userIndex].totalProductsCreated !== actualCount) {
+            users[userIndex].totalProductsCreated = actualCount;
+            await writeUsers(users);
+        }
     }
 
+    const user = users[userIndex];
     const userPlan = PLANS[user.level];
     const totalCreated = user.totalProductsCreated || 0;
 
@@ -186,12 +204,17 @@ router.get('/all-plans', async (req, res) => {
     }
 });
 
-// راه‌اندازی اولیه
-initializeUserLevels();
+// راه‌اندازی اولیه - اجرا در هر بار لود شدن ماژول
+initializeUserLevels().then(() => {
+    console.log('User levels initialized successfully');
+}).catch(error => {
+    console.error('Error initializing user levels:', error);
+});
 
 module.exports = {
     router,
     checkUserLimit,
     incrementUserProductCount,
-    initializeUserLevels
+    initializeUserLevels,
+    calculateUserProductCount
 };

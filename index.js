@@ -17,6 +17,7 @@ const adminTicketsRouter = require('./modules/admin-tickets');
 const appointmentsRouter = require('./modules/appointments');
 const ticketingRouter = require('./modules/ticketing');
 const signupRouter = require('./modules/signup'); // Added signup router
+const plansModule = require('./modules/plans');
 
 const app = express();
 const port = 3000;
@@ -65,6 +66,7 @@ app.use('/api/admin/tickets', adminTicketsRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/ticketing', ticketingRouter);
 app.use('/api/requests-3d', require('./modules/requests-3d'));
+app.use('/api', plansModule.router);
 
 // Serve HTML files
 app.get('/editor', (req, res) => {

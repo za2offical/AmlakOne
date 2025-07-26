@@ -275,11 +275,13 @@ body {
 
 .image-gallery {
     padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 .main-image {
     width: 100%;
-    height: 400px;
+    height: 450px;
     object-fit: contain;
     border-radius: 8px;
     margin-bottom: 15px;
@@ -344,14 +346,14 @@ body {
 
 .detail-card {
     text-align: center;
-    padding: 20px;
+    padding: 15px;
     background-color: #f8f9fa;
     border-radius: 8px;
     box-shadow: 
-        0 0 20px rgba(124, 58, 237, 0.15),
-        0 0 40px rgba(124, 58, 237, 0.08),
-        0 2px 8px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(124, 58, 237, 0.12);
+        0 0 15px rgba(124, 58, 237, 0.12),
+        0 0 30px rgba(124, 58, 237, 0.06),
+        0 2px 6px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(124, 58, 237, 0.1);
 }
 
 .facility-card {
@@ -582,21 +584,21 @@ body {
 .pricing-grid .detail-card {
     background-color: #f8f9fa;
     border-radius: 8px;
-    padding: 20px;
+    padding: 15px;
     text-align: center;
     box-shadow: 
-        0 0 20px rgba(59, 130, 246, 0.12),
-        0 0 40px rgba(59, 130, 246, 0.06),
-        0 2px 8px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(59, 130, 246, 0.1);
+        0 0 15px rgba(59, 130, 246, 0.1),
+        0 0 30px rgba(59, 130, 246, 0.05),
+        0 2px 6px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(59, 130, 246, 0.08);
 }
 
 .pricing-grid .detail-card.conversion-available {
     box-shadow: 
-        0 0 20px rgba(124, 58, 237, 0.15),
-        0 0 40px rgba(124, 58, 237, 0.08),
-        0 2px 8px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(124, 58, 237, 0.12);
+        0 0 15px rgba(124, 58, 237, 0.12),
+        0 0 30px rgba(124, 58, 237, 0.06),
+        0 2px 6px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(124, 58, 237, 0.1);
 }
 
 .conversion-info .detail-value {

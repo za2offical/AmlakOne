@@ -1,16 +1,444 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AmlakOne - سیستم مدیریت املاک</title>
-    <link rel="icon" type="image/jpeg" href="./AmlakOne-logo.jpg">
-    <link rel="shortcut icon" type="image/jpeg" href="./AmlakOne-logo.jpg">
-    <meta name="description" content="سیستم جامع مدیریت املاک">
-    <meta name="theme-color" content="#3b82f6">
+    <title>AmlakOne - The Future of Real Estate</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <h1>خوش آمدید به AmlakOne</h1>
-    <p>سیستم مدیریت املاک</p>
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="preloader-content">
+            <div class="logo-container">
+                <h1 class="preloader-logo">AmlakOne</h1>
+                <div class="loading-bar">
+                    <div class="loading-progress"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>AmlakOne</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="#hero" class="nav-link">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#preview" class="nav-link">Preview</a>
+                <a href="#ai-action" class="nav-link">AI Demo</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </div>
+            <div class="nav-actions">
+                <button id="theme-toggle" class="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="nav-cta">Get Started</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero">
+        <div class="particles-container">
+            <canvas id="particles-canvas"></canvas>
+        </div>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    <span class="title-line">The Future of</span>
+                    <span class="title-line gradient-text">Real Estate</span>
+                    <span class="title-line">File Management is Here</span>
+                </h1>
+                <p class="hero-subtitle">AI-powered. 3D-ready. Agent-friendly.</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary">
+                        <span>Get Started</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-play"></i>
+                        <span>See Demo</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-arrow">
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Powerful Features</h2>
+                <p class="section-subtitle">Everything you need to revolutionize your real estate workflow</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card" data-feature="1">
+                    <div class="feature-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h3>Smart File Management</h3>
+                    <p>Organize and access your property files with AI-powered categorization and instant search.</p>
+                </div>
+                <div class="feature-card" data-feature="2">
+                    <div class="feature-icon">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <h3>AI Image-to-3D Mapper</h3>
+                    <p>Transform 2D property images into immersive 3D models with our advanced AI technology.</p>
+                </div>
+                <div class="feature-card" data-feature="3">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>Appointment Booking</h3>
+                    <p>Streamline client meetings with intelligent scheduling and automated reminders.</p>
+                </div>
+                <div class="feature-card" data-feature="4">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI Chat Assistant</h3>
+                    <p>Get instant answers about properties, market trends, and client preferences.</p>
+                </div>
+                <div class="feature-card" data-feature="5">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Analytics Dashboard</h3>
+                    <p>Track performance metrics and gain insights with comprehensive analytics.</p>
+                </div>
+                <div class="feature-card" data-feature="6">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Powerful Search & Filters</h3>
+                    <p>Find exactly what you need with advanced search capabilities and smart filters.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Preview Section -->
+    <section id="preview" class="preview">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">See AmlakOne in Action</h2>
+                <p class="section-subtitle">Experience the future of real estate management</p>
+            </div>
+            <div class="preview-container">
+                <div class="device-mockup laptop">
+                    <div class="device-screen">
+                        <div class="mockup-interface">
+                            <div class="interface-header">
+                                <div class="interface-tabs">
+                                    <div class="tab active" data-tab="dashboard">Dashboard</div>
+                                    <div class="tab" data-tab="properties">Properties</div>
+                                    <div class="tab" data-tab="analytics">Analytics</div>
+                                </div>
+                            </div>
+                            <div class="interface-content">
+                                <div class="tab-content active" id="dashboard">
+                                    <div class="dashboard-grid">
+                                        <div class="dashboard-card">
+                                            <h4>Total Properties</h4>
+                                            <div class="metric">1,247</div>
+                                        </div>
+                                        <div class="dashboard-card">
+                                            <h4>Active Listings</h4>
+                                            <div class="metric">89</div>
+                                        </div>
+                                        <div class="dashboard-card">
+                                            <h4>3D Models</h4>
+                                            <div class="metric">156</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-content" id="properties">
+                                    <div class="properties-list">
+                                        <div class="property-item">
+                                            <div class="property-image"></div>
+                                            <div class="property-info">
+                                                <h5>Modern Villa</h5>
+                                                <p>$850,000</p>
+                                            </div>
+                                        </div>
+                                        <div class="property-item">
+                                            <div class="property-image"></div>
+                                            <div class="property-info">
+                                                <h5>Downtown Apartment</h5>
+                                                <p>$425,000</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-content" id="analytics">
+                                    <div class="analytics-chart">
+                                        <div class="chart-bars">
+                                            <div class="bar" style="height: 60%"></div>
+                                            <div class="bar" style="height: 80%"></div>
+                                            <div class="bar" style="height: 45%"></div>
+                                            <div class="bar" style="height: 90%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="device-mockup phone">
+                    <div class="device-screen">
+                        <div class="mobile-interface">
+                            <div class="mobile-header">
+                                <h4>AmlakOne Mobile</h4>
+                            </div>
+                            <div class="mobile-content">
+                                <div class="mobile-card">
+                                    <i class="fas fa-home"></i>
+                                    <span>Properties</span>
+                                </div>
+                                <div class="mobile-card">
+                                    <i class="fas fa-camera"></i>
+                                    <span>3D Scan</span>
+                                </div>
+                                <div class="mobile-card">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>Schedule</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI in Action Section -->
+    <section id="ai-action" class="ai-action">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">AI in Action</h2>
+                <p class="section-subtitle">Watch how our AI transforms 2D images into 3D models</p>
+                <div class="ai-badge">
+                    <span class="shimmer">Powered by AI</span>
+                </div>
+            </div>
+            <div class="ai-steps">
+                <div class="step" data-step="1">
+                    <div class="step-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <div class="step-content">
+                        <h3>Upload Image</h3>
+                        <p>Simply upload your property photos</p>
+                    </div>
+                    <div class="step-tooltip">
+                        <span>Supports JPG, PNG, HEIC formats</span>
+                    </div>
+                </div>
+                <div class="step-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="step-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="step-content">
+                        <h3>AI Analysis</h3>
+                        <p>Our AI analyzes depth and structure</p>
+                    </div>
+                    <div class="step-tooltip">
+                        <span>Advanced computer vision algorithms</span>
+                    </div>
+                </div>
+                <div class="step-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-icon">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="step-content">
+                        <h3>3D Generation</h3>
+                        <p>Creates immersive 3D model</p>
+                    </div>
+                    <div class="step-tooltip">
+                        <span>Ready for VR/AR viewing</span>
+                    </div>
+                </div>
+                <div class="step-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="step" data-step="4">
+                    <div class="step-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="step-content">
+                        <h3>View & Share</h3>
+                        <p>Explore and share with clients</p>
+                    </div>
+                    <div class="step-tooltip">
+                        <span>Interactive 360° viewing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <p class="section-subtitle">Everything you need to know about AmlakOne</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>How accurate is the AI 3D conversion?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our AI achieves 95%+ accuracy in 3D model generation, using advanced computer vision algorithms trained on millions of property images.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>Is my data secure with AmlakOne?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Absolutely. We use enterprise-grade encryption, comply with GDPR, and store all data in secure, certified data centers.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>Can I integrate AmlakOne with my existing CRM?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes! AmlakOne offers seamless integration with popular CRM systems including Salesforce, HubSpot, and custom APIs.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>What file formats do you support?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We support all major image formats (JPG, PNG, HEIC, RAW) and can export 3D models in various formats including OBJ, FBX, and GLTF.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Ready to Transform Your Business?</h2>
+                <p class="section-subtitle">Join the waitlist and be among the first to experience AmlakOne</p>
+            </div>
+            <div class="contact-content">
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" required>
+                        <label for="name">Full Name</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="email" name="email" required>
+                        <label for="email">Email Address</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="company" name="company">
+                        <label for="company">Company (Optional)</label>
+                    </div>
+                    <div class="form-group">
+                        <select id="interest" name="interest" required>
+                            <option value="">Select your interest</option>
+                            <option value="individual">Individual Agent</option>
+                            <option value="team">Real Estate Team</option>
+                            <option value="brokerage">Brokerage</option>
+                            <option value="developer">Property Developer</option>
+                        </select>
+                        <label for="interest">I'm interested as</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary form-submit">
+                        <span>Join Waitlist</span>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                    <div class="form-success" id="formSuccess">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Thank you! You're on the waitlist.</span>
+                    </div>
+                </form>
+                <div class="contact-social">
+                    <h3>Connect with us</h3>
+                    <div class="social-links">
+                        <a href="#" class="social-link">
+                            <i class="fab fa-telegram"></i>
+                            <span>Telegram</span>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>AmlakOne</h3>
+                    <p>The future of real estate file management</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#">Features</a>
+                        <a href="#">Pricing</a>
+                        <a href="#">API</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="#">About</a>
+                        <a href="#">Careers</a>
+                        <a href="#">Contact</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="#">Privacy</a>
+                        <a href="#">Terms</a>
+                        <a href="#">Security</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 AmlakOne. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>

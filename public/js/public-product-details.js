@@ -396,40 +396,21 @@ async function loadProductDetails() {
 function updateOpenGraphMeta(product) {
     const title = product.type || 'جزئیات ملک';
     const description = product.description || 'مشاهده جزئیات کامل این ملک';
-    let imageUrl = '/AmlakOne-logo.jpg'; // Default image
-
-    // Use first product image if available
-    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-        // اطمینان از اینکه تصویر معتبر است
-        const firstImage = product.images[0];
-        if (firstImage && firstImage.trim() !== '') {
-            imageUrl = firstImage;
-        }
-    }
-
-    // Make sure imageUrl is absolute
-    const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : window.location.origin + imageUrl;
+    const logoUrl = window.location.origin + '/AmlakOne-logo.jpg';
 
     // Update or create meta tags
     updateMetaTag('og:title', title + ' - AmlakOne');
     updateMetaTag('og:description', description);
-    updateMetaTag('og:image', fullImageUrl);
+    updateMetaTag('og:image', logoUrl);
     updateMetaTag('og:url', window.location.href);
     updateMetaTag('og:type', 'website');
     updateMetaTag('twitter:card', 'summary_large_image');
     updateMetaTag('twitter:title', title + ' - AmlakOne');
     updateMetaTag('twitter:description', description);
-    updateMetaTag('twitter:image', fullImageUrl);
+    updateMetaTag('twitter:image', logoUrl);
 
     // Update page title
     document.title = title + ' - AmlakOne';
-    
-    console.log('Open Graph updated:', {
-        title: title + ' - AmlakOne',
-        description: description,
-        imageUrl: fullImageUrl,
-        productImages: product.images
-    });
 }
 
 function updateMetaTag(property, content) {

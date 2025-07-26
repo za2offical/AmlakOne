@@ -177,7 +177,7 @@
 .nav-link.special-ai .special-badge {
   position: absolute;
   top: -8px;
-  right: -8px;
+  left: -8px;
   background: #fde047;
   color: #854d0e;
   font-size: 0.5rem;
@@ -227,8 +227,8 @@
   border-radius: 2px;
   border: 1px solid #fff;
   box-shadow: 0 1px 2px rgba(253, 224, 71, 0.5);
-  margin-right: auto;
-  margin-left: 1rem;
+  margin-left: auto;
+  margin-right: 1rem;
   line-height: 1.1;
   display: inline-block;
   min-width: auto;

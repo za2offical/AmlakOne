@@ -348,10 +348,10 @@ body {
     background-color: #f8f9fa;
     border-radius: 8px;
     box-shadow: 
-        0 0 12px rgba(124, 58, 237, 0.1),
-        0 0 25px rgba(124, 58, 237, 0.05),
+        0 0 12px rgba(59, 130, 246, 0.1),
+        0 0 25px rgba(59, 130, 246, 0.05),
         0 2px 5px rgba(0, 0, 0, 0.03);
-    border: 1px solid rgba(124, 58, 237, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.08);
 }
 
 .facility-card {
@@ -593,10 +593,10 @@ body {
 
 .pricing-grid .detail-card.conversion-available {
     box-shadow: 
-        0 0 12px rgba(124, 58, 237, 0.1),
-        0 0 25px rgba(124, 58, 237, 0.05),
+        0 0 12px rgba(59, 130, 246, 0.1),
+        0 0 25px rgba(59, 130, 246, 0.05),
         0 2px 5px rgba(0, 0, 0, 0.03);
-    border: 1px solid rgba(124, 58, 237, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.08);
 }
 
 .conversion-info .detail-value {

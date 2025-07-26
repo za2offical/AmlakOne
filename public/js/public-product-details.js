@@ -240,12 +240,81 @@ function displayPricing(product) {
     pricingSection.style.display = hasPricing ? 'block' : 'none';
 }
 
+// دریافت اطلاعات کاربر
+async function getUserInfo(username) {
+    try {
+        const response = await fetch('/api/public-products/user-info/' + username);
+        if (response.ok) {
+            const userData = await response.json();
+            const displayInfo = {
+                name: userData.firstName && userData.lastName ? 
+                    `${userData.firstName} ${userData.lastName}` : username,
+                phone: userData.phone || null
+            };
+            return displayInfo;
+        }
+        return { name: username, phone: null };
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        return { name: username, phone: null };
+    }
+}
+
+// نمایش مودال تایید تماس
+function showCallConfirmModal(phoneNumber) {
+    const modal = document.getElementById('callConfirmModal');
+    const modalPhoneNumber = document.getElementById('modalPhoneNumber');
+    const confirmBtn = document.getElementById('confirmCallBtn');
+    
+    modalPhoneNumber.textContent = phoneNumber;
+    confirmBtn.onclick = () => {
+        window.location.href = `tel:${phoneNumber}`;
+        closeCallModal();
+    };
+    
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+}
+
+// بستن مودال تایید تماس
+function closeCallModal() {
+    const modal = document.getElementById('callConfirmModal');
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+
+// رفتن به صفحه اصلی
+function goHome() {
+    window.location.href = '/';
+}
+
 // نمایش اطلاعات محصول
-function displayProduct(product) {
+async function displayProduct(product) {
     currentProduct = product;
 
-    // تنظیم اطلاعات صاحب
-    document.getElementById('ownerInfo').textContent = `توسط ${product.owner}`;
+    // دریافت اطلاعات کاربر
+    const userInfo = await getUserInfo(product.owner);
+
+    // به‌روزرسانی عنوان صفحه
+    document.getElementById('pageTitle').textContent = userInfo.name;
+
+    // نمایش آیکون و شماره تماس در صورت وجود
+    const contactElement = document.getElementById('userContact');
+    const phoneNumberElement = document.getElementById('phoneNumber');
+    
+    if (userInfo.phone) {
+        contactElement.style.display = 'flex';
+        phoneNumberElement.textContent = userInfo.phone;
+        contactElement.onclick = () => {
+            showCallConfirmModal(userInfo.phone);
+        };
+    } else {
+        contactElement.style.display = 'none';
+    }
     
     // تنظیم دکمه بازگشت
     document.getElementById('backButton').href = `/${product.owner}/products`;
@@ -369,4 +438,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.modal-content').onclick = function(event) {
         event.stopPropagation();
     };
+
+    // بستن مودال تماس با کلیک خارج از آن
+    const callModal = document.getElementById('callConfirmModal');
+    if (callModal) {
+        callModal.onclick = function(event) {
+            if (event.target === callModal) {
+                closeCallModal();
+            }
+        };
+    }
 });

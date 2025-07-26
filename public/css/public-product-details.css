@@ -10,11 +10,225 @@ body {
     text-align: right;
 }
 
+/* Header Styles */
+.header {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.user-contact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.user-contact:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.contact-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.contact-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.phone-number {
+    font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.home-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    backdrop-filter: blur(10px);
+}
+
+.home-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.home-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Call Modal Styles */
+.call-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.call-modal.show {
+    opacity: 1;
+}
+
+.call-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.call-modal.show .call-modal-content {
+    transform: scale(1);
+}
+
+.call-modal-header {
+    margin-bottom: 1.5rem;
+}
+
+.call-icon-large {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.call-icon-large svg {
+    width: 30px;
+    height: 30px;
+    color: white;
+}
+
+.call-modal-header h3 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.25rem;
+}
+
+.call-modal-body p {
+    margin-bottom: 1rem;
+    color: #6b7280;
+}
+
+.phone-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 1rem;
+    border-radius: 10px;
+    margin: 1rem 0;
+    letter-spacing: 1px;
+}
+
+.call-modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.call-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.confirm-call {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.confirm-call:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+}
+
+.confirm-call svg {
+    width: 18px;
+    height: 18px;
+}
+
+.cancel-call {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.cancel-call:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
+}
+
 .product-container {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     overflow: hidden;
+    max-width: 1200px;
+    margin: 1rem auto 0;
+    padding: 2rem;
 }
 
 .product-header {
@@ -466,13 +680,13 @@ body {
     .pricing-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .view-3d-button {
         font-size: 16px;
         padding: 14px 28px;
         gap: 10px;
     }
-    
+
     .view-3d-icon {
         width: 28px;
         height: 28px;

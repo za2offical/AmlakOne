@@ -400,13 +400,16 @@ function updateOpenGraphMeta(product) {
         imageUrl = product.images[0];
     }
 
+    // Make sure imageUrl is absolute
+    const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : window.location.origin + imageUrl;
+
     // Update or create meta tags
     updateMetaTag('og:title', title + ' - AmlakOne');
     updateMetaTag('og:description', description);
-    updateMetaTag('og:image', window.location.origin + imageUrl);
+    updateMetaTag('og:image', fullImageUrl);
     updateMetaTag('twitter:title', title + ' - AmlakOne');
     updateMetaTag('twitter:description', description);
-    updateMetaTag('twitter:image', window.location.origin + imageUrl);
+    updateMetaTag('twitter:image', fullImageUrl);
 
     // Update page title
     document.title = title + ' - AmlakOne';

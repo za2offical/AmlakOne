@@ -1,11 +1,15 @@
 // سیستم پیش‌کش محصولات
 class PreCacheManager {
     constructor() {
-        this.cacheName = 'amlakone-pre-cache-v1.0.0';
+        this.cacheVersion = Date.now();
+        this.cacheName = `amlakone-pre-cache-v${this.cacheVersion}`;
+        this.cacheExpiryTime = 48 * 60 * 60 * 1000; // 48 ساعت
         this.init();
     }
 
     async init() {
+        await this.checkCacheExpiry();
+        
         // گوش دادن به تغییرات وضعیت اتصال
         window.addEventListener('online', () => {
             this.preCachePopularProducts();
@@ -18,6 +22,31 @@ class PreCacheManager {
         setInterval(() => {
             this.autoStartPreCaching();
         }, 30 * 60 * 1000); // 30 دقیقه
+        
+        // بررسی انقضای کش هر 6 ساعت
+        setInterval(() => {
+            this.checkCacheExpiry();
+        }, 6 * 60 * 60 * 1000);
+    }
+
+    // بررسی انقضای کش
+    async checkCacheExpiry() {
+        try {
+            const lastCacheTime = localStorage.getItem('pre_cache_timestamp');
+            const now = Date.now();
+            
+            if (lastCacheTime && (now - parseInt(lastCacheTime)) > this.cacheExpiryTime) {
+                console.log('Pre-cache expired, clearing...');
+                await this.clearPreCache();
+                localStorage.setItem('pre_cache_timestamp', now.toString());
+                // بازسازی کش جدید
+                await this.preCachePopularProducts();
+            } else if (!lastCacheTime) {
+                localStorage.setItem('pre_cache_timestamp', now.toString());
+            }
+        } catch (error) {
+            console.error('Error checking pre-cache expiry:', error);
+        }
     }
 
     // شروع خودکار پیش‌کش

@@ -1,15 +1,41 @@
 // سیستم کش هوشمند بر اساس رفتار کاربر
 class SmartCacheManager {
     constructor() {
-        this.cacheName = 'amlakone-smart-cache-v1.0.0';
+        this.cacheVersion = Date.now();
+        this.cacheName = `amlakone-smart-cache-v${this.cacheVersion}`;
         this.userBehavior = {};
+        this.cacheExpiryTime = 48 * 60 * 60 * 1000; // 48 ساعت
         this.init();
     }
 
     async init() {
+        await this.checkCacheExpiry();
         this.loadUserBehavior();
         this.setupEventListeners();
         this.startSmartCaching();
+        
+        // بررسی انقضای کش هر 6 ساعت
+        setInterval(() => {
+            this.checkCacheExpiry();
+        }, 6 * 60 * 60 * 1000);
+    }
+
+    // بررسی انقضای کش
+    async checkCacheExpiry() {
+        try {
+            const lastCacheTime = localStorage.getItem('smart_cache_timestamp');
+            const now = Date.now();
+            
+            if (lastCacheTime && (now - parseInt(lastCacheTime)) > this.cacheExpiryTime) {
+                console.log('Smart cache expired, clearing...');
+                await this.clearSmartCache();
+                localStorage.setItem('smart_cache_timestamp', now.toString());
+            } else if (!lastCacheTime) {
+                localStorage.setItem('smart_cache_timestamp', now.toString());
+            }
+        } catch (error) {
+            console.error('Error checking smart cache expiry:', error);
+        }
     }
 
     // بارگذاری رفتار کاربر از localStorage

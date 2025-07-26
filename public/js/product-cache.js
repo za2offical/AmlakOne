@@ -1,15 +1,42 @@
 // مدیریت کش محصولات برای کارکرد آفلاین
 class ProductCacheManager {
     constructor() {
-        this.cacheName = 'amlakone-products-v1.0.0';
+        this.cacheVersion = Date.now();
+        this.cacheName = `amlakone-products-v${this.cacheVersion}`;
+        this.cacheExpiryTime = 48 * 60 * 60 * 1000; // 48 ساعت
         this.init();
     }
 
     async init() {
+        await this.checkCacheExpiry();
+        
         // گوش دادن به تغییرات وضعیت اتصال
         window.addEventListener('online', () => {
             this.syncOfflineData();
         });
+        
+        // بررسی انقضای کش هر 6 ساعت
+        setInterval(() => {
+            this.checkCacheExpiry();
+        }, 6 * 60 * 60 * 1000);
+    }
+
+    // بررسی انقضای کش
+    async checkCacheExpiry() {
+        try {
+            const lastCacheTime = localStorage.getItem('product_cache_timestamp');
+            const now = Date.now();
+            
+            if (lastCacheTime && (now - parseInt(lastCacheTime)) > this.cacheExpiryTime) {
+                console.log('Product cache expired, clearing...');
+                await this.clearProductCache();
+                localStorage.setItem('product_cache_timestamp', now.toString());
+            } else if (!lastCacheTime) {
+                localStorage.setItem('product_cache_timestamp', now.toString());
+            }
+        } catch (error) {
+            console.error('Error checking product cache expiry:', error);
+        }
     }
 
     // کش کردن محصولات

@@ -29,7 +29,7 @@ function generateToken(user) {
     return jwt.sign(
         { username: user.username },
         JWT_SECRET,
-        { expiresIn: '24h' }
+        { expiresIn: '30d' } // 30 روز = 1 ماه
     );
 }
 

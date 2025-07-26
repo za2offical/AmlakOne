@@ -1,6 +1,8 @@
-const CACHE_NAME = 'amlakone-v1.0.0';
-const STATIC_CACHE = 'amlakone-static-v1.0.0';
-const DYNAMIC_CACHE = 'amlakone-dynamic-v1.0.0';
+const CACHE_VERSION = Date.now(); // تولید ورژن منحصر به فرد
+const CACHE_NAME = `amlakone-v${CACHE_VERSION}`;
+const STATIC_CACHE = `amlakone-static-v${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `amlakone-dynamic-v${CACHE_VERSION}`;
+const CACHE_EXPIRY_TIME = 48 * 60 * 60 * 1000; // 48 ساعت به میلی‌ثانیه
 
 // فایل‌های استاتیک که باید کش شوند
 const STATIC_FILES = [
@@ -75,15 +77,88 @@ const API_CACHE = [
     '/api/ticketing'
 ];
 
+// بررسی انقضای کش
+async function checkCacheExpiry() {
+    try {
+        const cacheMetadata = await getCacheMetadata();
+        const now = Date.now();
+        
+        for (const [cacheName, metadata] of Object.entries(cacheMetadata)) {
+            if (metadata.timestamp && (now - metadata.timestamp) > CACHE_EXPIRY_TIME) {
+                console.log(`Cache expired: ${cacheName}, deleting...`);
+                await caches.delete(cacheName);
+                await removeCacheMetadata(cacheName);
+            }
+        }
+    } catch (error) {
+        console.error('Error checking cache expiry:', error);
+    }
+}
+
+// ذخیره metadata کش
+async function setCacheMetadata(cacheName, data = {}) {
+    try {
+        const metadata = await getCacheMetadata();
+        metadata[cacheName] = {
+            timestamp: Date.now(),
+            ...data
+        };
+        
+        const metadataCache = await caches.open('cache-metadata');
+        const response = new Response(JSON.stringify(metadata), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+        await metadataCache.put('/cache-metadata', response);
+    } catch (error) {
+        console.error('Error setting cache metadata:', error);
+    }
+}
+
+// دریافت metadata کش
+async function getCacheMetadata() {
+    try {
+        const metadataCache = await caches.open('cache-metadata');
+        const response = await metadataCache.match('/cache-metadata');
+        
+        if (response) {
+            return await response.json();
+        }
+        return {};
+    } catch (error) {
+        console.error('Error getting cache metadata:', error);
+        return {};
+    }
+}
+
+// حذف metadata کش
+async function removeCacheMetadata(cacheName) {
+    try {
+        const metadata = await getCacheMetadata();
+        delete metadata[cacheName];
+        
+        const metadataCache = await caches.open('cache-metadata');
+        const response = new Response(JSON.stringify(metadata), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+        await metadataCache.put('/cache-metadata', response);
+    } catch (error) {
+        console.error('Error removing cache metadata:', error);
+    }
+}
+
 // نصب Service Worker
 self.addEventListener('install', (event) => {
     console.log('Service Worker installing...');
     
     event.waitUntil(
-        caches.open(STATIC_CACHE)
+        checkCacheExpiry()
+            .then(() => caches.open(STATIC_CACHE))
             .then((cache) => {
                 console.log('Caching static files...');
                 return cache.addAll(STATIC_FILES);
+            })
+            .then(() => {
+                return setCacheMetadata(STATIC_CACHE);
             })
             .then(() => {
                 console.log('Static files cached successfully');
@@ -105,7 +180,11 @@ self.addEventListener('install', (event) => {
 async function preCacheProductsInBackground() {
     try {
         const activeUsers = ['a', 'Ali', 'alireza', 'masi', 'zii'];
-        const preCache = await caches.open('amlakone-pre-cache-v1.0.0');
+        const preCacheName = `amlakone-pre-cache-v${CACHE_VERSION}`;
+        const preCache = await caches.open(preCacheName);
+        
+        // ذخیره metadata برای پیش‌کش
+        await setCacheMetadata(preCacheName, { type: 'pre-cache' });
         
         for (const username of activeUsers) {
             try {

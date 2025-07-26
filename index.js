@@ -111,6 +111,10 @@ app.get('/requests-3d', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'requests-3d.html'));
 });
 
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'signup.html'));
+});
+
 app.get('/edit-product', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'edit-product.html'));
 });

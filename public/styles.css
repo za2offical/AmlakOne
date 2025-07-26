@@ -1,3 +1,6 @@
+/* Persian Font */
+@import url('https://fonts.googleapis.com/css2?family=Vazir:wght@300;400;500;600;700;800;900&display=swap');
+
 /* Reset and Base Styles */
 * {
     margin: 0;
@@ -24,7 +27,7 @@
     --shadow-heavy: rgba(0, 0, 0, 0.25);
     
     /* Typography */
-    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-family: 'Inter', 'Vazir', 'Tahoma', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-size-xs: 0.75rem;
     --font-size-sm: 0.875rem;
     --font-size-base: 1rem;
@@ -379,6 +382,15 @@ body {
 
 .btn-primary:hover::before {
     left: 100%;
+}
+
+/* RTL Support */
+[dir="rtl"] .btn-primary::before {
+    left: 100%;
+}
+
+[dir="rtl"] .btn-primary:hover::before {
+    left: -100%;
 }
 
 .btn-secondary {

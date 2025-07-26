@@ -1,0 +1,263 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دانلود اپلیکیشن - املاک وان</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        .download-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .download-header {
+            margin-bottom: 2rem;
+        }
+
+        .download-header h1 {
+            color: #059669;
+            margin-bottom: 1rem;
+        }
+
+        .download-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .download-options {
+            display: grid;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .download-option {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .download-option:hover {
+            border-color: #059669;
+            transform: translateY(-2px);
+        }
+
+        .download-option h3 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .download-option p {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        .download-btn {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+            width: 100%;
+        }
+
+        .download-btn:hover {
+            background: #047857;
+        }
+
+        .download-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .instructions {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: right;
+        }
+
+        .instructions h4 {
+            color: #1e40af;
+            margin-bottom: 1rem;
+        }
+
+        .instructions ol {
+            color: #374151;
+            padding-right: 1.5rem;
+        }
+
+        .instructions li {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .features {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .features h4 {
+            color: #059669;
+            margin-bottom: 1rem;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            color: #374151;
+            margin-bottom: 0.5rem;
+            padding-right: 1.5rem;
+            position: relative;
+        }
+
+        .features li:before {
+            content: "✓";
+            color: #059669;
+            font-weight: bold;
+            position: absolute;
+            right: 0;
+        }
+
+        .back-link {
+            color: #6b7280;
+            text-decoration: none;
+            margin-top: 2rem;
+            display: inline-block;
+        }
+
+        .back-link:hover {
+            color: #059669;
+        }
+
+        @media (max-width: 768px) {
+            .download-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="download-container">
+        <div class="download-header">
+            <h1>دانلود اپلیکیشن املاک وان</h1>
+            <p>با نصب اپلیکیشن املاک وان، به سرعت و راحتی به املاک دسترسی داشته باشید</p>
+        </div>
+
+        <div class="download-options">
+            <div class="download-option">
+                <h3>نصب مستقیم از مرورگر</h3>
+                <p>بهترین روش برای دسترسی سریع و آسان</p>
+                <button class="download-btn" id="installDirectBtn">نصب از مرورگر</button>
+            </div>
+
+            <div class="download-option">
+                <h3>افزودن به صفحه اصلی</h3>
+                <p>اپلیکیشن را به صفحه اصلی دستگاه خود اضافه کنید</p>
+                <button class="download-btn" id="addToHomeBtn">افزودن به صفحه اصلی</button>
+            </div>
+        </div>
+
+        <div class="features">
+            <h4>مزایای نصب اپلیکیشن:</h4>
+            <ul>
+                <li>دسترسی آفلاین کامل</li>
+                <li>سرعت بارگذاری بالا</li>
+                <li>تجربه کاربری بهتر</li>
+                <li>دریافت اعلان‌های جدید</li>
+                <li>عملکرد مشابه اپلیکیشن‌های بومی</li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h4>راهنمای نصب دستی:</h4>
+            <ol>
+                <li><strong>در کروم:</strong> منو ← نصب املاک وان</li>
+                <li><strong>در سافاری:</strong> دکمه اشتراک‌گذاری ← افزودن به صفحه اصلی</li>
+                <li><strong>در فایرفاکس:</strong> منو ← نصب</li>
+                <li><strong>در اج:</strong> منو ← اپلیکیشن‌ها ← نصب این سایت به عنوان اپلیکیشن</li>
+            </ol>
+        </div>
+
+        <a href="/" class="back-link">← بازگشت به صفحه اصلی</a>
+    </div>
+
+    <script>
+        // بررسی پشتیبانی از PWA
+        const installDirectBtn = document.getElementById('installDirectBtn');
+        const addToHomeBtn = document.getElementById('addToHomeBtn');
+
+        // نصب مستقیم
+        installDirectBtn.addEventListener('click', async () => {
+            if (window.deferredPrompt) {
+                window.deferredPrompt.prompt();
+                const { outcome } = await window.deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    alert('اپلیکیشن با موفقیت نصب شد!');
+                    window.deferredPrompt = null;
+                } else {
+                    alert('نصب لغو شد');
+                }
+            } else {
+                alert('نصب مستقیم در این مرورگر پشتیبانی نمی‌شود. از راهنمای دستی استفاده کنید.');
+            }
+        });
+
+        // افزودن به صفحه اصلی
+        addToHomeBtn.addEventListener('click', () => {
+            if (navigator.userAgent.match(/iPhone|iPad|iPod/)) {
+                alert('برای افزودن به صفحه اصلی:\n1. دکمه اشتراک‌گذاری را بزنید\n2. "افزودن به صفحه اصلی" را انتخاب کنید');
+            } else if (navigator.userAgent.match(/Android/)) {
+                alert('برای افزودن به صفحه اصلی:\n1. منوی مرورگر را باز کنید\n2. "افزودن به صفحه اصلی" را انتخاب کنید');
+            } else {
+                alert('برای افزودن به صفحه اصلی از راهنمای دستی استفاده کنید');
+            }
+        });
+
+        // بررسی اینکه آیا قبلاً نصب شده
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            window.deferredPrompt = e;
+        });
+
+        // اگر قبلاً نصب شده باشد
+        if (window.matchMedia('(display-mode: standalone)').matches || 
+            window.navigator.standalone === true) {
+            document.querySelector('.download-header p').textContent = 
+                'اپلیکیشن قبلاً نصب شده است! از آن استفاده کنید.';
+            installDirectBtn.textContent = 'نصب شده';
+            installDirectBtn.disabled = true;
+            addToHomeBtn.textContent = 'نصب شده';
+            addToHomeBtn.disabled = true;
+        }
+
+        // بررسی Service Worker
+        if (!('serviceWorker' in navigator)) {
+            installDirectBtn.textContent = 'پشتیبانی نمی‌شود';
+            installDirectBtn.disabled = true;
+        }
+    </script>
+</body>
+</html>

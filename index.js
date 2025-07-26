@@ -83,8 +83,14 @@ app.get('/create-profile', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'create-profile.html'));
 });
 
+// مسیرهای عمومی
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// صفحه دانلود PWA
+app.get('/download', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'download.html'));
 });
 
 app.get('/edit-profile', (req, res) => {

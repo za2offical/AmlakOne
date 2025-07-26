@@ -172,13 +172,45 @@ class PWAManager {
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            this.showInstallPrompt();
+            window.deferredPrompt = deferredPrompt;
+            this.scheduleInstallPrompt();
         });
 
         window.addEventListener('appinstalled', () => {
             console.log('PWA was installed');
             this.showNotification('برنامه با موفقیت نصب شد', 'success');
+            // پاک کردن تایمر نصب
+            localStorage.removeItem('install_prompt_timer');
         });
+
+        // بررسی تایمر موجود در بارگذاری صفحه
+        this.checkInstallPromptTimer();
+    }
+
+    // بررسی و برنامه‌ریزی پیام نصب
+    checkInstallPromptTimer() {
+        const lastPromptTime = localStorage.getItem('last_install_prompt');
+        const now = Date.now();
+        const twentyFourHours = 24 * 60 * 60 * 1000; // 24 ساعت
+
+        if (!lastPromptTime || (now - parseInt(lastPromptTime)) >= twentyFourHours) {
+            // اگر 24 ساعت گذشته یا اولین بار است
+            setTimeout(() => {
+                this.showInstallPrompt();
+                localStorage.setItem('last_install_prompt', now.toString());
+            }, 5000); // 5 ثانیه بعد از بارگذاری صفحه
+        }
+    }
+
+    // برنامه‌ریزی پیام نصب هر 24 ساعت
+    scheduleInstallPrompt() {
+        const twentyFourHours = 24 * 60 * 60 * 1000; // 24 ساعت
+        
+        // تنظیم تایمر برای نمایش پیام هر 24 ساعت
+        setInterval(() => {
+            this.showInstallPrompt();
+            localStorage.setItem('last_install_prompt', Date.now().toString());
+        }, twentyFourHours);
     }
 
     showInstallPrompt() {
@@ -188,7 +220,8 @@ class PWAManager {
             <div class="install-content">
                 <span>این برنامه را روی دستگاه خود نصب کنید</span>
                 <div class="install-actions">
-                    <button class="install-btn" onclick="pwaManager.installApp()">نصب</button>
+                    <button class="install-btn" onclick="pwaManager.installApp()">نصب مستقیم</button>
+                    <button class="download-btn" onclick="pwaManager.goToDownloadPage()">صفحه دانلود</button>
                     <button class="dismiss-btn" onclick="this.parentElement.parentElement.parentElement.remove()">بعداً</button>
                 </div>
             </div>
@@ -221,20 +254,28 @@ class PWAManager {
                 
                 .install-actions {
                     display: flex;
-                    gap: 10px;
+                    gap: 8px;
+                    flex-wrap: wrap;
                 }
                 
-                .install-btn, .dismiss-btn {
-                    padding: 8px 16px;
+                .install-btn, .download-btn, .dismiss-btn {
+                    padding: 8px 12px;
                     border: none;
                     border-radius: 4px;
                     cursor: pointer;
-                    font-size: 14px;
+                    font-size: 13px;
+                    flex: 1;
+                    min-width: 80px;
                 }
                 
                 .install-btn {
                     background: #ffffff;
                     color: #059669;
+                }
+                
+                .download-btn {
+                    background: #3b82f6;
+                    color: white;
                 }
                 
                 .dismiss-btn {
@@ -278,6 +319,11 @@ class PWAManager {
                 console.log('User dismissed the install prompt');
             }
         }
+    }
+
+    goToDownloadPage() {
+        // هدایت به صفحه دانلود
+        window.location.href = '/download';
     }
 
     showNotification(message, type = 'info') {

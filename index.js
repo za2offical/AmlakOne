@@ -83,6 +83,10 @@ app.get('/create-profile', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'create-profile.html'));
 });
 
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'signup.html'));
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

@@ -348,6 +348,9 @@ async function displayProduct(product) {
         document.getElementById('descriptionText').textContent = product.description;
     }
 
+    // تنظیم تصاویر برای مودال
+    modalImages = product.images && Array.isArray(product.images) ? product.images : [];
+
     // ایجاد گالری تصاویر
     createImageGallery(product.images);
 
@@ -396,8 +399,12 @@ function updateOpenGraphMeta(product) {
     let imageUrl = '/AmlakOne-logo.jpg'; // Default image
 
     // Use first product image if available
-    if (product.images && product.images.length > 0) {
-        imageUrl = product.images[0];
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+        // اطمینان از اینکه تصویر معتبر است
+        const firstImage = product.images[0];
+        if (firstImage && firstImage.trim() !== '') {
+            imageUrl = firstImage;
+        }
     }
 
     // Make sure imageUrl is absolute
@@ -407,12 +414,22 @@ function updateOpenGraphMeta(product) {
     updateMetaTag('og:title', title + ' - AmlakOne');
     updateMetaTag('og:description', description);
     updateMetaTag('og:image', fullImageUrl);
+    updateMetaTag('og:url', window.location.href);
+    updateMetaTag('og:type', 'website');
+    updateMetaTag('twitter:card', 'summary_large_image');
     updateMetaTag('twitter:title', title + ' - AmlakOne');
     updateMetaTag('twitter:description', description);
     updateMetaTag('twitter:image', fullImageUrl);
 
     // Update page title
     document.title = title + ' - AmlakOne';
+    
+    console.log('Open Graph updated:', {
+        title: title + ' - AmlakOne',
+        description: description,
+        imageUrl: fullImageUrl,
+        productImages: product.images
+    });
 }
 
 function updateMetaTag(property, content) {

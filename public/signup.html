@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت نام - املاک وان</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/signup.css">
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-form">
+            <div class="logo">
+                <h1>املاک وان</h1>
+                <p>ثبت نام در سیستم</p>
+            </div>
+
+            <!-- مرحله اول: بررسی شماره تلفن -->
+            <div id="phone-step" class="step active">
+                <h2>تایید شماره تلفن</h2>
+                <form id="phone-form">
+                    <div class="form-group">
+                        <label for="phone">شماره تلفن همراه:</label>
+                        <input type="tel" id="phone" name="phone" placeholder="09123456789" required>
+                    </div>
+                    <button type="submit" class="btn-primary">تایید شماره</button>
+                </form>
+                <div class="form-links">
+                    <a href="login.html">قبلاً ثبت نام کرده‌اید؟ ورود</a>
+                </div>
+            </div>
+
+            <!-- مرحله دوم: اطلاعات کاربر -->
+            <div id="user-step" class="step">
+                <h2>اطلاعات کاربری</h2>
+                <form id="user-form">
+                    <input type="hidden" id="verified-phone" name="phone">
+                    
+                    <div class="form-group">
+                        <label for="username">نام کاربری:</label>
+                        <input type="text" id="username" name="username" placeholder="نام کاربری (انگلیسی)" required>
+                        <small>فقط حروف انگلیسی و اعداد، بین 3 تا 20 کاراکتر</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">رمز عبور:</label>
+                        <input type="password" id="password" name="password" placeholder="رمز عبور" required>
+                        <small>حداقل 6 کاراکتر</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm-password">تکرار رمز عبور:</label>
+                        <input type="password" id="confirm-password" name="confirmPassword" placeholder="تکرار رمز عبور" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary">ثبت نام</button>
+                </form>
+
+                <div class="form-links">
+                    <button id="back-btn" class="btn-secondary">بازگشت</button>
+                </div>
+            </div>
+
+            <div id="error-message" class="error-message"></div>
+            <div id="success-message" class="success-message"></div>
+        </div>
+    </div>
+
+    <script src="js/signup.js"></script>
+</body>
+</html>

@@ -16,6 +16,7 @@ const ticketsRouter = require('./modules/tickets');
 const adminTicketsRouter = require('./modules/admin-tickets');
 const appointmentsRouter = require('./modules/appointments');
 const ticketingRouter = require('./modules/ticketing');
+const signupRouter = require('./modules/signup'); // Added signup router
 
 const app = express();
 const port = 3000;
@@ -48,6 +49,7 @@ app.get('/browserconfig.xml', (req, res) => {
 // Routes
 app.use('/api/login', loginRouter);
 app.use('/api/create-profile', createProfileRouter);
+app.use('/signup', signupRouter);
 app.use('/api/panel', panelRouter);
 app.use('/api/product', productRouter);
 app.use('/api/panel-products', showProductPanelRouter);

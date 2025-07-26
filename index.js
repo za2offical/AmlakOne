@@ -13,13 +13,10 @@ const editProductsRouter = require('./modules/edit-products');
 const editRouter = require('./modules/edit');
 const productRouter = require('./modules/product');
 const ticketsRouter = require('./modules/tickets');
-const { router: adminTicketsRouter } = require('./modules/admin-tickets');
-const { router: appointmentsRouter } = require('./modules/appointments');
-const { router: ticketingRouter } = require('./modules/ticketing');
-const { router: signupRouter } = require('./modules/signup');
-const { router: plansRouter, checkUserLimit, incrementUserProductCount } = require('./modules/plans');
-const authModule = require('./modules/auth');
-const { router: requests3dRouter } = require('./modules/requests-3d');
+const adminTicketsRouter = require('./modules/admin-tickets');
+const appointmentsRouter = require('./modules/appointments');
+const ticketingRouter = require('./modules/ticketing');
+const signupRouter = require('./modules/signup'); // Added signup router
 
 const app = express();
 const port = 3000;
@@ -50,22 +47,24 @@ app.get('/browserconfig.xml', (req, res) => {
 });
 
 // Routes
-app.use('/api/auth', authModule.router);
 app.use('/api/login', loginRouter);
-app.use('/api/signup', signupRouter);
+app.use('/api/create-profile', createProfileRouter);
+app.use('/signup', signupRouter);
 app.use('/api/panel', panelRouter);
 app.use('/api/product', productRouter);
-app.use('/api/edit', editRouter);
-app.use('/api/products', showProductsPublicRouter);
+app.use('/api/panel-products', showProductPanelRouter);
 app.use('/api/product-details', showProductNRouter);
-app.use('/api/create-profile', createProfileRouter);
-app.use('/api/ticketing', ticketingRouter);
-app.use('/api/tickets', ticketsRouter);
-app.use('/api/appointments', appointmentsRouter);
-app.use('/api/requests-3d', requests3dRouter);
-app.use('/api/admin-tickets', adminTicketsRouter);
+app.use('/api/public-products', showProductsPublicRouter);
+app.use('/api/public-details', showPublicDetailsRouter);
+app.use('/api/edit', editRouter);
+app.use('/api/products', editProductsRouter);
+app.use('/api/edit-products', editProductsRouter);
 app.use('/api/editor', editorRouter);
-app.use('/api/plans', plansRouter);
+app.use('/api/tickets', ticketsRouter);
+app.use('/api/admin/tickets', adminTicketsRouter);
+app.use('/api/appointments', appointmentsRouter);
+app.use('/api/ticketing', ticketingRouter);
+app.use('/api/requests-3d', require('./modules/requests-3d'));
 
 // Serve HTML files
 app.get('/editor', (req, res) => {

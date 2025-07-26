@@ -627,25 +627,31 @@ body {
     }
     
     .header {
-        padding: 15px;
-        flex-direction: column;
-        align-items: stretch;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: row;
         gap: 10px;
     }
     
     .header-content {
-        order: 2;
+        flex: 1;
+        min-width: 0;
     }
     
     .home-btn {
-        order: 1;
         width: 40px;
         height: 40px;
-        align-self: flex-end;
+        flex-shrink: 0;
     }
     
     .header h1 {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
     }
     
     .home-btn svg {
@@ -654,23 +660,29 @@ body {
     }
     
     .contact-text {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         margin-left: 6px;
     }
     
     .contact-icon {
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
+        flex-shrink: 0;
     }
     
     .contact-icon svg {
-        width: 18px;
-        height: 18px;
+        width: 16px;
+        height: 16px;
     }
     
     .phone-number {
-        font-size: 0.85rem;
-        padding: 3px 6px;
+        font-size: 0.8rem;
+        padding: 2px 5px;
+    }
+    
+    .user-contact {
+        gap: 6px;
+        margin-top: 4px;
     }
     
     .products-grid {

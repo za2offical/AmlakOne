@@ -6,6 +6,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const sanitize = require('sanitize-filename');
 const { authenticateToken } = require('./auth');
+const { checkUserLimit, incrementUserProductCount } = require('./plans');
 
 // تنظیمات آپلود فایل
 const storage = multer.memoryStorage();
@@ -174,6 +175,19 @@ function validateProductData(data) {
 router.post('/create', authenticateToken, handleUpload, async (req, res) => {
     try {
         const username = req.user.username;
+
+        // بررسی محدودیت پلن کاربر
+        const limitCheck = await checkUserLimit(username);
+        if (!limitCheck.canCreate) {
+            return res.status(403).json({
+                error: limitCheck.error || 'شما نمی‌توانید آگهی جدید ایجاد کنید',
+                planInfo: {
+                    plan: limitCheck.plan,
+                    used: limitCheck.used,
+                    limit: limitCheck.limit
+                }
+            });
+        }
         const { bedrooms, area } = req.body;
 
         // اعتبارسنجی داده‌ها
@@ -259,6 +273,8 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
 
         // ذخیره اطلاعات
         await fs.writeFile(dataPath, JSON.stringify(userData, null, 2));
+                // افزایش شمارنده محصولات ایجاد شده
+        await incrementUserProductCount(username);
 
         res.status(201).json({ 
             success: true, 

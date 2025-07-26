@@ -47,24 +47,22 @@ app.get('/browserconfig.xml', (req, res) => {
 });
 
 // Routes
+app.use('/api/auth', require('./modules/auth').router);
 app.use('/api/login', loginRouter);
-app.use('/api/create-profile', createProfileRouter);
-app.use('/signup', signupRouter);
+app.use('/api/signup', signupRouter);
 app.use('/api/panel', panelRouter);
 app.use('/api/product', productRouter);
-app.use('/api/panel-products', showProductPanelRouter);
-app.use('/api/product-details', showProductNRouter);
-app.use('/api/public-products', showProductsPublicRouter);
-app.use('/api/public-details', showPublicDetailsRouter);
 app.use('/api/edit', editRouter);
-app.use('/api/products', editProductsRouter);
-app.use('/api/edit-products', editProductsRouter);
-app.use('/api/editor', editorRouter);
-app.use('/api/tickets', ticketsRouter);
-app.use('/api/admin/tickets', adminTicketsRouter);
-app.use('/api/appointments', appointmentsRouter);
+app.use('/api/products', showProductsPublicRouter);
+app.use('/api/product-details', showProductNRouter);
+app.use('/api/create-profile', createProfileRouter);
 app.use('/api/ticketing', ticketingRouter);
+app.use('/api/tickets', ticketsRouter);
+app.use('/api/appointments', appointmentsRouter);
 app.use('/api/requests-3d', require('./modules/requests-3d'));
+app.use('/api/admin-tickets', adminTicketsRouter);
+app.use('/api/editor', editorRouter);
+app.use('/api/plans', require('./modules/plans').router);
 
 // Serve HTML files
 app.get('/editor', (req, res) => {

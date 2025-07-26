@@ -11,6 +11,62 @@ async function checkAuth() {
     }
 }
 
+// بررسی محدودیت پلن کاربر
+async function checkPlanLimit() {
+    try {
+        const response = await fetch('/api/plans/check-limit');
+        const data = await response.json();
+        
+        if (!response.ok) {
+            const submitButton = document.querySelector('.submit-button');
+            const form = document.getElementById('productForm');
+            
+            // غیرفعال کردن فرم
+            submitButton.disabled = true;
+            submitButton.textContent = 'محدودیت پلن';
+            form.style.opacity = '0.6';
+            form.style.pointerEvents = 'none';
+            
+            // نمایش پیام محدودیت
+            showMessage(data.error, 'error');
+            
+            // نمایش اطلاعات پلن
+            if (data.planInfo) {
+                const planInfo = document.createElement('div');
+                planInfo.className = 'plan-info-warning';
+                planInfo.innerHTML = `
+                    <h3>اطلاعات پلن شما:</h3>
+                    <p>پلن فعلی: ${data.planInfo.plan?.name || 'نامشخص'}</p>
+                    <p>آگهی‌های ایجاد شده: ${data.used}</p>
+                    <p>حد مجاز: ${data.limit}</p>
+                `;
+                
+                const container = document.querySelector('.container');
+                container.insertBefore(planInfo, container.firstChild);
+            }
+            
+            return false;
+        }
+        
+        // نمایش اطلاعات پلن در بالای صفحه
+        if (data.plan) {
+            const planInfo = document.createElement('div');
+            planInfo.className = 'plan-info-success';
+            planInfo.innerHTML = `
+                <p>پلن: ${data.plan.name} | استفاده شده: ${data.used}/${data.limit === -1 ? 'نامحدود' : data.limit}</p>
+            `;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(planInfo, container.firstChild);
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error checking plan limit:', error);
+        return true; // در صورت خطا اجازه ادامه
+    }
+}
+
 // نمایش/مخفی کردن امکانات اختیاری
 function toggleOptionalFeatures() {
     const section = document.getElementById('optionalFeatures');
@@ -305,9 +361,12 @@ async function handleFormSubmit(e) {
 }
 
 // راه‌اندازی اولیه
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // بررسی احراز هویت
     checkAuth();
+    
+    // بررسی محدودیت پلن
+    await checkPlanLimit();
     
     // راه‌اندازی شمارنده کاراکتر
     updateCharCount();

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Vazir:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   --primary: #3b82f6;
@@ -37,7 +37,7 @@
 }
 
 body {
-  font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+  font-family: 'Vazir', Tahoma, Arial, sans-serif;
   background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 50%, #e0f2fe 100%);
   min-height: 100vh;
   color: var(--gray-700);

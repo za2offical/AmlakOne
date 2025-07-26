@@ -99,7 +99,17 @@ function startFileWatcher() {
       }
     });
 
-    console.log('رصدگر فایل users.json شروع شد - plans به صورت خودکار همگام‌سازی می‌شود');
+    // همگام‌سازی دوره‌ای هر 5 ثانیه
+    const periodicSync = setInterval(async () => {
+      try {
+        await syncPlansWithUsers();
+        console.log('همگام‌سازی دوره‌ای plans انجام شد');
+      } catch (error) {
+        console.error('خطا در همگام‌سازی دوره‌ای:', error);
+      }
+    }, 5000); // هر 5 ثانیه
+
+    console.log('رصدگر فایل users.json شروع شد - plans هم با file watcher و هم هر 5 ثانیه همگام‌سازی می‌شود');
     
     // همگام‌سازی اولیه
     syncPlansWithUsers().then(() => {
@@ -108,7 +118,7 @@ function startFileWatcher() {
       console.error('خطا در همگام‌سازی اولیه:', error);
     });
 
-    return watcher;
+    return { watcher, periodicSync };
   } catch (error) {
     console.error('خطا در شروع رصدگر فایل:', error);
   }
@@ -205,8 +215,8 @@ router.post('/plans/sync', async (req, res) => {
   }
 });
 
-// شروع خودکار رصدگر فایل
-const fileWatcher = startFileWatcher();
+// شروع خودکار رصدگر فایل و همگام‌سازی دوره‌ای
+const fileWatcherSystem = startFileWatcher();
 
 module.exports = {
   router,
@@ -217,5 +227,5 @@ module.exports = {
   setUserLevel,
   getAllPlans,
   startFileWatcher,
-  fileWatcher
+  fileWatcherSystem
 };

@@ -187,30 +187,32 @@ class PWAManager {
         this.checkInstallPromptTimer();
     }
 
-    // بررسی و برنامه‌ریزی پیام نصب
+    // بررسی و برنامه‌ریزی پیام نصب - غیرفعال شده
     checkInstallPromptTimer() {
-        const lastPromptTime = localStorage.getItem('last_install_prompt');
-        const now = Date.now();
-        const twentyFourHours = 24 * 60 * 60 * 1000; // 24 ساعت
+        // پیام نصب غیرفعال است
+        // const lastPromptTime = localStorage.getItem('last_install_prompt');
+        // const now = Date.now();
+        // const twentyFourHours = 24 * 60 * 60 * 1000; // 24 ساعت
 
-        if (!lastPromptTime || (now - parseInt(lastPromptTime)) >= twentyFourHours) {
-            // اگر 24 ساعت گذشته یا اولین بار است
-            setTimeout(() => {
-                this.showInstallPrompt();
-                localStorage.setItem('last_install_prompt', now.toString());
-            }, 5000); // 5 ثانیه بعد از بارگذاری صفحه
-        }
+        // if (!lastPromptTime || (now - parseInt(lastPromptTime)) >= twentyFourHours) {
+        //     // اگر 24 ساعت گذشته یا اولین بار است
+        //     setTimeout(() => {
+        //         this.showInstallPrompt();
+        //         localStorage.setItem('last_install_prompt', now.toString());
+        //     }, 5000); // 5 ثانیه بعد از بارگذاری صفحه
+        // }
     }
 
-    // برنامه‌ریزی پیام نصب هر 24 ساعت
+    // برنامه‌ریزی پیام نصب هر 24 ساعت - غیرفعال شده
     scheduleInstallPrompt() {
-        const twentyFourHours = 24 * 60 * 60 * 1000; // 24 ساعت
+        // پیام نصب غیرفعال است
+        // const twentyFourHours = 24 * 60 * 60 * 1000; // 24 ساعت
         
-        // تنظیم تایمر برای نمایش پیام هر 24 ساعت
-        setInterval(() => {
-            this.showInstallPrompt();
-            localStorage.setItem('last_install_prompt', Date.now().toString());
-        }, twentyFourHours);
+        // // تنظیم تایمر برای نمایش پیام هر 24 ساعت
+        // setInterval(() => {
+        //     this.showInstallPrompt();
+        //     localStorage.setItem('last_install_prompt', Date.now().toString());
+        // }, twentyFourHours);
     }
 
     showInstallPrompt() {

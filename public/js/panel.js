@@ -53,6 +53,10 @@
             if (userData.profileImagePath && profileImage && profilePlaceholder) {
                 profileImage.src = userData.profileImagePath;
                 profileImage.style.display = 'block';
+                profileImage.style.width = '100%';
+                profileImage.style.height = '100%';
+                profileImage.style.objectFit = 'cover';
+                profileImage.style.borderRadius = '50%';
                 profilePlaceholder.style.display = 'none';
             } else if (profileImage && profilePlaceholder) {
                 profileImage.style.display = 'none';
@@ -473,28 +477,42 @@
   // بارگذاری اعلان‌ها
   async function loadNotifications() {
     try {
+      console.log('Loading notifications...');
       const response = await fetch('/api/panel/notifications/unread-count', {
         credentials: 'include'
       });
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Notification data:', data);
         const badge = document.getElementById('notificationBadge');
         const mobileBadge = document.getElementById('mobileNotificationBadge');
         
         if (data.unreadCount > 0) {
+          console.log(`Showing ${data.unreadCount} unread notifications`);
           if (badge) {
             badge.textContent = data.unreadCount;
             badge.style.display = 'flex';
+            badge.style.visibility = 'visible';
           }
           if (mobileBadge) {
             mobileBadge.textContent = data.unreadCount;
             mobileBadge.style.display = 'flex';
+            mobileBadge.style.visibility = 'visible';
           }
         } else {
-          if (badge) badge.style.display = 'none';
-          if (mobileBadge) mobileBadge.style.display = 'none';
+          console.log('No unread notifications');
+          if (badge) {
+            badge.style.display = 'none';
+            badge.style.visibility = 'hidden';
+          }
+          if (mobileBadge) {
+            mobileBadge.style.display = 'none';
+            mobileBadge.style.visibility = 'hidden';
+          }
         }
+      } else {
+        console.error('Failed to fetch notifications:', response.status);
       }
     } catch (error) {
       console.error('Error loading notifications:', error);
@@ -508,6 +526,9 @@
       loadUserInfo();
       loadProducts();
       loadNotifications();
+      
+      // بارگذاری مجدد اعلان‌ها هر ۳۰ ثانیه
+      setInterval(loadNotifications, 30000);
     }, 50);
   });
 
@@ -633,6 +654,10 @@
         if (profileImage.style.display !== 'none' && profileImage.src && profileImage.src !== window.location.href) {
           mobileProfileImage.src = profileImage.src;
           mobileProfileImage.style.display = 'block';
+          mobileProfileImage.style.width = '100%';
+          mobileProfileImage.style.height = '100%';
+          mobileProfileImage.style.objectFit = 'cover';
+          mobileProfileImage.style.borderRadius = '50%';
           mobileProfilePlaceholder.style.display = 'none';
         } else {
           mobileProfileImage.style.display = 'none';

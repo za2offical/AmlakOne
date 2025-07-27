@@ -43,9 +43,19 @@ async function ensureDirectories(username) {
 async function readUserProducts(dataPath) {
     try {
         const data = await fs.readFile(dataPath, 'utf8');
-        return JSON.parse(data);
+        const userData = JSON.parse(data);
+        
+        // اضافه کردن فیلد total_products_created اگر وجود نداشته باشد
+        if (typeof userData.total_products_created !== 'number') {
+            userData.total_products_created = userData.products?.length || 0;
+        }
+        
+        return userData;
     } catch (error) {
-        return { products: [] };
+        return { 
+            products: [],
+            total_products_created: 0
+        };
     }
 }
 
@@ -182,6 +192,16 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
         const { dataPath, imagesDir } = await ensureDirectories(username);
         const userData = await readUserProducts(dataPath);
 
+        // بررسی محدودیت تعداد آگهی
+        const totalCreated = userData.total_products_created || 0;
+        const limit = userData.product_limit;
+        
+        if (limit !== null && totalCreated >= limit) {
+            return res.status(403).json({
+                error: `شما به حد مجاز ایجاد آگهی رسیده‌اید. حداکثر ${limit} آگهی مجاز است.`
+            });
+        }
+
         // پردازش تصاویر
         const imageUrls = [];
         if (req.files && req.files.length > 0) {
@@ -256,6 +276,13 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
         }
 
         userData.products.push(newProduct);
+
+        // افزایش تعداد کل آگهی‌های ایجاد شده
+        if (typeof userData.total_products_created !== 'number') {
+            userData.total_products_created = userData.products.length;
+        } else {
+            userData.total_products_created += 1;
+        }
 
         // ذخیره اطلاعات
         await fs.writeFile(dataPath, JSON.stringify(userData, null, 2));

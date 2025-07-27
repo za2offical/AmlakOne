@@ -14,7 +14,11 @@ async function checkAuth() {
 // بررسی محدودیت پلن کاربر
 async function checkPlanLimit() {
     try {
-        const response = await fetch('/api/plans/check-limit');
+        const response = await fetch('/api/plans/check-limit', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
         const data = await response.json();
         
         if (!response.ok) {
@@ -31,14 +35,14 @@ async function checkPlanLimit() {
             showMessage(data.error, 'error');
             
             // نمایش اطلاعات پلن
-            if (data.planInfo) {
+            if (data.planInfo || data.used !== undefined) {
                 const planInfo = document.createElement('div');
                 planInfo.className = 'plan-info-warning';
                 planInfo.innerHTML = `
                     <h3>اطلاعات پلن شما:</h3>
-                    <p>پلن فعلی: ${data.planInfo.plan?.name || 'نامشخص'}</p>
+                    <p>پلن فعلی: ${data.planInfo?.plan?.name || 'نامشخص'}</p>
                     <p>آگهی‌های ایجاد شده: ${data.used}</p>
-                    <p>حد مجاز: ${data.limit}</p>
+                    <p>حد مجاز: ${data.limit === null ? 'نامحدود' : data.limit}</p>
                 `;
                 
                 const container = document.querySelector('.container');
@@ -53,7 +57,7 @@ async function checkPlanLimit() {
             const planInfo = document.createElement('div');
             planInfo.className = 'plan-info-success';
             planInfo.innerHTML = `
-                <p>پلن: ${data.plan.name} | استفاده شده: ${data.used}/${data.limit === -1 ? 'نامحدود' : data.limit}</p>
+                <p>پلن: ${data.plan.name} | آگهی‌های ایجاد شده: ${data.used}/${data.limit === null ? 'نامحدود' : data.limit}</p>
             `;
             
             const container = document.querySelector('.container');

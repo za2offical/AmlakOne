@@ -51,7 +51,8 @@ async function applyProductLimitToUser(username, level, levelChangedAt = null) {
         products: [],
         user_level: level,
         level_changed_at: levelChangedAt || new Date().toISOString(),
-        product_limit: limit
+        product_limit: limit,
+        total_products_created: 0 // تعداد کل آگهی‌های ایجاد شده
       };
       await fs.writeFile(userProductsPath, JSON.stringify(emptyData, null, 2));
       console.log(`فایل محصولات برای کاربر ${username} ایجاد شد با سطح ${level}`);
@@ -63,6 +64,11 @@ async function applyProductLimitToUser(username, level, levelChangedAt = null) {
 
     if (!userData.products || !Array.isArray(userData.products)) {
       userData.products = [];
+    }
+
+    // اضافه کردن فیلد total_products_created اگر وجود نداشته باشد
+    if (typeof userData.total_products_created !== 'number') {
+      userData.total_products_created = userData.products.length;
     }
 
     // به‌روزرسانی اطلاعات سطح کاربر در فایل محصولات
@@ -325,6 +331,67 @@ router.put('/:username', async (req, res) => {
   } catch (error) {
     console.error('خطا در تنظیم سطح کاربر:', error);
     res.status(400).json({ error: error.message });
+  }
+});
+
+// بررسی محدودیت برای ایجاد آگهی جدید
+router.get('/check-limit', require('./auth').authenticateToken, async (req, res) => {
+  try {
+    const username = req.user?.username;
+    if (!username) {
+      return res.status(401).json({ error: 'کاربر احراز هویت نشده است' });
+    }
+
+    const userProductsPath = path.join(productsDir, `${username}.json`);
+    
+    // خواندن اطلاعات کاربر
+    let userData;
+    try {
+      const data = await fs.readFile(userProductsPath, 'utf8');
+      userData = JSON.parse(data);
+    } catch (error) {
+      // اگر فایل وجود ندارد، کاربر جدید است
+      const plans = await syncPlansWithUsers();
+      const userLevel = plans[username]?.level || 0;
+      const limit = LEVEL_LIMITS[userLevel];
+      
+      userData = {
+        products: [],
+        user_level: userLevel,
+        product_limit: limit,
+        total_products_created: 0
+      };
+    }
+
+    const limit = userData.product_limit;
+    const totalCreated = userData.total_products_created || 0;
+    
+    // بررسی محدودیت
+    if (limit !== null && totalCreated >= limit) {
+      return res.status(403).json({
+        error: `شما به حد مجاز ایجاد آگهی رسیده‌اید (${limit} آگهی)`,
+        canCreate: false,
+        used: totalCreated,
+        limit: limit,
+        planInfo: {
+          plan: { name: `سطح ${userData.user_level}` }
+        }
+      });
+    }
+
+    // اگر مجاز است
+    const plans = await syncPlansWithUsers();
+    const userPlan = plans[username];
+    res.json({
+      canCreate: true,
+      used: totalCreated,
+      limit: limit,
+      plan: { name: `سطح ${userData.user_level}` }
+    });
+
+  } catch (error) {
+    console.error('خطا در بررسی محدودیت:', error);
+    res.status(500).json({ error: 'خطا در بررسی محدودیت' });
   }
 });
 

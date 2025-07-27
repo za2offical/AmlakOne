@@ -5,40 +5,10 @@
       "username": "Ali",
       "productId": "1753420803992",
       "videoPath": "3D/Ali/1753420803992.mp4",
-      "status": "تایید شده",
-      "url": null,
-      "submittedAt": "2025-07-27T03:15:31.771Z",
-      "updatedAt": "2025-07-27T03:15:31.771Z"
-    },
-    {
-      "id": "Ali-1749400785538",
-      "username": "Ali",
-      "productId": "1749400785538",
-      "videoPath": "3D/Ali/1749400785538.mp4",
       "status": "در حال بررسی",
       "url": null,
-      "submittedAt": "2025-07-27T04:24:13.739Z",
-      "updatedAt": "2025-07-27T04:24:13.739Z"
-    },
-    {
-      "id": "Ali-1753585429757",
-      "username": "Ali",
-      "productId": "1753585429757",
-      "videoPath": "3D/Ali/1753585429757.mp4",
-      "status": "در حال بررسی",
-      "url": null,
-      "submittedAt": "2025-07-27T04:28:55.109Z",
-      "updatedAt": "2025-07-27T04:28:55.109Z"
-    },
-    {
-      "id": "Ali-1753585730272",
-      "username": "Ali",
-      "productId": "1753585730272",
-      "videoPath": "3D/Ali/1753585730272.mp4",
-      "status": "در حال بررسی",
-      "url": null,
-      "submittedAt": "2025-07-27T04:35:26.424Z",
-      "updatedAt": "2025-07-27T04:35:26.424Z"
+      "submittedAt": "2025-07-27T04:41:10.606Z",
+      "updatedAt": "2025-07-27T04:41:10.606Z"
     }
   ]
 }

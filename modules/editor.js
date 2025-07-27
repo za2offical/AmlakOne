@@ -4,6 +4,7 @@ const { authenticateToken } = require("./auth");
 const fs = require("fs").promises;
 const path = require("path");
 const bcrypt = require("bcryptjs");
+const { getUserByUsername, updateUser } = require('./database');
 
 const USERS_FILE = path.join(__dirname, "..", "data", "users.json");
 const NOTIFICATIONS_FILE = path.join(__dirname, "..", "data", "notifications.json");
@@ -183,4 +184,3 @@ router.delete('/notifications/:id', async (req, res) => {
 });
 
 module.exports = router;
-

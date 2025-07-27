@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { authenticateToken } = require('./auth');
 const router = express.Router();
-const { getAllUsers, getUserByUsername, updateUser } = require('./database');
+const { getAllUsers, getUserByUsername, updateUser, getDB } = require('./database');
 
 // خواندن plans از دیتابیس
 async function readPlans() {
@@ -36,6 +36,13 @@ async function writePlans(plans) {
 // به‌روزرسانی plans از دیتابیس
 async function syncPlansWithUsers() {
   try {
+    // بررسی اینکه دیتابیس متصل است
+    const db = getDB();
+    if (!db) {
+      console.log('دیتابیس هنوز متصل نشده است');
+      return {};
+    }
+
     const users = await getAllUsers();
     const plans = {};
     const currentTime = new Date().toISOString();
@@ -63,15 +70,34 @@ async function syncPlansWithUsers() {
     return plans;
   } catch (error) {
     console.error('خطا در هماهنگ‌سازی plans با users:', error);
-    throw error;
+    return {};
   }
 }
 
 // همگام‌سازی اولیه plans
 async function initializePlans() {
   try {
-    await syncPlansWithUsers();
-    console.log('همگام‌سازی اولیه plans انجام شد');
+    // صبر کنیم تا دیتابیس متصل شود
+    let retryCount = 0;
+    const maxRetries = 10;
+    
+    while (retryCount < maxRetries) {
+      try {
+        const db = getDB();
+        if (db) {
+          await syncPlansWithUsers();
+          console.log('همگام‌سازی اولیه plans انجام شد');
+          return;
+        }
+      } catch (error) {
+        // دیتابیس هنوز آماده نیست
+      }
+      
+      retryCount++;
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 1 ثانیه صبر
+    }
+    
+    console.log('عدم موفقیت در اتصال به دیتابیس برای همگام‌سازی plans');
   } catch (error) {
     console.error('خطا در همگام‌سازی اولیه:', error);
   }
@@ -79,8 +105,13 @@ async function initializePlans() {
 
 // دریافت سطح یک کاربر
 async function getUserLevel(username) {
-  const plans = await syncPlansWithUsers();
-  return plans[username] ? plans[username].level : 0;
+  try {
+    const plans = await syncPlansWithUsers();
+    return plans[username] ? plans[username].level : 0;
+  } catch (error) {
+    console.error('خطا در دریافت سطح کاربر:', error);
+    return 0;
+  }
 }
 
 // تنظیم سطح یک کاربر

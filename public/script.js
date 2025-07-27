@@ -23,7 +23,7 @@ function initializeApp() {
     initSmoothScrolling();
     
     // Set initial theme
-    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
 }
@@ -224,26 +224,17 @@ function initThemeToggle() {
     const themeToggle = document.getElementById('theme-toggle');
     
     themeToggle.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         
-        console.log('Current theme:', currentTheme);
-        console.log('New theme:', newTheme);
-        
-        // Force set the attribute
         document.documentElement.setAttribute('data-theme', newTheme);
-        document.body.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         updateThemeIcon(newTheme);
-        
-        console.log('Theme applied:', document.documentElement.getAttribute('data-theme'));
     });
 }
 
 function updateThemeIcon(theme) {
     const icon = document.querySelector('#theme-toggle i');
-    // وقتی تم تاریک است، آیکون خورشید نمایش می‌دهیم (برای تغییر به روشن)
-    // وقتی تم روشن است، آیکون ماه نمایش می‌دهیم (برای تغییر به تاریک)
     icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 }
 

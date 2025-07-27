@@ -149,6 +149,32 @@ async function syncPlansWithUsers() {
         // اعمال محدودیت محصول با زمان دقیق
         await applyProductLimitToUser(user.username, 0, newUserTime);
       } else {
+        // بررسی تغییر سطح نسبت به فایل محصولات کاربر
+        const userProductsPath = path.join(productsDir, `${user.username}.json`);
+        let previousLevel = null;
+        
+        try {
+          const userProductsData = await fs.readFile(userProductsPath, 'utf8');
+          const userData = JSON.parse(userProductsData);
+          previousLevel = userData.user_level;
+        } catch (error) {
+          // اگر فایل محصولات وجود نداشت، سطح قبلی را 0 در نظر بگیر
+          previousLevel = 0;
+        }
+        
+        const currentLevel = plans[user.username].level;
+        
+        // اگر سطح تغییر کرده باشد (تغییر دستی)
+        if (previousLevel !== null && previousLevel !== currentLevel) {
+          plans[user.username].level_changed_at = currentTime;
+          plans[user.username].updated_at = currentTime;
+          hasChanges = true;
+          console.log(`تشخیص تغییر دستی سطح: کاربر ${user.username} سطح ${previousLevel} → ${currentLevel} در ${currentTime}`);
+          
+          // اعمال محدودیت محصول جدید با زمان جدید
+          await applyProductLimitToUser(user.username, currentLevel, currentTime);
+        }
+        
         // اگر کاربر وجود دارد ولی level_changed_at ندارد، اضافه کن
         if (!plans[user.username].level_changed_at) {
           const fallbackTime = plans[user.username].created_at || currentTime;

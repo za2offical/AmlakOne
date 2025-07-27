@@ -153,12 +153,6 @@ router.get('/user-products', async (req, res) => {
         // بررسی وضعیت پلن کاربر
         const planStatus = await checkUserPlan(username);
 
-        // همیشه محصولات را نمایش دهید، فقط وضعیت پلن را ارسال کنید
-        // نمایش تعداد استفاده‌های باقی‌مانده (اگر پلن دارد)
-        if (planStatus.hasPlan) {
-            updatePlanDisplay(planStatus.remainingUses);
-        }
-
         // آماده‌سازی داده‌های محصولات برای نمایش
         const safeProducts = products.map(product => ({
             id: product.id,

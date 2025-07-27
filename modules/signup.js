@@ -4,7 +4,7 @@ const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
 const bcrypt = require('bcryptjs');
-const { readUsers, createUser, findUserByUsername } = require('./auth');
+const { readUsers, writeUsers } = require('./auth');
 
 const SIGNUP_FILE = path.join(__dirname, '..', 'data', 'signup.json');
 
@@ -119,7 +119,8 @@ router.post('/complete-registration', async (req, res) => {
         }
 
         // بررسی تکراری نبودن نام کاربری
-        const existingUsername = await findUserByUsername(username);
+        const users = await readUsers();
+        const existingUsername = users.find(u => u.username === username);
         if (existingUsername) {
             return res.status(400).json({ 
                 error: 'این نام کاربری قبلاً استفاده شده است' 
@@ -127,7 +128,6 @@ router.post('/complete-registration', async (req, res) => {
         }
 
         // بررسی تکراری نبودن شماره تلفن
-        const users = await readUsers();
         const existingPhone = users.find(u => u.phone === phone);
         if (existingPhone) {
             return res.status(400).json({ 
@@ -139,16 +139,19 @@ router.post('/complete-registration', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // ایجاد کاربر جدید
-        const newUserData = {
+        const newUser = {
             username: username,
             hashedPassword: hashedPassword,
             phone: phone,
+            created_at: new Date().toISOString(),
             profileCompleted: false,
             failedLoginAttempts: 0,
             lockoutUntil: null
         };
 
-        await createUser(newUserData);
+        // اضافه کردن کاربر به لیست
+        users.push(newUser);
+        await writeUsers(users);
 
         // حذف شماره تلفن از لیست مجاز
         const updatedPhones = authorizedPhones.filter(p => p !== phone);

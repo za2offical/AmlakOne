@@ -1,12 +1,9 @@
-
 const express = require('express');
 const router = express.Router();
 const { 
     generateToken, 
     readUsers, 
-    comparePassword,
-    findUserByUsername,
-    updateUser
+    comparePassword
 } = require('./auth');
 
 // Admin credentials
@@ -37,7 +34,9 @@ router.post('/verify', async (req, res) => {
         }
 
         // بررسی اعتبار کاربر عادی
-        const user = await findUserByUsername(username);
+        const users = await readUsers();
+        const user = users.find(u => u.username === username);
+        const userIndex = users.findIndex(u => u.username === username);
 
         if (!user) {
             return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' });
@@ -51,34 +50,45 @@ router.post('/verify', async (req, res) => {
 
         // اگر قفل گذشته باشد، شمارنده و قفل را ریست کن
         if (user.lockoutUntil && Date.now() > user.lockoutUntil) {
-            await updateUser(username, {
-                failedLoginAttempts: 0,
-                lockoutUntil: null
-            });
             user.failedLoginAttempts = 0;
             user.lockoutUntil = null;
+            users[userIndex] = user;
+            await require('fs').promises.writeFile(
+                require('path').join(__dirname, '../data/users.json'),
+                JSON.stringify(users, null, 2),
+                'utf8'
+            );
+            // مقدار جدید را از فایل بخوان
+            const updatedUsers = await readUsers();
+            const updatedUser = updatedUsers.find(u => u.username === username);
+            // مقدار user و users را به‌روزرسانی کن
+            users[userIndex] = updatedUser;
         }
-
+        // مقدار user را مجدداً از users بگیر تا مقدار جدید را داشته باشی
+        const freshUser = users[userIndex];
         // اگر پسورد به صورت هش ذخیره نشده باشد
-        const isMatch = user.hashedPassword 
-            ? await comparePassword(password, user.hashedPassword)
-            : password === user.password;
+        const isMatch = freshUser.hashedPassword 
+            ? await comparePassword(password, freshUser.hashedPassword)
+            : password === freshUser.password;
 
         if (isMatch) {
             // ریست شمارنده و قفل
-            await updateUser(username, {
-                failedLoginAttempts: 0,
-                lockoutUntil: null
-            });
-
-            const token = generateToken(user);
+            freshUser.failedLoginAttempts = 0;
+            freshUser.lockoutUntil = null;
+            users[userIndex] = freshUser;
+            await require('fs').promises.writeFile(
+                require('path').join(__dirname, '../data/users.json'),
+                JSON.stringify(users, null, 2),
+                'utf8'
+            );
+            const token = generateToken(freshUser);
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 maxAge: 30 * 24 * 60 * 60 * 1000 // 30 روز (یک ماه)
             });
-            const profileCompleted = user.profileCompleted || false;
+            const profileCompleted = freshUser.profileCompleted || false;
             res.json({ 
                 success: true, 
                 isAdmin: false, 
@@ -86,21 +96,19 @@ router.post('/verify', async (req, res) => {
             });
         } else {
             // افزایش شمارنده تلاش ناموفق
-            const failedAttempts = (user.failedLoginAttempts || 0) + 1;
-            let lockoutUntil = null;
-            
+            freshUser.failedLoginAttempts = (freshUser.failedLoginAttempts || 0) + 1;
             // اگر به حد مجاز رسید، قفل کن
-            if (failedAttempts >= LOCKOUT_ATTEMPTS) {
-                lockoutUntil = Date.now() + LOCKOUT_MINUTES * 60 * 1000;
+            if (freshUser.failedLoginAttempts >= LOCKOUT_ATTEMPTS) {
+                freshUser.lockoutUntil = Date.now() + LOCKOUT_MINUTES * 60 * 1000;
             }
-
-            await updateUser(username, {
-                failedLoginAttempts: failedAttempts,
-                lockoutUntil: lockoutUntil
-            });
-
-            if (lockoutUntil && Date.now() < lockoutUntil) {
-                const remainingSec = Math.ceil((lockoutUntil - Date.now()) / 1000);
+            users[userIndex] = freshUser;
+            await require('fs').promises.writeFile(
+                require('path').join(__dirname, '../data/users.json'),
+                JSON.stringify(users, null, 2),
+                'utf8'
+            );
+            if (freshUser.lockoutUntil && Date.now() < freshUser.lockoutUntil) {
+                const remainingSec = Math.ceil((freshUser.lockoutUntil - Date.now()) / 1000);
                 return res.status(403).json({ error: `اکانت شما به دلیل ورود ناموفق تا ${remainingSec} ثانیه دیگر قفل است. لطفاً بعداً تلاش کنید.` });
             }
             res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است' });

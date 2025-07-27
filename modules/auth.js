@@ -1,11 +1,28 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const fs = require('fs').promises;
+const path = require('path');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const { readUsers, writeUsers, findUserByUsername, updateUser, createUser } = require('./database');
 
-// احراز هویت - با پایگاه داده MongoDB
+// احراز هویت - بدون سیستم کش
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+const USERS_FILE = path.join(__dirname, '..', 'data', 'users.json');
+
+// خواندن کاربران از فایل
+async function readUsers() {
+    try {
+        const data = await fs.readFile(USERS_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        return [];
+    }
+}
+
+// نوشتن کاربران در فایل
+async function writeUsers(users) {
+    await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
+}
 
 // تولید توکن
 function generateToken(user) {
@@ -32,7 +49,7 @@ const authenticateToken = async (req, res, next) => {
         // ابتدا از Authorization header بررسی کن
         let token = null;
         const authHeader = req.headers['authorization'];
-
+        
         if (authHeader && authHeader.startsWith('Bearer ')) {
             token = authHeader.substring(7);
         } else if (req.cookies.token) {
@@ -73,8 +90,5 @@ module.exports = {
     writeUsers,
     hashPassword,
     comparePassword,
-    findUserByUsername,
-    updateUser,
-    createUser,
     JWT_SECRET
 };

@@ -18,19 +18,26 @@ async function checkAuth() {
             }
         });
         
-        if (!response.ok) {
+        // فقط برای خطاهای 401 و 403 redirect کن
+        if (response.status === 401 || response.status === 403) {
             console.log('Token invalid or expired, redirecting to login');
             localStorage.removeItem('token');
             window.location.href = '/login';
             return false;
         }
         
+        // برای سایر خطاها، اجازه ادامه بده
+        if (!response.ok) {
+            console.warn('Auth check failed but continuing:', response.status);
+            return true; // اجازه ادامه
+        }
+        
         return true;
     } catch (error) {
         console.error('Auth error:', error);
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-        return false;
+        // فقط برای خطاهای شبکه کاربر را redirect نکن
+        console.warn('Network error in auth check, but continuing...');
+        return true;
     }
 }
 
@@ -53,12 +60,19 @@ async function checkPlanLimit() {
         });
         
         // بررسی خطاهای احراز هویت
-        if (response.status === 401 || response.status === 403) {
+        if (response.status === 401) {
+            console.log('Authentication failed, redirecting to login');
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+            return false;
+        }
+        
+        if (response.status === 403) {
             const data = await response.json();
             
-            // اگر خطای احراز هویت باشد
-            if (response.status === 401 || (response.status === 403 && data.error && data.error.includes('Authentication'))) {
-                console.log('Authentication failed, redirecting to login');
+            // فقط اگر خطای احراز هویت باشد redirect کن
+            if (data.error && (data.error.includes('Authentication') || data.error.includes('Invalid') || data.error.includes('expired'))) {
+                console.log('Token expired, redirecting to login');
                 localStorage.removeItem('token');
                 window.location.href = '/login';
                 return false;

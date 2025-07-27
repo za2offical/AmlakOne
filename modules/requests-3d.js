@@ -98,21 +98,35 @@ async function checkUserPlan(username) {
 
 // کاهش تعداد استفاده پلن
 async function decrementPlanUsage(username) {
-    const plans = await read3DPlans();
-    
-    if (plans[username] && plans[username] > 0) {
-        plans[username]--;
+    try {
+        console.log(`Attempting to decrement plan usage for user: ${username}`);
+        const plans = await read3DPlans();
+        console.log('Current plans before decrement:', plans);
         
-        // اگر تعداد استفاده به صفر رسید، کاربر را حذف کن
-        if (plans[username] === 0) {
-            delete plans[username];
+        if (plans[username] && plans[username] > 0) {
+            const oldValue = plans[username];
+            plans[username]--;
+            console.log(`Decremented ${username} from ${oldValue} to ${plans[username]}`);
+            
+            // اگر تعداد استفاده به صفر رسید، کاربر را حذف کن
+            if (plans[username] === 0) {
+                console.log(`Removing user ${username} from plan (reached 0)`);
+                delete plans[username];
+            }
+            
+            const updateResult = await update3DPlans(plans);
+            console.log('Plan update result:', updateResult);
+            console.log('Plans after update:', await read3DPlans());
+            
+            return updateResult;
+        } else {
+            console.log(`User ${username} not found in plans or has 0 remaining uses`);
+            return false;
         }
-        
-        await update3DPlans(plans);
-        return true;
+    } catch (error) {
+        console.error('Error in decrementPlanUsage:', error);
+        return false;
     }
-    
-    return false;
 }
 
 // میدلور احراز هویت
@@ -251,18 +265,37 @@ router.post('/submit-request', async (req, res) => {
             await fs.writeFile(dataFile, JSON.stringify(requestsData, null, 2));
 
             // کاهش تعداد استفاده از پلن کاربر هنگام ثبت درخواست
-            const decrementResult = await decrementPlanUsage(username);
-            
-            if (!decrementResult) {
-                console.warn(`Could not decrement plan usage for user: ${username}`);
-            }
+            try {
+                const decrementResult = await decrementPlanUsage(username);
+                console.log(`Plan usage decrement result for ${username}:`, decrementResult);
+                
+                if (!decrementResult) {
+                    console.error(`Failed to decrement plan usage for user: ${username}`);
+                }
+                
+                // خواندن مجدد پلن برای اطمینان از به‌روزرسانی
+                const updatedPlanStatus = await checkUserPlan(username);
+                console.log(`Updated plan status for ${username}:`, updatedPlanStatus);
 
-            res.status(201).json({
-                success: true,
-                message: 'درخواست 3D با موفقیت ارسال شد',
-                request: newRequest,
-                remainingUses: planStatus.remainingUses - 1 // ارسال تعداد باقی‌مانده جدید
-            });
+                res.status(201).json({
+                    success: true,
+                    message: 'درخواست 3D با موفقیت ارسال شد',
+                    request: newRequest,
+                    remainingUses: updatedPlanStatus.remainingUses,
+                    planDecremented: decrementResult
+                });
+            } catch (decrementError) {
+                console.error('Error decrementing plan usage:', decrementError);
+                // حتی اگر کاهش پلن با خطا مواجه شود، درخواست را ثبت کن
+                res.status(201).json({
+                    success: true,
+                    message: 'درخواست 3D با موفقیت ارسال شد',
+                    request: newRequest,
+                    remainingUses: Math.max(0, planStatus.remainingUses - 1),
+                    planDecremented: false,
+                    error: 'خطا در به‌روزرسانی پلن'
+                });
+            }
 
         } catch (error) {
             console.error('Error submitting 3D request:', error);

@@ -634,19 +634,31 @@ async function submitRequest() {
                 loadActiveRequests(); // بارگذاری مجدد درخواست‌های فعال
                 displayProducts(allProducts); // به‌روزرسانی نمایش محصولات
                 
-                // استفاده از تعداد باقی‌مانده جدید از سرور
+                // بررسی و به‌روزرسانی تعداد باقی‌مانده بر اساس پاسخ سرور
+                console.log('Server response:', response);
+                
                 if (response.remainingUses !== undefined) {
+                    console.log(`Updating remaining uses from ${userPlanStatus.remainingUses} to ${response.remainingUses}`);
                     userPlanStatus.remainingUses = response.remainingUses;
                     updatePlanDisplay(response.remainingUses);
                 } else if (userPlanStatus.remainingUses > 0) {
                     // fallback اگر سرور تعداد جدید نفرستاد
+                    console.log('Fallback: decreasing remaining uses locally');
                     userPlanStatus.remainingUses--;
                     updatePlanDisplay(userPlanStatus.remainingUses);
+                }
+                
+                // نمایش وضعیت به‌روزرسانی پلن
+                if (response.planDecremented === false) {
+                    console.warn('Plan was not decremented on server');
+                    // نمایش هشدار به کاربر
+                    alert('هشدار: ممکن است پلن شما به درستی به‌روزرسانی نشده باشد');
                 }
                 
                 // اگر تعداد استفاده به صفر رسید، نمایش حالت بدون پلن
                 if (userPlanStatus.remainingUses <= 0) {
                     setTimeout(() => {
+                        console.log('Showing no plan state due to 0 remaining uses');
                         showNoPlanState();
                     }, 2000); // با تاخیر 2 ثانیه بعد از نمایش پیام موفقیت
                 }

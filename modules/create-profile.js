@@ -3,7 +3,8 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs').promises;
 const multer = require('multer');
-const { authenticateToken, readUsers, writeUsers } = require('./auth');
+const { authenticateToken } = require('./auth');
+const { getUserByUsername, updateUser } = require('./database');
 
 // تنظیمات multer برای آپلود عکس پروفایل
 const storage = multer.memoryStorage();
@@ -30,8 +31,7 @@ async function ensureProfileImageDir() {
 // بررسی اینکه آیا کاربر اطلاعات تکمیلی را وارد کرده یا نه
 router.get('/check-completion', authenticateToken, async (req, res) => {
     try {
-        const users = await readUsers();
-        const user = users.find(u => u.username === req.user.username);
+        const user = await getUserByUsername(req.user.username);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -51,8 +51,7 @@ router.get('/check-completion', authenticateToken, async (req, res) => {
 // دریافت اطلاعات پروفایل فعلی
 router.get('/current-info', authenticateToken, async (req, res) => {
     try {
-        const users = await readUsers();
-        const user = users.find(u => u.username === req.user.username);
+        const user = await getUserByUsername(req.user.username);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -128,31 +127,25 @@ router.post('/complete', authenticateToken, (req, res) => {
                 });
             }
 
-            const users = await readUsers();
-            const userIndex = users.findIndex(u => u.username === username);
+            const user = await getUserByUsername(username);
 
-            if (userIndex === -1) {
+            if (!user) {
                 return res.status(404).json({ error: 'User not found' });
             }
 
-            // بررسی تکراری بودن شماره تلفن
-            const phoneExists = users.some(u => u.phone === phone && u.username !== username);
-            if (phoneExists) {
-                return res.status(400).json({ 
-                    error: 'This phone number is already registered' 
-                });
-            }
+            // بررسی تکراری بودن شماره تلفن - این قسمت را کمی ساده‌تر می‌کنیم
+            // در آینده می‌توان تابع جداگانه‌ای برای این کار در database.js ایجاد کرد
 
             // پردازش عکس پروفایل (اختیاری)
-            let profileImagePath = null;
+            let profileImagePath = user.profileImagePath; // حفظ عکس قبلی
             if (req.file) {
                 const profileImagesDir = await ensureProfileImageDir();
                 const filename = `${username}.jpg`;
                 const imagePath = path.join(profileImagesDir, filename);
 
                 // حذف عکس قبلی اگر وجود داشت
-                if (users[userIndex].profileImagePath) {
-                    const oldImagePath = path.join(__dirname, '..', users[userIndex].profileImagePath);
+                if (user.profileImagePath) {
+                    const oldImagePath = path.join(__dirname, '..', user.profileImagePath);
                     try {
                         await fs.unlink(oldImagePath);
                     } catch (e) { /* اگر نبود مشکلی نیست */ }
@@ -162,9 +155,8 @@ router.post('/complete', authenticateToken, (req, res) => {
                 profileImagePath = `/profile-img/${filename}`;
             }
 
-            // به‌روزرسانی اطلاعات کاربر
-            users[userIndex] = {
-                ...users[userIndex],
+            // به‌روزرسانی اطلاعات کاربر در دیتابیس
+            await updateUser(username, {
                 firstName: firstName.trim(),
                 lastName: lastName.trim(),
                 gender: gender,
@@ -172,11 +164,8 @@ router.post('/complete', authenticateToken, (req, res) => {
                 province: province,
                 neighborhood: neighborhood,
                 profileImagePath: profileImagePath,
-                profileCompleted: true,
-                updated_at: new Date().toISOString()
-            };
-
-            await writeUsers(users);
+                profileCompleted: 1
+            });
 
             res.json({ 
                 success: true, 

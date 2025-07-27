@@ -3,8 +3,12 @@ const router = express.Router();
 const { authenticateToken } = require('./auth');
 const fs = require('fs').promises;
 const path = require('path');
+const { 
+    createTicket,
+    getDB,
+    getUserByUsername
+} = require('./database');
 
-const TICKETS_FILE = path.join(__dirname, '..', 'data', 'tickets.json');
 const USERS_FILE = path.join(__dirname, '..', 'data', 'users.json');
 
 // میدلور احراز هویت برای تمام مسیرها
@@ -117,22 +121,14 @@ router.post('/create', async (req, res) => {
             });
         }
 
-        // خواندن تیکت‌های موجود
-        let tickets = [];
-        try {
-            tickets = JSON.parse(await fs.readFile(TICKETS_FILE, 'utf8'));
-        } catch (error) {
-            // فایل وجود ندارد، آرایه خالی استفاده می‌کنیم
-        }
-
-        // ایجاد تیکت جدید
+        // ایجاد تیکت جدید در دیتابیس
         const newTicket = {
             id: Date.now().toString(),
             title: title.trim(),
             description: description.trim(),
-            priority: priority || 'medium', // low, medium, high, urgent
-            category: category || 'general', // general, technical, billing, support
-            status: 'open', // open, in_progress, waiting_for_user, resolved, closed
+            priority: priority || 'medium',
+            category: category || 'general',
+            status: 'open',
             createdBy: username,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -150,8 +146,8 @@ router.post('/create', async (req, res) => {
             attachments: []
         };
 
-        tickets.unshift(newTicket);
-        await fs.writeFile(TICKETS_FILE, JSON.stringify(tickets, null, 2));
+        // ذخیره در دیتابیس
+        await createTicket(newTicket);
 
         res.status(201).json({
             success: true,
@@ -171,15 +167,27 @@ router.get('/my-tickets', async (req, res) => {
         const username = req.user.username;
         const { status, priority, category, page = 1, limit = 10 } = req.query;
 
-        let tickets = [];
+        // خواندن تیکت‌های کاربر از دیتابیس
+        let userTickets = [];
         try {
-            tickets = JSON.parse(await fs.readFile(TICKETS_FILE, 'utf8'));
+            const db = getDB();
+            userTickets = await new Promise((resolve, reject) => {
+                db.all(
+                    "SELECT * FROM tickets WHERE username = ? ORDER BY created_at DESC", 
+                    [username], 
+                    (err, rows) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(rows || []);
+                        }
+                    }
+                );
+            });
         } catch (error) {
+            console.log('خطا در خواندن تیکت‌ها از دیتابیس:', error);
             return res.json({ tickets: [], total: 0, page: 1, totalPages: 0 });
         }
-
-        // فیلتر کردن تیکت‌های کاربر
-        let userTickets = tickets.filter(ticket => ticket.createdBy === username);
 
         // اعمال فیلترها
         if (status) {

@@ -2,6 +2,11 @@ const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
 const router = express.Router();
+const { 
+    createAppointment,
+    getDB,
+    getUserByUsername
+} = require('./database');
 
 // Middleware to verify user authentication
 const authenticateUser = async (req, res, next) => {
@@ -35,14 +40,27 @@ const authenticateUser = async (req, res, next) => {
 // Get all appointments for a user
 router.get('/', authenticateUser, async (req, res) => {
     try {
-        const appointmentsPath = path.join(__dirname, '..', 'data', 'appointments.json');
-        const appointmentsData = await fs.readFile(appointmentsPath, 'utf8');
-        const appointments = JSON.parse(appointmentsData);
-        
-        // Filter appointments for the current user
-        const userAppointments = appointments.appointments.filter(
-            appointment => appointment.agentUsername === req.user.username
-        );
+        // خواندن قرارملاقات‌های کاربر از دیتابیس
+        let userAppointments = [];
+        try {
+            const db = getDB();
+            userAppointments = await new Promise((resolve, reject) => {
+                db.all(
+                    "SELECT * FROM appointments WHERE username = ? ORDER BY created_at DESC", 
+                    [req.user.username], 
+                    (err, rows) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(rows || []);
+                        }
+                    }
+                );
+            });
+        } catch (error) {
+            console.log('خطا در خواندن قرارملاقات‌ها از دیتابیس:', error);
+            userAppointments = [];
+        }
         
         res.json(userAppointments);
     } catch (error) {
@@ -83,27 +101,36 @@ router.post('/', authenticateUser, async (req, res) => {
             return res.status(400).json({ error: 'تاریخ و زمان قرار باید در آینده باشد' });
         }
 
-        // Load existing appointments
-        const appointmentsPath = path.join(__dirname, '..', 'data', 'appointments.json');
-        const appointmentsData = await fs.readFile(appointmentsPath, 'utf8');
-        const appointments = JSON.parse(appointmentsData);
+        // بررسی تداخل قرارملاقات‌ها از دیتابیس
+        let conflictingAppointment = null;
+        try {
+            const db = getDB();
+            const userAppointments = await new Promise((resolve, reject) => {
+                db.all(
+                    "SELECT * FROM appointments WHERE username = ?", 
+                    [req.user.username], 
+                    (err, rows) => {
+                        if (err) reject(err);
+                        else resolve(rows || []);
+                    }
+                );
+            });
 
-        // Check for conflicting appointments
-        const conflictingAppointment = appointments.appointments.find(appointment => {
-            if (appointment.agentUsername !== req.user.username) return false;
-            
-            const existingDateTime = new Date(`${appointment.appointmentDate}T${appointment.appointmentTime}`);
-            const timeDiff = Math.abs(appointmentDateTime - existingDateTime);
-            const hoursDiff = timeDiff / (1000 * 60 * 60);
-            
-            return hoursDiff < 2; // 2 hours buffer
-        });
+            conflictingAppointment = userAppointments.find(appointment => {
+                const existingDateTime = new Date(`${appointment.date}T${appointment.time}`);
+                const timeDiff = Math.abs(appointmentDateTime - existingDateTime);
+                const hoursDiff = timeDiff / (1000 * 60 * 60);
+                return hoursDiff < 2; // 2 hours buffer
+            });
+        } catch (error) {
+            console.log('خطا در بررسی تداخل قرارملاقات‌ها:', error);
+        }
 
         if (conflictingAppointment) {
             return res.status(400).json({ error: 'در این زمان قرار دیگری دارید. لطفاً زمان دیگری انتخاب کنید' });
         }
 
-        // Create new appointment
+        // ایجاد قرارملاقات جدید در دیتابیس
         const newAppointment = {
             id: Date.now().toString(),
             agentUsername: req.user.username,
@@ -120,8 +147,8 @@ router.post('/', authenticateUser, async (req, res) => {
             updatedAt: new Date().toISOString()
         };
 
-        appointments.appointments.push(newAppointment);
-        await fs.writeFile(appointmentsPath, JSON.stringify(appointments, null, 2));
+        // ذخیره در دیتابیس
+        await createAppointment(newAppointment);
 
         res.status(201).json(newAppointment);
     } catch (error) {

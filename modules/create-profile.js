@@ -3,7 +3,7 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs').promises;
 const multer = require('multer');
-const { findUserByUsername, updateUser } = require('./auth');
+const { findUserByUsername, updateUser, authenticateToken } = require('./auth');
 
 // تنظیمات multer برای آپلود عکس پروفایل
 const storage = multer.memoryStorage();

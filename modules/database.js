@@ -9,15 +9,26 @@ const connectDB = async () => {
         const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
         const dbName = process.env.DB_NAME || 'amlakone_db';
         
-        client = new MongoClient(uri);
+        console.log('در حال اتصال به MongoDB...', uri);
+        
+        client = new MongoClient(uri, {
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 10000
+        });
+        
         await client.connect();
+        
+        // Test the connection
+        await client.db(dbName).admin().ping();
+        
         db = client.db(dbName);
         
         console.log('اتصال به MongoDB برقرار شد');
         return db;
     } catch (error) {
-        console.error('خطا در اتصال به MongoDB:', error);
-        throw error;
+        console.error('خطا در اتصال به MongoDB:', error.message);
+        console.log('در حال ادامه با سیستم فایل JSON...');
+        return null;
     }
 };
 

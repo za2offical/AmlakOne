@@ -4,23 +4,17 @@ async function checkAuth() {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            console.log('No token found, redirecting to login');
             window.location.href = '/login';
             return false;
         }
         
-        // بررسی اعتبار توکن با ارسال درخواست به سرور
         const response = await fetch('/api/panel/user-info', {
-            method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Authorization': `Bearer ${token}`
             }
         });
         
-        if (!response.ok) {
-            console.log('Token invalid or expired, redirecting to login');
-            localStorage.removeItem('token');
+        if (response.status === 401) {
             window.location.href = '/login';
             return false;
         }
@@ -28,7 +22,6 @@ async function checkAuth() {
         return true;
     } catch (error) {
         console.error('Auth error:', error);
-        localStorage.removeItem('token');
         window.location.href = '/login';
         return false;
     }
@@ -52,19 +45,10 @@ async function checkPlanLimit() {
             }
         });
         
-        // بررسی خطاهای احراز هویت
-        if (response.status === 401 || response.status === 403) {
-            const data = await response.json();
-            
-            // اگر خطای احراز هویت باشد
-            if (response.status === 401 || (response.status === 403 && data.error && data.error.includes('Authentication'))) {
-                console.log('Authentication failed, redirecting to login');
-                localStorage.removeItem('token');
-                window.location.href = '/login';
-                return false;
-            }
-            
-            // اگر خطای محدودیت پلن باشد
+        const data = await response.json();
+        
+        if (!response.ok) {
+            // اگر خطای 403 باشد (محدودیت پلن)
             if (response.status === 403) {
                 const submitButton = document.querySelector('.submit-button');
                 const form = document.getElementById('productForm');
@@ -83,34 +67,10 @@ async function checkPlanLimit() {
                 showMessage(data.error || 'شما به حد مجاز ایجاد آگهی رسیده‌اید', 'error');
                 return false;
             }
-        }
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
+            
             // برای سایر خطاها، اجازه ادامه بده
             console.warn('Could not check plan limit:', data.error);
             return true;
-        }
-        
-        // بررسی canCreate حتی اگر response موفق باشد
-        if (data.canCreate === false) {
-            const submitButton = document.querySelector('.submit-button');
-            const form = document.getElementById('productForm');
-            
-            // غیرفعال کردن فرم
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.textContent = 'محدودیت پلن';
-            }
-            if (form) {
-                form.style.opacity = '0.6';
-                form.style.pointerEvents = 'none';
-            }
-            
-            // نمایش پیام محدودیت
-            showMessage(data.error || 'شما به حد مجاز ایجاد آگهی رسیده‌اید', 'error');
-            return false;
         }
         
         // اگر همه چیز اوکی است
@@ -420,17 +380,6 @@ async function handleFormSubmit(e) {
             },
             body: formData
         });
-
-        // بررسی خطاهای احراز هویت
-        if (response.status === 401 || response.status === 403) {
-            const data = await response.json();
-            if (data.error && (data.error.includes('Authentication') || data.error.includes('Invalid') || data.error.includes('expired'))) {
-                console.log('Token expired during form submission, redirecting to login');
-                localStorage.removeItem('token');
-                window.location.href = '/login';
-                return;
-            }
-        }
 
         const data = await response.json();
 

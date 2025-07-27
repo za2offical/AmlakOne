@@ -25,6 +25,7 @@
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^8.16.5",
     "multer": "^1.4.5-lts.1",
+    "pg": "^8.16.3",
     "react-countup": "^6.5.3",
     "react-multi-date-picker": "^4.5.2",
     "sanitize-filename": "^1.6.3",

@@ -1,121 +1,148 @@
 
-const mongoose = require('mongoose');
+const { Pool } = require('pg');
 
-// اتصال به MongoDB
+// اتصال به PostgreSQL
+let pool;
 const connectDB = async () => {
     try {
-        const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/amlakone';
-        await mongoose.connect(mongoURI);
-        console.log('MongoDB connected successfully');
+        const databaseUrl = process.env.DATABASE_URL;
+        if (!databaseUrl) {
+            throw new Error('DATABASE_URL environment variable is not set');
+        }
+        
+        pool = new Pool({
+            connectionString: databaseUrl,
+            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+        });
+        
+        // تست اتصال
+        const client = await pool.connect();
+        client.release();
+        console.log('PostgreSQL connected successfully');
+        
+        // ایجاد جدول کاربران در صورت عدم وجود
+        await createUsersTable();
+        
     } catch (error) {
-        console.error('MongoDB connection error:', error);
+        console.error('PostgreSQL connection error:', error);
         process.exit(1);
     }
 };
 
-// اسکیمای کاربر
-const userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    hashedPassword: {
-        type: String,
-        required: true
-    },
-    phone: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    firstName: String,
-    lastName: String,
-    gender: String,
-    province: String,
-    neighborhood: String,
-    profileImagePath: String,
-    profileCompleted: {
-        type: Boolean,
-        default: false
-    },
-    initialized: {
-        type: Boolean,
-        default: false
-    },
-    lastLogin: Date,
-    failedLoginAttempts: {
-        type: Number,
-        default: 0
-    },
-    lockoutUntil: Number,
-    created_at: {
-        type: Date,
-        default: Date.now
-    },
-    updated_at: {
-        type: Date,
-        default: Date.now
+// ایجاد جدول کاربران
+const createUsersTable = async () => {
+    try {
+        const query = `
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(255) UNIQUE NOT NULL,
+                hashed_password VARCHAR(255) NOT NULL,
+                phone VARCHAR(20) UNIQUE NOT NULL,
+                first_name VARCHAR(255),
+                last_name VARCHAR(255),
+                gender VARCHAR(10),
+                province VARCHAR(255),
+                neighborhood VARCHAR(255),
+                profile_image_path VARCHAR(500),
+                profile_completed BOOLEAN DEFAULT false,
+                initialized BOOLEAN DEFAULT false,
+                last_login TIMESTAMP,
+                failed_login_attempts INTEGER DEFAULT 0,
+                lockout_until BIGINT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `;
+        
+        const client = await pool.connect();
+        await client.query(query);
+        client.release();
+        console.log('Users table created or already exists');
+        
+    } catch (error) {
+        console.error('Error creating users table:', error);
     }
-}, {
-    timestamps: false // چون خودمان created_at و updated_at را مدیریت می‌کنیم
-});
+};
 
-// میدلور pre-save برای به‌روزرسانی updated_at
-userSchema.pre('save', function(next) {
-    this.updated_at = new Date();
-    next();
-});
-
-const User = mongoose.model('User', userSchema);
-
-// توابع کمکی برای سازگاری با کد موجود
+// خواندن تمام کاربران
 const readUsers = async () => {
     try {
-        const users = await User.find({}).lean();
-        return users.map(user => ({
-            ...user,
+        const client = await pool.connect();
+        const result = await client.query('SELECT * FROM users ORDER BY created_at DESC');
+        client.release();
+        
+        return result.rows.map(user => ({
+            username: user.username,
+            hashedPassword: user.hashed_password,
+            phone: user.phone,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            gender: user.gender,
+            province: user.province,
+            neighborhood: user.neighborhood,
+            profileImagePath: user.profile_image_path,
+            profileCompleted: user.profile_completed,
+            initialized: user.initialized,
+            lastLogin: user.last_login ? user.last_login.toISOString() : undefined,
+            failedLoginAttempts: user.failed_login_attempts,
+            lockoutUntil: user.lockout_until,
             created_at: user.created_at.toISOString(),
-            updated_at: user.updated_at.toISOString(),
-            lastLogin: user.lastLogin ? user.lastLogin.toISOString() : undefined
+            updated_at: user.updated_at.toISOString()
         }));
     } catch (error) {
-        console.error('Error reading users from MongoDB:', error);
+        console.error('Error reading users from PostgreSQL:', error);
         return [];
     }
 };
 
+// نوشتن تمام کاربران (برای سازگاری با کد قدیمی)
 const writeUsers = async (users) => {
     try {
+        const client = await pool.connect();
+        
         // پاک کردن تمام کاربران موجود
-        await User.deleteMany({});
+        await client.query('DELETE FROM users');
         
         // اضافه کردن کاربران جدید
-        const usersToInsert = users.map(user => ({
-            ...user,
-            created_at: new Date(user.created_at),
-            updated_at: new Date(user.updated_at),
-            lastLogin: user.lastLogin ? new Date(user.lastLogin) : undefined
-        }));
+        for (const user of users) {
+            await createUser(user);
+        }
         
-        await User.insertMany(usersToInsert);
-        console.log('Users written to MongoDB successfully');
+        client.release();
+        console.log('Users written to PostgreSQL successfully');
     } catch (error) {
-        console.error('Error writing users to MongoDB:', error);
+        console.error('Error writing users to PostgreSQL:', error);
         throw error;
     }
 };
 
+// پیدا کردن کاربر با نام کاربری
 const findUserByUsername = async (username) => {
     try {
-        const user = await User.findOne({ username }).lean();
-        if (!user) return null;
+        const client = await pool.connect();
+        const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
+        client.release();
         
+        if (result.rows.length === 0) return null;
+        
+        const user = result.rows[0];
         return {
-            ...user,
+            username: user.username,
+            hashedPassword: user.hashed_password,
+            phone: user.phone,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            gender: user.gender,
+            province: user.province,
+            neighborhood: user.neighborhood,
+            profileImagePath: user.profile_image_path,
+            profileCompleted: user.profile_completed,
+            initialized: user.initialized,
+            lastLogin: user.last_login ? user.last_login.toISOString() : undefined,
+            failedLoginAttempts: user.failed_login_attempts,
+            lockoutUntil: user.lockout_until,
             created_at: user.created_at.toISOString(),
-            updated_at: user.updated_at.toISOString(),
-            lastLogin: user.lastLogin ? user.lastLogin.toISOString() : undefined
+            updated_at: user.updated_at.toISOString()
         };
     } catch (error) {
         console.error('Error finding user by username:', error);
@@ -123,24 +150,76 @@ const findUserByUsername = async (username) => {
     }
 };
 
+// به‌روزرسانی کاربر
 const updateUser = async (username, updateData) => {
     try {
-        const result = await User.findOneAndUpdate(
-            { username },
-            { 
-                ...updateData,
-                updated_at: new Date()
-            },
-            { new: true }
-        ).lean();
+        const client = await pool.connect();
         
-        if (!result) return null;
+        const setClause = [];
+        const values = [];
+        let paramCounter = 1;
         
+        // ساخت پویا کوئری UPDATE
+        Object.keys(updateData).forEach(key => {
+            if (key === 'hashedPassword') {
+                setClause.push(`hashed_password = $${paramCounter}`);
+                values.push(updateData[key]);
+            } else if (key === 'firstName') {
+                setClause.push(`first_name = $${paramCounter}`);
+                values.push(updateData[key]);
+            } else if (key === 'lastName') {
+                setClause.push(`last_name = $${paramCounter}`);
+                values.push(updateData[key]);
+            } else if (key === 'profileImagePath') {
+                setClause.push(`profile_image_path = $${paramCounter}`);
+                values.push(updateData[key]);
+            } else if (key === 'profileCompleted') {
+                setClause.push(`profile_completed = $${paramCounter}`);
+                values.push(updateData[key]);
+            } else if (key === 'failedLoginAttempts') {
+                setClause.push(`failed_login_attempts = $${paramCounter}`);
+                values.push(updateData[key]);
+            } else if (key === 'lockoutUntil') {
+                setClause.push(`lockout_until = $${paramCounter}`);
+                values.push(updateData[key]);
+            } else if (key === 'lastLogin') {
+                setClause.push(`last_login = $${paramCounter}`);
+                values.push(new Date(updateData[key]));
+            } else {
+                setClause.push(`${key} = $${paramCounter}`);
+                values.push(updateData[key]);
+            }
+            paramCounter++;
+        });
+        
+        setClause.push(`updated_at = CURRENT_TIMESTAMP`);
+        values.push(username);
+        
+        const query = `UPDATE users SET ${setClause.join(', ')} WHERE username = $${paramCounter} RETURNING *`;
+        
+        const result = await client.query(query, values);
+        client.release();
+        
+        if (result.rows.length === 0) return null;
+        
+        const user = result.rows[0];
         return {
-            ...result,
-            created_at: result.created_at.toISOString(),
-            updated_at: result.updated_at.toISOString(),
-            lastLogin: result.lastLogin ? result.lastLogin.toISOString() : undefined
+            username: user.username,
+            hashedPassword: user.hashed_password,
+            phone: user.phone,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            gender: user.gender,
+            province: user.province,
+            neighborhood: user.neighborhood,
+            profileImagePath: user.profile_image_path,
+            profileCompleted: user.profile_completed,
+            initialized: user.initialized,
+            lastLogin: user.last_login ? user.last_login.toISOString() : undefined,
+            failedLoginAttempts: user.failed_login_attempts,
+            lockoutUntil: user.lockout_until,
+            created_at: user.created_at.toISOString(),
+            updated_at: user.updated_at.toISOString()
         };
     } catch (error) {
         console.error('Error updating user:', error);
@@ -148,21 +227,59 @@ const updateUser = async (username, updateData) => {
     }
 };
 
+// ایجاد کاربر جدید
 const createUser = async (userData) => {
     try {
-        const newUser = new User({
-            ...userData,
-            created_at: new Date(),
-            updated_at: new Date()
-        });
+        const client = await pool.connect();
         
-        const savedUser = await newUser.save();
+        const query = `
+            INSERT INTO users (
+                username, hashed_password, phone, first_name, last_name, 
+                gender, province, neighborhood, profile_image_path, 
+                profile_completed, initialized, last_login, 
+                failed_login_attempts, lockout_until
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            RETURNING *
+        `;
         
+        const values = [
+            userData.username,
+            userData.hashedPassword,
+            userData.phone,
+            userData.firstName || null,
+            userData.lastName || null,
+            userData.gender || null,
+            userData.province || null,
+            userData.neighborhood || null,
+            userData.profileImagePath || null,
+            userData.profileCompleted || false,
+            userData.initialized || false,
+            userData.lastLogin ? new Date(userData.lastLogin) : null,
+            userData.failedLoginAttempts || 0,
+            userData.lockoutUntil || null
+        ];
+        
+        const result = await client.query(query, values);
+        client.release();
+        
+        const user = result.rows[0];
         return {
-            ...savedUser.toObject(),
-            created_at: savedUser.created_at.toISOString(),
-            updated_at: savedUser.updated_at.toISOString(),
-            lastLogin: savedUser.lastLogin ? savedUser.lastLogin.toISOString() : undefined
+            username: user.username,
+            hashedPassword: user.hashed_password,
+            phone: user.phone,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            gender: user.gender,
+            province: user.province,
+            neighborhood: user.neighborhood,
+            profileImagePath: user.profile_image_path,
+            profileCompleted: user.profile_completed,
+            initialized: user.initialized,
+            lastLogin: user.last_login ? user.last_login.toISOString() : undefined,
+            failedLoginAttempts: user.failed_login_attempts,
+            lockoutUntil: user.lockout_until,
+            created_at: user.created_at.toISOString(),
+            updated_at: user.updated_at.toISOString()
         };
     } catch (error) {
         console.error('Error creating user:', error);
@@ -170,9 +287,12 @@ const createUser = async (userData) => {
     }
 };
 
+// حذف کاربر
 const deleteUser = async (username) => {
     try {
-        await User.findOneAndDelete({ username });
+        const client = await pool.connect();
+        await client.query('DELETE FROM users WHERE username = $1', [username]);
+        client.release();
         console.log(`User ${username} deleted successfully`);
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -182,7 +302,6 @@ const deleteUser = async (username) => {
 
 module.exports = {
     connectDB,
-    User,
     readUsers,
     writeUsers,
     findUserByUsername,

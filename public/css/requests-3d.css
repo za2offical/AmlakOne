@@ -1438,3 +1438,17 @@
         gap: 0.5rem;
     }
 }
+
+/* plan badge */
+.plan-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }

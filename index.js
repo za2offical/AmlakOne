@@ -72,7 +72,7 @@ app.use('/api/admin/tickets', adminTicketsRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/ticketing', ticketingRouter);
 app.use('/api/requests-3d', requests3dRouter);
-app.use('/api/plans', plansRouter.router);
+app.use('/api/plans', plansRouter);
 
 // Serve HTML files
 app.get('/editor', (req, res) => {

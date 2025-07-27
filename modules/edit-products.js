@@ -80,26 +80,17 @@ router.put('/update/:productId', upload.array('newImages', 10), async (req, res)
             conversionDeductAmount, conversionAddAmount
         } = req.body;
 
-        const userProductsPath = path.join('data', 'products', `${username}.json`);
+        // دریافت محصول از دیتابیس
+        const product = await getProductById(productId);
 
-        // بررسی وجود فایل محصولات
-        try {
-            await fs.access(userProductsPath);
-        } catch {
-            return res.status(404).json({ message: 'محصولی یافت نشد' });
-        }
-
-        // خواندن محصولات
-        const data = await fs.readFile(userProductsPath, 'utf8');
-        const productsData = JSON.parse(data);
-
-        // پیدا کردن محصول
-        const productIndex = productsData.products.findIndex(p => p.id === productId);
-        if (productIndex === -1) {
+        if (!product) {
             return res.status(404).json({ message: 'محصول یافت نشد' });
         }
 
-        const product = productsData.products[productIndex];
+        // بررسی مالکیت محصول
+        if (product.username !== username) {
+            return res.status(403).json({ message: 'شما مجاز به ویرایش این محصول نیستید' });
+        }
 
         // بروزرسانی فیلدها
         if (propertyType !== undefined) product.propertyType = propertyType;
@@ -108,7 +99,7 @@ router.put('/update/:productId', upload.array('newImages', 10), async (req, res)
         if (constructionYear !== undefined) product.constructionYear = constructionYear ? parseInt(constructionYear) : null;
         if (description !== undefined) product.description = description;
         if (location !== undefined) product.location = location;
-        
+
         // بروزرسانی اطلاعات خصوصی
         if (propertyAddress !== undefined) product.propertyAddress = propertyAddress;
         if (ownerName !== undefined) product.ownerName = ownerName;
@@ -146,7 +137,7 @@ router.put('/update/:productId', upload.array('newImages', 10), async (req, res)
             if (deposit !== undefined && deposit !== '') product.deposit = parseInt(deposit);
             if (monthlyRent !== undefined && monthlyRent !== '') product.monthlyRent = parseInt(monthlyRent);
             product.allowConversion = allowConversion === 'true';
-            
+
             if (product.allowConversion) {
                 if (conversionDeductAmount !== undefined && conversionDeductAmount !== '') {
                     product.conversionDeductAmount = parseInt(conversionDeductAmount);
@@ -158,7 +149,7 @@ router.put('/update/:productId', upload.array('newImages', 10), async (req, res)
                 delete product.conversionDeductAmount;
                 delete product.conversionAddAmount;
             }
-            
+
             // حذف فیلدهای فروش اگر نوع به اجاره تغییر کرده
             delete product.salePrice;
             delete product.pricePerMeter;
@@ -352,7 +343,7 @@ router.post('/bulk-delete', async (req, res) => {
 
         // پیدا کردن محصولات برای حذف
         const productsToDelete = productsData.products.filter(p => productIds.includes(p.id));
-        
+
         if (productsToDelete.length === 0) {
             return res.status(404).json({ message: 'هیچ محصولی برای حذف یافت نشد' });
         }

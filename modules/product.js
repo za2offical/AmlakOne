@@ -6,6 +6,12 @@ const multer = require('multer');
 const sharp = require('sharp');
 const sanitize = require('sanitize-filename');
 const { authenticateToken } = require('./auth');
+const { 
+    createProduct, 
+    getProductsByUser, 
+    getUserByUsername,
+    getDB 
+} = require('./database');
 
 // تنظیمات آپلود فایل
 const storage = multer.memoryStorage();
@@ -39,22 +45,36 @@ async function ensureDirectories(username) {
     };
 }
 
-// خواندن اطلاعات محصولات کاربر
-async function readUserProducts(dataPath) {
+// خواندن اطلاعات محصولات کاربر از دیتابیس
+async function readUserProducts(username) {
     try {
-        const data = await fs.readFile(dataPath, 'utf8');
-        const userData = JSON.parse(data);
-        
-        // اضافه کردن فیلد total_products_created اگر وجود نداشته باشد
-        if (typeof userData.total_products_created !== 'number') {
-            userData.total_products_created = userData.products?.length || 0;
+        // دریافت اطلاعات کاربر از دیتابیس
+        const user = await getUserByUsername(username);
+        if (!user) {
+            return { 
+                products: [],
+                total_products_created: 0,
+                product_limit: null,
+                user_level: 0
+            };
         }
+
+        // دریافت محصولات کاربر از دیتابیس
+        const products = await getProductsByUser(username);
         
-        return userData;
+        return {
+            products: products || [],
+            total_products_created: products ? products.length : 0,
+            product_limit: user.product_limit || null,
+            user_level: user.user_level || 0
+        };
     } catch (error) {
+        console.log('خطا در خواندن محصولات کاربر:', error);
         return { 
             products: [],
-            total_products_created: 0
+            total_products_created: 0,
+            product_limit: null,
+            user_level: 0
         };
     }
 }
@@ -195,8 +215,8 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
             description: req.body.description
         });
 
-        const { dataPath, imagesDir } = await ensureDirectories(username);
-        const userData = await readUserProducts(dataPath);
+        const { imagesDir } = await ensureDirectories(username);
+        const userData = await readUserProducts(username);
 
         // بررسی محدودیت با تابع داخلی
         const limitCheck = checkUserLimit(userData);
@@ -289,19 +309,10 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
             });
         }
 
-        userData.products.push(newProduct);
+        // ذخیره محصول در دیتابیس
+        await createProduct(username, newProduct);
 
-        // افزایش تعداد کل آگهی‌های ایجاد شده
-        if (typeof userData.total_products_created !== 'number') {
-            userData.total_products_created = userData.products.length;
-        } else {
-            userData.total_products_created += 1;
-        }
-
-        // ذخیره اطلاعات
-        await fs.writeFile(dataPath, JSON.stringify(userData, null, 2));
-
-        console.log(`Product created successfully for user ${username}. Total products: ${userData.products.length}, Total created: ${userData.total_products_created}`);
+        console.log(`Product created successfully for user ${username} in database.`);
 
         res.status(201).json({ 
             success: true, 
@@ -317,9 +328,8 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
 // دریافت محصولات کاربر
 router.get('/my-products', authenticateToken, async (req, res) => {
     try {
-        const { dataPath } = await ensureDirectories(req.user.username);
-        const userData = await readUserProducts(dataPath);
-        res.json(userData.products);
+        const products = await getProductsByUser(req.user.username);
+        res.json(products || []);
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -334,8 +344,7 @@ router.get('/check-limit', authenticateToken, async (req, res) => {
             return res.status(401).json({ error: 'کاربر احراز هویت نشده است' });
         }
 
-        const { dataPath } = await ensureDirectories(username);
-        const userData = await readUserProducts(dataPath);
+        const userData = await readUserProducts(username);
 
         const limitCheck = checkUserLimit(userData);
         

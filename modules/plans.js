@@ -41,6 +41,7 @@ async function applyProductLimitToUser(username, level, levelChangedAt = null) {
   try {
     const limit = LEVEL_LIMITS[level];
     const userProductsPath = path.join(productsDir, `${username}.json`);
+    const currentTime = levelChangedAt || new Date().toISOString();
     
     // بررسی وجود فایل محصولات کاربر
     try {
@@ -50,12 +51,12 @@ async function applyProductLimitToUser(username, level, levelChangedAt = null) {
       const emptyData = { 
         products: [],
         user_level: level,
-        level_changed_at: levelChangedAt || new Date().toISOString(),
+        level_changed_at: currentTime,
         product_limit: limit,
         total_products_created: 0 // تعداد کل آگهی‌های ایجاد شده
       };
       await fs.writeFile(userProductsPath, JSON.stringify(emptyData, null, 2));
-      console.log(`فایل محصولات برای کاربر ${username} ایجاد شد با سطح ${level}`);
+      console.log(`فایل محصولات برای کاربر ${username} ایجاد شد با سطح ${level} در زمان ${currentTime}`);
       return;
     }
 
@@ -71,10 +72,20 @@ async function applyProductLimitToUser(username, level, levelChangedAt = null) {
       userData.total_products_created = userData.products.length;
     }
 
+    // بررسی تغییر سطح و ثبت زمان دقیق
+    const oldLevel = userData.user_level;
+    const levelChanged = oldLevel !== level;
+    
     // به‌روزرسانی اطلاعات سطح کاربر در فایل محصولات
     userData.user_level = level;
     userData.product_limit = limit;
-    if (levelChangedAt) {
+    
+    // اگر سطح تغییر کرده باشد، زمان تغییر را ثبت کن
+    if (levelChanged) {
+      userData.level_changed_at = currentTime;
+      console.log(`فایل محصولات کاربر ${username} به‌روزرسانی شد: سطح ${oldLevel} → ${level} در ${currentTime}`);
+    } else if (levelChangedAt) {
+      // اگر زمان از بیرون ارسال شده، آن را ثبت کن
       userData.level_changed_at = levelChangedAt;
     }
 
@@ -89,6 +100,7 @@ async function applyProductLimitToUser(username, level, levelChangedAt = null) {
     }
     
     await fs.writeFile(userProductsPath, JSON.stringify(userData, null, 2));
+    console.log(`فایل محصولات کاربر ${username} با محدودیت ${limit === null ? 'نامحدود' : limit} ذخیره شد`);
   } catch (error) {
     console.error(`خطا در اعمال محدودیت محصول برای ${username}:`, error);
   }
@@ -123,25 +135,30 @@ async function syncPlansWithUsers() {
     for (const user of users) {
       // اگر کاربر در plans.json وجود نداشت، اضافه کن با level 0
       if (!plans[user.username]) {
+        const newUserTime = currentTime;
         plans[user.username] = {
           username: user.username,
           level: 0,
-          level_changed_at: currentTime,
-          created_at: currentTime,
-          updated_at: currentTime
+          level_changed_at: newUserTime,
+          created_at: newUserTime,
+          updated_at: newUserTime
         };
         hasChanges = true;
-        console.log(`کاربر جدید ${user.username} به plans اضافه شد با زمان ${currentTime}`);
+        console.log(`کاربر جدید ${user.username} به plans اضافه شد با زمان ${newUserTime}`);
         
-        // اعمال محدودیت محصول با زمان
-        await applyProductLimitToUser(user.username, 0, currentTime);
+        // اعمال محدودیت محصول با زمان دقیق
+        await applyProductLimitToUser(user.username, 0, newUserTime);
       } else {
         // اگر کاربر وجود دارد ولی level_changed_at ندارد، اضافه کن
         if (!plans[user.username].level_changed_at) {
-          plans[user.username].level_changed_at = plans[user.username].created_at || currentTime;
+          const fallbackTime = plans[user.username].created_at || currentTime;
+          plans[user.username].level_changed_at = fallbackTime;
           plans[user.username].updated_at = currentTime;
           hasChanges = true;
-          console.log(`زمان تغییر سطح برای کاربر ${user.username} اضافه شد`);
+          console.log(`زمان تغییر سطح برای کاربر ${user.username} اضافه شد: ${fallbackTime}`);
+          
+          // همگام‌سازی زمان در فایل محصولات کاربر
+          await applyProductLimitToUser(user.username, plans[user.username].level, fallbackTime);
         }
       }
     }
@@ -159,7 +176,7 @@ async function syncPlansWithUsers() {
     // اگر تغییری ایجاد شده، فایل را ذخیره کن
     if (hasChanges) {
       await writePlans(plans);
-      console.log('فایل plans.json به‌روزرسانی شد');
+      console.log(`فایل plans.json به‌روزرسانی شد در ${currentTime}`);
     }
     
     return plans;
@@ -250,11 +267,14 @@ async function setUserLevel(username, level) {
   
   // اگر سطح تغییر کرده باشد
   if (oldLevel !== level) {
+    // به‌روزرسانی اطلاعات در plans.json
     plans[username].level = level;
     plans[username].level_changed_at = currentTime;
     plans[username].updated_at = currentTime;
     
+    // ذخیره تغییرات در plans.json
     await writePlans(plans);
+    console.log(`plans.json به‌روزرسانی شد: کاربر ${username} سطح ${oldLevel} → ${level} در ${currentTime}`);
     
     // اعمال محدودیت محصول جدید در real-time با زمان دقیق
     await applyProductLimitToUser(username, level, currentTime);

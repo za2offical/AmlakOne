@@ -1,11 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('./auth');
-const fs = require('fs').promises;
-const path = require('path');
-
-const TICKETS_FILE = path.join(__dirname, '..', 'data', 'tickets.json');
-const USERS_FILE = path.join(__dirname, '..', 'data', 'users.json');
+const { getAllUsers, createTicket, updateTicket, deleteTicket } = require('./database');
 
 // میدلور احراز هویت و بررسی دسترسی ادمین
 router.use(authenticateToken);
@@ -23,7 +19,7 @@ router.use(async (req, res, next) => {
 // تابع دریافت نام کامل کاربران برای تیکت
 async function getTicketUsersInfo(ticket) {
     try {
-        const users = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
+        const users = await getAllUsers();
         const createdByUser = users.find(u => u.username === ticket.createdBy);
         const assignedToUser = ticket.assignedTo ? users.find(u => u.username === ticket.assignedTo) : null;
         
@@ -48,7 +44,7 @@ async function getTicketUsersInfo(ticket) {
 // تابع دریافت نام کامل کاربران برای پیام‌ها
 async function getMessagesWithUserNames(messages) {
     try {
-        const users = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
+        const users = await getAllUsers();
         return messages.map(message => {
             let fullName = message.sender;
             

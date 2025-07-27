@@ -1,10 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
 const fs = require('fs').promises;
+const path = require('path');
 const multer = require('multer');
 const { authenticateToken } = require('./auth');
-const sanitize = require('sanitize-filename');
+const { 
+    create3DRequest, 
+    get3DRequests, 
+    get3DRequestById,
+    update3DRequest,
+    getDB 
+} = require('./database');
 
 // تنظیمات آپلود ویدیو
 const storage = multer.memoryStorage();

@@ -12,7 +12,7 @@ const productsDir = path.join(__dirname, '../data/products');
 
 // محدودیت‌های محصول بر اساس سطح
 const LEVEL_LIMITS = {
-  0: 20,
+  0: 6,
   1: 35,
   2: 60,
   3: null // unlimited

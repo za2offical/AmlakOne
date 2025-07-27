@@ -81,8 +81,8 @@
       "pricePerMeter": 85470085
     }
   ],
-  "user_level": 1,
-  "product_limit": 35,
-  "level_changed_at": "2025-07-27T00:39:24.857Z",
+  "user_level": 3,
+  "product_limit": null,
+  "level_changed_at": "2025-07-27T00:47:14.401Z",
   "total_products_created": 3
 }

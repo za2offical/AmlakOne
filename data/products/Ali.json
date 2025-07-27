@@ -91,45 +91,10 @@
       "updated_at": "2025-07-25T05:20:03.992Z",
       "salePrice": 5000000000,
       "pricePerMeter": 62500000
-    },
-    {
-      "id": "1753422679387",
-      "propertyType": "sale",
-      "bedrooms": 2,
-      "area": 90,
-      "constructionYear": 1389,
-      "images": [
-        "/images/img-Ali/product-1753422679002-0.jpg",
-        "/images/img-Ali/product-1753422679095-1.jpg",
-        "/images/img-Ali/product-1753422679151-2.jpg",
-        "/images/img-Ali/product-1753422679235-3.jpg",
-        "/images/img-Ali/product-1753422679310-4.jpg"
-      ],
-      "facilities": {
-        "parking": true,
-        "storage": true,
-        "elevator": false,
-        "balcony": true,
-        "parquet": false,
-        "westernToilet": false
-      },
-      "privateInfo": {
-        "propertyAddress": "",
-        "ownerName": "",
-        "ownerPhone": "",
-        "propertyNumber": "",
-        "tenantName": "",
-        "tenantPhone": ""
-      },
-      "description": "",
-      "created_at": "2025-07-25T05:51:19.387Z",
-      "updated_at": "2025-07-25T05:51:19.387Z",
-      "salePrice": 5000000000,
-      "pricePerMeter": 55555556
     }
   ],
   "user_level": 0,
-  "product_limit": 20,
+  "product_limit": 6,
   "level_changed_at": "2025-07-26T23:57:04.399Z",
   "total_products_created": 4
 }

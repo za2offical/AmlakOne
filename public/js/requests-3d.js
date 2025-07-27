@@ -1,6 +1,7 @@
 let allProducts = [];
 let activeRequests = [];
 let selectedProductId = null;
+let userPlanStatus = { hasPlan: false, remainingUses: 0 };
 
 // بررسی وضعیت احراز هویت
 async function checkAuth() {
@@ -15,6 +16,21 @@ async function checkAuth() {
         console.error('Authentication error:', error);
         window.location.href = '/login';
         return null;
+    }
+}
+
+// بررسی وضعیت پلن کاربر
+async function checkUserPlan() {
+    try {
+        const response = await fetch('/api/requests-3d/check-plan');
+        if (response.ok) {
+            userPlanStatus = await response.json();
+            return userPlanStatus;
+        }
+        return { hasPlan: false, remainingUses: 0 };
+    } catch (error) {
+        console.error('Error checking user plan:', error);
+        return { hasPlan: false, remainingUses: 0 };
     }
 }
 
@@ -34,6 +50,18 @@ async function loadUserProducts() {
         // بررسی احراز هویت
         const userInfo = await checkAuth();
         if (!userInfo) return;
+
+        // بررسی وضعیت پلن کاربر
+        const planStatus = await checkUserPlan();
+        
+        // اگر کاربر پلن ندارد، حالت ماتی نمایش داده شود
+        if (!planStatus.hasPlan) {
+            showNoPlanState();
+            return;
+        }
+        
+        // نمایش تعداد استفاده‌های باقی‌مانده
+        updatePlanDisplay(planStatus.remainingUses);
 
         // بارگذاری محصولات با داده‌های زنده - هیچ کش‌ای استفاده نمی‌شود
         const timestamp = Date.now() + Math.random(); // اطمینان از یکتا بودن
@@ -605,9 +633,22 @@ async function submitRequest() {
                 showSuccessModal();
                 loadActiveRequests(); // بارگذاری مجدد درخواست‌های فعال
                 displayProducts(allProducts); // به‌روزرسانی نمایش محصولات
+                
+                // کاهش تعداد استفاده‌های نمایش داده شده
+                if (userPlanStatus.remainingUses > 0) {
+                    userPlanStatus.remainingUses--;
+                    updatePlanDisplay(userPlanStatus.remainingUses);
+                }
             } else {
                 const errorResponse = JSON.parse(xhr.responseText);
-                showError(errorResponse.error || 'خطا در ارسال درخواست');
+                
+                // اگر خطای نبود پلن باشد
+                if (errorResponse.needsPlan) {
+                    closeUploadModal();
+                    showNoPlanState();
+                } else {
+                    showError(errorResponse.error || 'خطا در ارسال درخواست');
+                }
             }
         });
 
@@ -877,6 +918,145 @@ function updateProductCardsStatus() {
 function forceRefresh() {
     console.log('Force refreshing live data...');
     loadUserProducts();
+}
+
+// نمایش حالت بدون پلن
+function showNoPlanState() {
+    const mainContent = document.querySelector('.main-content');
+    mainContent.innerHTML = `
+        <div class="no-plan-overlay">
+            <div class="no-plan-content">
+                <div class="no-plan-icon">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
+                        <path d="M12.5 2.5L21 7v10l-8.5 4.5L4 17V7l8.5-4.5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <path d="M12.5 2.5v19M4 7l8.5 4.5L21 7" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    </svg>
+                </div>
+                <h2>پلن 3D فعالی ندارید</h2>
+                <p>برای استفاده از سرویس درخواست 3D، ابتدا باید از فروشگاه یک پلن سه‌بعدی تهیه کنید.</p>
+                <div class="no-plan-actions">
+                    <button class="btn-primary" onclick="window.location.href='/shop'">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.41c-.15.25-.25.55-.25.85 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                        </svg>
+                        خرید پلن 3D
+                    </button>
+                    <button class="btn-outline" onclick="window.location.href='/panel'">
+                        بازگشت به پنل
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // اضافه کردن استایل برای حالت ماتی
+    document.body.style.overflow = 'hidden';
+    const style = document.createElement('style');
+    style.textContent = `
+        .no-plan-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .no-plan-content {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 2rem;
+        }
+        
+        .no-plan-icon {
+            margin-bottom: 2rem;
+            color: #6b7280;
+        }
+        
+        .no-plan-content h2 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .no-plan-content p {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .no-plan-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .no-plan-actions button {
+            min-width: 140px;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// نمایش تعداد استفاده‌های باقی‌مانده
+function updatePlanDisplay(remainingUses) {
+    const header = document.querySelector('.page-header .header-center');
+    
+    // حذف نمایش قبلی
+    const existingPlanDisplay = header.querySelector('.plan-status');
+    if (existingPlanDisplay) {
+        existingPlanDisplay.remove();
+    }
+    
+    // اضافه کردن نمایش جدید
+    const planDisplay = document.createElement('div');
+    planDisplay.className = 'plan-status';
+    planDisplay.innerHTML = `
+        <div class="plan-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.5 2.5L21 7v10l-8.5 4.5L4 17V7l8.5-4.5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            </svg>
+            <span>${remainingUses} درخواست باقی‌مانده</span>
+        </div>
+    `;
+    
+    header.appendChild(planDisplay);
+    
+    // اضافه کردن استایل
+    const style = document.createElement('style');
+    style.textContent = `
+        .plan-status {
+            margin-top: 0.5rem;
+        }
+        
+        .plan-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .plan-badge svg {
+            opacity: 0.9;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // بارگذاری اولیه

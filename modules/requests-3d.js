@@ -61,8 +61,75 @@ async function getUserProducts(username) {
     }
 }
 
+// خواندن پلن‌های 3D
+async function read3DPlans() {
+    try {
+        const planPath = path.join(__dirname, '..', '3D', 'plan3D.json');
+        const data = await fs.readFile(planPath, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading 3D plans:', error);
+        return {};
+    }
+}
+
+// به‌روزرسانی پلن‌های 3D
+async function update3DPlans(plans) {
+    try {
+        const planPath = path.join(__dirname, '..', '3D', 'plan3D.json');
+        await fs.writeFile(planPath, JSON.stringify(plans, null, 2));
+        return true;
+    } catch (error) {
+        console.error('Error updating 3D plans:', error);
+        return false;
+    }
+}
+
+// بررسی وجود پلن برای کاربر
+async function checkUserPlan(username) {
+    const plans = await read3DPlans();
+    const userPlan = plans[username];
+    
+    return {
+        hasPlan: userPlan !== undefined,
+        remainingUses: userPlan || 0
+    };
+}
+
+// کاهش تعداد استفاده پلن
+async function decrementPlanUsage(username) {
+    const plans = await read3DPlans();
+    
+    if (plans[username] && plans[username] > 0) {
+        plans[username]--;
+        
+        // اگر تعداد استفاده به صفر رسید، کاربر را حذف کن
+        if (plans[username] === 0) {
+            delete plans[username];
+        }
+        
+        await update3DPlans(plans);
+        return true;
+    }
+    
+    return false;
+}
+
 // میدلور احراز هویت
 router.use(authenticateToken);
+
+// بررسی وضعیت پلن کاربر
+router.get('/check-plan', async (req, res) => {
+    try {
+        const username = req.user.username;
+        const planStatus = await checkUserPlan(username);
+        
+        res.json(planStatus);
+    } catch (error) {
+        console.error('Error checking user plan:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 // دریافت محصولات کاربر برای نمایش در صفحه درخواست 3D
 router.get('/user-products', async (req, res) => {
@@ -135,6 +202,15 @@ router.post('/submit-request', async (req, res) => {
                 return res.status(400).json({ error: 'Product ID and video file are required' });
             }
 
+            // بررسی وجود پلن برای کاربر
+            const planStatus = await checkUserPlan(username);
+            if (!planStatus.hasPlan || planStatus.remainingUses <= 0) {
+                return res.status(403).json({ 
+                    error: 'شما پلن 3D فعالی ندارید. لطفاً ابتدا از فروشگاه پلن تهیه کنید.',
+                    needsPlan: true
+                });
+            }
+
             const { dataFile, userVideoDir } = await ensureDirectories(username);
             
             // خواندن درخواست‌های موجود
@@ -185,6 +261,58 @@ router.post('/submit-request', async (req, res) => {
             res.status(500).json({ error: 'Internal server error' });
         }
     });
+});
+
+// endpoint برای تایید درخواست (برای ادمین‌ها)
+router.post('/approve-request', async (req, res) => {
+    try {
+        const { requestId, url } = req.body;
+        
+        if (!requestId) {
+            return res.status(400).json({ error: 'Request ID is required' });
+        }
+
+        const { dataFile } = await ensureDirectories('temp');
+        const requestsData = await read3DRequests(dataFile);
+        
+        // پیدا کردن درخواست
+        const requestIndex = requestsData.requests.findIndex(r => r.id === requestId);
+        
+        if (requestIndex === -1) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+
+        const request = requestsData.requests[requestIndex];
+        
+        // اگر درخواست قبلاً تایید نشده باشد
+        if (request.status !== 'تایید شده') {
+            // تایید درخواست
+            requestsData.requests[requestIndex].status = 'تایید شده';
+            requestsData.requests[requestIndex].url = url || null;
+            requestsData.requests[requestIndex].updatedAt = new Date().toISOString();
+            
+            // ذخیره تغییرات درخواست
+            await fs.writeFile(dataFile, JSON.stringify(requestsData, null, 2));
+            
+            // کاهش تعداد استفاده از پلن کاربر
+            const username = request.username;
+            const decrementResult = await decrementPlanUsage(username);
+            
+            if (!decrementResult) {
+                console.warn(`Could not decrement plan usage for user: ${username}`);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'درخواست با موفقیت تایید شد',
+            request: requestsData.requests[requestIndex]
+        });
+
+    } catch (error) {
+        console.error('Error approving request:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 module.exports = router;

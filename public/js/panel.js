@@ -451,10 +451,14 @@
             method: 'POST',
             credentials: 'same-origin'
         });
+        // پاک کردن محلی کوکی ها
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         window.location.href = '/login';
     } catch (error) {
         console.error('Error during logout:', error);
-        showError('خطا در خروج از حساب. لطفاً دوباره تلاش کنید.');
+        // حتی در صورت خطا، کاربر را به صفحه لاگین هدایت کن
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = '/login';
     }
   }
 

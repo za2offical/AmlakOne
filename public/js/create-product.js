@@ -19,9 +19,17 @@ async function checkPlanLimit() {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
+        
+        // اگر درخواست ناموفق بود، اجازه ادامه بده
+        if (!response.ok) {
+            console.warn('Could not check plan limit, allowing form usage');
+            return true;
+        }
+        
         const data = await response.json();
         
-        if (!response.ok) {
+        // فقط در صورتی که واقعاً محدودیت وجود دارد، فرم را غیرفعال کن
+        if (data.error && data.used !== undefined && data.limit !== null && data.used >= data.limit) {
             const submitButton = document.querySelector('.submit-button');
             const form = document.getElementById('productForm');
             
@@ -67,6 +75,19 @@ async function checkPlanLimit() {
         return true;
     } catch (error) {
         console.error('Error checking plan limit:', error);
+        // در صورت خطا، فرم را فعال نگه دار
+        const submitButton = document.querySelector('.submit-button');
+        const form = document.getElementById('productForm');
+        
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = 'ایجاد آگهی';
+        }
+        if (form) {
+            form.style.opacity = '1';
+            form.style.pointerEvents = 'auto';
+        }
+        
         return true; // در صورت خطا اجازه ادامه
     }
 }
@@ -364,13 +385,42 @@ async function handleFormSubmit(e) {
     }
 }
 
+// فعال کردن مجدد فرم در صورت مشکل
+function resetForm() {
+    const submitButton = document.querySelector('.submit-button');
+    const form = document.getElementById('productForm');
+    
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'ایجاد آگهی';
+    }
+    if (form) {
+        form.style.opacity = '1';
+        form.style.pointerEvents = 'auto';
+    }
+    
+    // حذف پیام‌های قبلی
+    const existingWarnings = document.querySelectorAll('.plan-info-warning');
+    existingWarnings.forEach(warning => warning.remove());
+    
+    showMessage('فرم دوباره فعال شد', 'success');
+}
+
 // راه‌اندازی اولیه
 document.addEventListener('DOMContentLoaded', async function() {
     // بررسی احراز هویت
     checkAuth();
     
+    // اطمینان از فعال بودن اولیه فرم
+    resetForm();
+    
     // بررسی محدودیت پلن
-    await checkPlanLimit();
+    const planCheckResult = await checkPlanLimit();
+    
+    // اگر بررسی پلن ناموفق بود، فرم را فعال نگه دار
+    if (!planCheckResult) {
+        console.log('Plan limit reached, form disabled');
+    }
     
     // راه‌اندازی شمارنده کاراکتر
     updateCharCount();
@@ -383,4 +433,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // تنظیم event listener برای آپلود تصاویر
     document.getElementById('images').addEventListener('change', previewImages);
+    
+    // اضافه کردن کلیدهای میانبر برای دیباگ
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + Shift + R برای ریست فرم
+        if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+            e.preventDefault();
+            resetForm();
+        }
+    });
 });

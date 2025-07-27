@@ -1,6 +1,8 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
+const { connectDB } = require('./modules/database');
 const editorRouter = require('./modules/editor');
 const loginRouter = require('./modules/login');
 const panelRouter = require('./modules/panel');
@@ -20,7 +22,10 @@ const signupRouter = require('./modules/signup'); // Added signup router
 const plansModule = require('./modules/plans');
 
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT || 5000;
+
+// اتصال به MongoDB
+connectDB();
 
 // Trust proxy برای rate limiting در محیط production
 app.set('trust proxy', 1);
@@ -152,6 +157,6 @@ app.get('*', (req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'public', 'page-not-found.html'));
 });
 
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

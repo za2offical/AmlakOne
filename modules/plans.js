@@ -4,10 +4,9 @@ const fsSync = require('fs');
 const path = require('path');
 const { authenticateToken } = require('./auth');
 const router = express.Router();
-const { readUsers } = require('./auth');
+const { readUsers } = require('./database');
 
 const plansFilePath = path.join(__dirname, '../data/plans.json');
-const usersFilePath = path.join(__dirname, '../data/users.json');
 
 // خواندن فایل plans.json
 async function readPlans() {
@@ -88,11 +87,11 @@ async function syncPlansWithUsers() {
 // رصد تغییرات فایل users.json و همگام‌سازی خودکار
 function startFileWatcher() {
   try {
-    if (!fsSync.existsSync(usersFilePath)) {
+    if (!fsSync.existsSync(plansFilePath)) {
       console.log('فایل users.json موجود نیست، رصدگر منتظر ایجاد فایل است...');
     }
 
-    const watcher = fsSync.watch(usersFilePath, { persistent: true }, async (eventType, filename) => {
+    const watcher = fsSync.watch(plansFilePath, { persistent: true }, async (eventType, filename) => {
       if (eventType === 'change' || eventType === 'rename') {
         console.log(`تغییر در فایل users.json تشخیص داده شد (${eventType})`);
 

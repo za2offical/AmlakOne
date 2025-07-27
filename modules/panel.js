@@ -1,10 +1,11 @@
+
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('./auth');
+const { findUserByUsername, updateUser } = require('./database');
 const fs = require('fs').promises;
 const path = require('path');
 
-const USERS_FILE = path.join(__dirname, '..', 'data', 'users.json');
 const NOTIFICATIONS_FILE = path.join(__dirname, '..', 'data', 'notifications.json');
 
 // میدلور احراز هویت برای تمام مسیرهای پنل
@@ -14,17 +15,17 @@ router.use(authenticateToken);
 router.get('/user-info', async (req, res) => {
     try {
         console.log('User info requested for:', req.user.username);
-        const users = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
-        const user = users.find(u => u.username === req.user.username);
+        const user = await findUserByUsername(req.user.username);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
         // حذف اطلاعات حساس قبل از ارسال
-        const { password, ...userInfo } = user;
+        const { hashedPassword, password, ...userInfo } = user;
         res.json(userInfo);
     } catch (error) {
+        console.error('Error getting user info:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -32,22 +33,22 @@ router.get('/user-info', async (req, res) => {
 // بروزرسانی اطلاعات کاربر
 router.post('/initialize', async (req, res) => {
     try {
-        const users = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
-        const userIndex = users.findIndex(u => u.username === req.user.username);
+        const user = await findUserByUsername(req.user.username);
 
-        if (userIndex === -1) {
+        if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        if (!users[userIndex].initialized) {
-            users[userIndex].initialized = true;
-            users[userIndex].lastLogin = new Date().toISOString();
-
-            await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
+        if (!user.initialized) {
+            await updateUser(req.user.username, {
+                initialized: true,
+                lastLogin: new Date().toISOString()
+            });
         }
 
         res.json({ success: true });
     } catch (error) {
+        console.error('Error initializing user:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

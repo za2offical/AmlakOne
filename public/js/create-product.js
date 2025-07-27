@@ -14,9 +14,18 @@ async function checkAuth() {
 // بررسی محدودیت پلن کاربر
 async function checkPlanLimit() {
     try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found');
+            window.location.href = '/login';
+            return false;
+        }
+
         const response = await fetch('/api/product/check-limit', {
+            method: 'GET',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
         });
         
@@ -362,8 +371,17 @@ async function handleFormSubmit(e) {
     }
 
     try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+
         const response = await fetch('/api/product/create', {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
             body: formData
         });
 

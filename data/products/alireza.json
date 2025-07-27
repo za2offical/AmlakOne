@@ -190,5 +190,8 @@
       "tenantPhone": "09987654321",
       "mainImage": "/images/img-alireza/product-1753030547919-581454389.jpg"
     }
-  ]
+  ],
+  "user_level": 0,
+  "product_limit": 20,
+  "level_changed_at": "2025-07-26T23:57:04.399Z"
 }

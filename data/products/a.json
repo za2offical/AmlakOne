@@ -67,5 +67,8 @@
       "conversionDeductAmount": 1000000000,
       "conversionAddAmount": 25000000
     }
-  ]
+  ],
+  "user_level": 0,
+  "product_limit": 20,
+  "level_changed_at": "2025-07-26T23:57:04.399Z"
 }

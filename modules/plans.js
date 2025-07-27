@@ -1,9 +1,9 @@
 const express = require('express');
-const router = express.Router();
-const path = require('path');
 const fs = require('fs').promises;
-const { authenticateToken } = require('./auth');
 const fsSync = require('fs');
+const path = require('path');
+const { authenticateToken } = require('./auth');
+const router = express.Router();
 const { readUsers } = require('./auth');
 
 const plansFilePath = path.join(__dirname, '../data/plans.json');

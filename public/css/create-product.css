@@ -1,13 +1,81 @@
-
 /* استایل‌های هشدار محدودیت */
 .limit-warning {
-    background: linear-gradient(135deg, #ff6b6b, #ff5252);
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
     color: white;
     padding: 20px;
-    margin: 20px 0;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-    animation: slideDown 0.5s ease-out;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(238, 90, 36, 0.3);
+    animation: slideInDown 0.5s ease-out;
+}
+
+.status-info {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+    text-align: center;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.error-status {
+    background: linear-gradient(135deg, #ff9a9e, #fecfef);
+    color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(255, 154, 158, 0.3);
+    animation: shake 0.5s ease-in-out;
+}
+
+.refresh-button {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+.refresh-button:hover {
+    background: #ee5a24;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
 }
 
 .warning-content {
@@ -914,7 +982,7 @@ small {
   border-radius: 10px;
   border: none;
   box-shadow: none;
-  transition: opacity 0.33s cubic-bezier(.4,0,.2,1), transform 0.33s cubic-bezier(.4,0,.2,1);
+  transition: opacity 0.33s cubic-bezier(.4,0,.2,1);
     }
 .optional-section.show {
   display: block;

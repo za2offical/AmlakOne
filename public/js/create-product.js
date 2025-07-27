@@ -1,3 +1,6 @@
+// متغیر برای نگهداری interval
+let statusCheckInterval = null;
+
 // بررسی وضعیت احراز هویت و محدودیت‌ها
 async function checkAuth() {
     try {
@@ -8,9 +11,38 @@ async function checkAuth() {
         
         // بررسی محدودیت ایجاد آگهی
         await checkCreateLimit();
+        
+        // راه‌اندازی بررسی دوره‌ای وضعیت
+        startPeriodicStatusCheck();
     } catch (error) {
         console.error('Auth error:', error);
         window.location.href = '/login';
+    }
+}
+
+// راه‌اندازی بررسی دوره‌ای وضعیت
+function startPeriodicStatusCheck() {
+    // پاک کردن interval قبلی اگر وجود داشته باشد
+    if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+    }
+    
+    // بررسی هر 30 ثانیه
+    statusCheckInterval = setInterval(async () => {
+        try {
+            await checkCreateLimit();
+            console.log('Status updated automatically');
+        } catch (error) {
+            console.error('Error in periodic status check:', error);
+        }
+    }, 30000);
+}
+
+// متوقف کردن بررسی دوره‌ای
+function stopPeriodicStatusCheck() {
+    if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+        statusCheckInterval = null;
     }
 }
 
@@ -20,6 +52,9 @@ async function checkCreateLimit() {
         const response = await fetch('/api/product/check-limit');
         const data = await response.json();
         
+        // پاک کردن وضعیت‌های قبلی
+        clearPreviousStatus();
+        
         if (!data.canCreate) {
             // نمایش پیام محدودیت
             showLimitWarning(data);
@@ -28,10 +63,28 @@ async function checkCreateLimit() {
         } else {
             // نمایش وضعیت فعلی کاربر
             showCurrentStatus(data);
+            // فعال کردن فرم در صورت غیرفعال بودن
+            enableForm();
         }
+        
+        // لاگ کردن وضعیت فعلی
+        console.log(`Status check completed - Can create: ${data.canCreate}, Used: ${data.used}/${data.limit || 'unlimited'}`);
     } catch (error) {
         console.error('Error checking limit:', error);
+        // در صورت خطا، فرم را غیرفعال کن
+        showErrorStatus();
     }
+}
+
+// پاک کردن وضعیت‌های قبلی
+function clearPreviousStatus() {
+    const existingWarning = document.querySelector('.limit-warning');
+    const existingStatus = document.querySelector('.status-info');
+    const existingError = document.querySelector('.error-status');
+    
+    if (existingWarning) existingWarning.remove();
+    if (existingStatus) existingStatus.remove();
+    if (existingError) existingError.remove();
 }
 
 // نمایش هشدار محدودیت
@@ -77,6 +130,38 @@ function disableForm() {
     
     form.style.opacity = '0.5';
     form.style.pointerEvents = 'none';
+}
+
+// فعال کردن فرم
+function enableForm() {
+    const form = document.getElementById('productForm');
+    const inputs = form.querySelectorAll('input, select, textarea, button');
+    
+    inputs.forEach(input => {
+        input.disabled = false;
+    });
+    
+    form.style.opacity = '1';
+    form.style.pointerEvents = 'auto';
+}
+
+// نمایش وضعیت خطا
+function showErrorStatus() {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-status';
+    errorDiv.innerHTML = `
+        <div class="error-content">
+            <h3>⚠️ خطا در بررسی وضعیت</h3>
+            <p>امکان بررسی محدودیت‌های شما وجود ندارد. لطفاً صفحه را تازه‌سازی کنید.</p>
+            <button onclick="location.reload()" class="refresh-button">تازه‌سازی صفحه</button>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(errorDiv, container.firstChild);
+    
+    // غیرفعال کردن فرم
+    disableForm();
 }
 
 // نمایش/مخفی کردن امکانات اختیاری
@@ -408,4 +493,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // تنظیم event listener برای آپلود تصاویر
     document.getElementById('images').addEventListener('change', previewImages);
+    
+    // بررسی وضعیت هنگام فوکس مجدد صفحه
+    window.addEventListener('focus', function() {
+        console.log('Page focused - checking status');
+        checkCreateLimit();
+    });
+    
+    // بررسی وضعیت هنگام تغییر visibility صفحه
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            console.log('Page became visible - checking status');
+            checkCreateLimit();
+        }
+    });
+    
+    // متوقف کردن بررسی دوره‌ای هنگام خروج از صفحه
+    window.addEventListener('beforeunload', function() {
+        stopPeriodicStatusCheck();
+    });
 });

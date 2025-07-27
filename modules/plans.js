@@ -8,6 +8,7 @@ const { readUsers } = require('./auth');
 
 const plansFilePath = path.join(__dirname, '../data/plans.json');
 const usersFilePath = path.join(__dirname, '../data/users.json');
+const productsDir = path.join(__dirname, '../data/products');
 
 // محدودیت‌های محصول بر اساس سطح
 const LEVEL_LIMITS = {
@@ -35,19 +36,20 @@ async function writePlans(plans) {
   await fs.writeFile(plansFilePath, JSON.stringify(plans, null, 2));
 }
 
-// اعمال محدودیت محصول برای کاربر
-async function applyProductLimit(username, level) {
+// اعمال محدودیت محصول برای کاربر در real-time
+async function applyProductLimitToUser(username, level) {
   try {
     const limit = LEVEL_LIMITS[level];
-    if (limit === null) return; // unlimited
-
-    const userProductsPath = path.join(__dirname, '..', 'data', 'products', `${username}.json`);
+    const userProductsPath = path.join(productsDir, `${username}.json`);
     
     // بررسی وجود فایل محصولات کاربر
     try {
       await fs.access(userProductsPath);
     } catch {
-      // فایل وجود ندارد، نیازی به محدودسازی نیست
+      // فایل وجود ندارد، فایل خالی ایجاد کن
+      const emptyData = { products: [] };
+      await fs.writeFile(userProductsPath, JSON.stringify(emptyData, null, 2));
+      console.log(`فایل محصولات برای کاربر ${username} ایجاد شد`);
       return;
     }
 
@@ -55,20 +57,37 @@ async function applyProductLimit(username, level) {
     const userData = JSON.parse(userProductsData);
 
     if (!userData.products || !Array.isArray(userData.products)) {
-      return;
+      userData.products = [];
     }
 
-    // اگر تعداد محصولات از حد مجاز بیشتر باشد، محدود کن
-    if (userData.products.length > limit) {
+    // اگر unlimited نباشد و تعداد محصولات از حد مجاز بیشتر باشد
+    if (limit !== null && userData.products.length > limit) {
       // نگه‌داری جدیدترین محصولات (بر اساس created_at)
       userData.products.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const removedProducts = userData.products.slice(limit);
       userData.products = userData.products.slice(0, limit);
       
       await fs.writeFile(userProductsPath, JSON.stringify(userData, null, 2));
-      console.log(`محصولات کاربر ${username} به ${limit} عدد محدود شد`);
+      console.log(`محصولات کاربر ${username} از ${userData.products.length + removedProducts.length} به ${limit} عدد محدود شد`);
     }
   } catch (error) {
     console.error(`خطا در اعمال محدودیت محصول برای ${username}:`, error);
+  }
+}
+
+// اعمال محدودیت برای تمام کاربران
+async function applyLimitsToAllUsers() {
+  try {
+    const plans = await readPlans();
+    
+    for (const username in plans) {
+      const userPlan = plans[username];
+      await applyProductLimitToUser(username, userPlan.level);
+    }
+    
+    console.log('محدودیت‌ها برای تمام کاربران اعمال شد');
+  } catch (error) {
+    console.error('خطا در اعمال محدودیت‌ها:', error);
   }
 }
 
@@ -88,7 +107,6 @@ async function syncPlansWithUsers() {
           username: user.username,
           level: 0,
           level_changed_at: new Date().toISOString(),
-          product_limit: LEVEL_LIMITS[0],
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
@@ -96,7 +114,7 @@ async function syncPlansWithUsers() {
         console.log(`کاربر جدید ${user.username} به plans اضافه شد`);
         
         // اعمال محدودیت محصول
-        await applyProductLimit(user.username, 0);
+        await applyProductLimitToUser(user.username, 0);
       }
     }
     
@@ -137,7 +155,8 @@ function startFileWatcher() {
         setTimeout(async () => {
           try {
             await syncPlansWithUsers();
-            console.log('همگام‌سازی خودکار plans با users انجام شد');
+            await applyLimitsToAllUsers();
+            console.log('همگام‌سازی خودکار plans و اعمال محدودیت‌ها انجام شد');
           } catch (error) {
             console.error('خطا در همگام‌سازی خودکار:', error);
           }
@@ -145,21 +164,23 @@ function startFileWatcher() {
       }
     });
 
-    // همگام‌سازی دوره‌ای هر 5 ثانیه
+    // همگام‌سازی دوره‌ای هر 10 ثانیه
     const periodicSync = setInterval(async () => {
       try {
         await syncPlansWithUsers();
-        console.log('همگام‌سازی دوره‌ای plans انجام شد');
+        await applyLimitsToAllUsers();
+        console.log('همگام‌سازی دوره‌ای plans و اعمال محدودیت‌ها انجام شد');
       } catch (error) {
         console.error('خطا در همگام‌سازی دوره‌ای:', error);
       }
-    }, 5000);
+    }, 10000);
 
-    console.log('رصدگر فایل users.json شروع شد - plans هم با file watcher و هم هر 5 ثانیه همگام‌سازی می‌شود');
+    console.log('رصدگر فایل users.json شروع شد - plans و محدودیت‌ها real-time اعمال می‌شوند');
     
     // همگام‌سازی اولیه
-    syncPlansWithUsers().then(() => {
-      console.log('همگام‌سازی اولیه plans انجام شد');
+    syncPlansWithUsers().then(async () => {
+      await applyLimitsToAllUsers();
+      console.log('همگام‌سازی اولیه plans و اعمال محدودیت‌ها انجام شد');
     }).catch(error => {
       console.error('خطا در همگام‌سازی اولیه:', error);
     });
@@ -176,11 +197,11 @@ async function getUserLevel(username) {
   return plans[username] ? plans[username].level : 0;
 }
 
-// دریافت محدودیت محصول کاربر
+// دریافت محدودیت محصول کاربر (از LEVEL_LIMITS)
 async function getUserProductLimit(username) {
   const plans = await syncPlansWithUsers();
   if (!plans[username]) return LEVEL_LIMITS[0];
-  return plans[username].product_limit;
+  return LEVEL_LIMITS[plans[username].level];
 }
 
 // تنظیم سطح یک کاربر
@@ -201,16 +222,15 @@ async function setUserLevel(username, level) {
   // اگر سطح تغییر کرده باشد
   if (oldLevel !== level) {
     plans[username].level = level;
-    plans[username].product_limit = LEVEL_LIMITS[level];
     plans[username].level_changed_at = new Date().toISOString();
     plans[username].updated_at = new Date().toISOString();
     
     await writePlans(plans);
     
-    // اعمال محدودیت محصول جدید
-    await applyProductLimit(username, level);
+    // اعمال محدودیت محصول جدید در real-time
+    await applyProductLimitToUser(username, level);
     
-    console.log(`سطح کاربر ${username} از ${oldLevel} به ${level} تغییر کرد`);
+    console.log(`سطح کاربر ${username} از ${oldLevel} به ${level} تغییر کرد و محدودیت‌ها اعمال شد`);
   }
   
   return plans[username];
@@ -224,7 +244,7 @@ async function getAllPlans() {
 // API Routes
 
 // دریافت تمام plans
-router.get('/plans', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const plans = await getAllPlans();
     res.json(plans);
@@ -235,7 +255,7 @@ router.get('/plans', async (req, res) => {
 });
 
 // دریافت سطح یک کاربر خاص
-router.get('/plans/:username', async (req, res) => {
+router.get('/:username', async (req, res) => {
   try {
     const { username } = req.params;
     const plans = await syncPlansWithUsers();
@@ -253,7 +273,7 @@ router.get('/plans/:username', async (req, res) => {
 });
 
 // دریافت محدودیت محصول کاربر
-router.get('/plans/:username/limit', async (req, res) => {
+router.get('/:username/limit', async (req, res) => {
   try {
     const { username } = req.params;
     const limit = await getUserProductLimit(username);
@@ -265,7 +285,7 @@ router.get('/plans/:username/limit', async (req, res) => {
 });
 
 // تنظیم سطح یک کاربر
-router.put('/plans/:username', async (req, res) => {
+router.put('/:username', async (req, res) => {
   try {
     const { username } = req.params;
     const { level } = req.body;
@@ -276,7 +296,7 @@ router.put('/plans/:username', async (req, res) => {
     
     const updatedPlan = await setUserLevel(username, level);
     res.json({ 
-      message: 'سطح کاربر با موفقیت به‌روزرسانی شد',
+      message: 'سطح کاربر با موفقیت به‌روزرسانی شد و محدودیت‌ها اعمال شد',
       plan: updatedPlan 
     });
   } catch (error) {
@@ -286,11 +306,12 @@ router.put('/plans/:username', async (req, res) => {
 });
 
 // هماهنگ‌سازی دستی plans با users
-router.post('/plans/sync', async (req, res) => {
+router.post('/sync', async (req, res) => {
   try {
     const plans = await syncPlansWithUsers();
+    await applyLimitsToAllUsers();
     res.json({ 
-      message: 'هماهنگ‌سازی با موفقیت انجام شد',
+      message: 'هماهنگ‌سازی و اعمال محدودیت‌ها با موفقیت انجام شد',
       plans 
     });
   } catch (error) {
@@ -313,5 +334,7 @@ module.exports = {
   getAllPlans,
   startFileWatcher,
   fileWatcherSystem,
-  LEVEL_LIMITS
+  LEVEL_LIMITS,
+  applyProductLimitToUser,
+  applyLimitsToAllUsers
 };

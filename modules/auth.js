@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const { getAllUsers, createUser, getUserByUsername, updateUser } = require('./database');
 
 // احراز هویت - بدون سیستم کش
-const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-key-replace-in-production';
 
 // خواندن کاربران از دیتابیس
 async function readUsers() {
@@ -88,42 +88,5 @@ module.exports = {
     writeUsers,
     hashPassword,
     comparePassword,
-    JWT_SECRET
-};
-const jwt = require('jsonwebtoken');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here';
-
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Access token required' });
-    }
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: 'Invalid or expired token' });
-        }
-        req.user = user;
-        next();
-    });
-};
-
-const generateToken = (user) => {
-    return jwt.sign(
-        { 
-            username: user.username,
-            level: user.level || 0
-        },
-        JWT_SECRET,
-        { expiresIn: '24h' }
-    );
-};
-
-module.exports = {
-    authenticateToken,
-    generateToken,
     JWT_SECRET
 };

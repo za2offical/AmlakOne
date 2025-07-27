@@ -17,7 +17,7 @@ router.use(authenticateToken);
 // بررسی دسترسی ادمین
 router.use(async (req, res, next) => {
     try {
-        if (req.user.username !== 'admin') {
+        if (req.user.username !== process.env.ADMIN_USERNAME && req.user.username !== 'admin') {
             return res.status(403).json({ error: 'Access denied - Admin only' });
         }
         next();

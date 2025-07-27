@@ -1,27 +1,45 @@
 
+// متغیرهای سراسری
+let userCanCreateProduct = false;
+let compressedFiles = [];
+
 // بررسی وضعیت احراز هویت
 async function checkAuth() {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
+            console.log('No token found, redirecting to login');
             window.location.href = '/login';
             return false;
         }
         
+        console.log('Token found, checking authentication...');
         const response = await fetch('/api/panel/user-info', {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
         });
         
-        if (response.status === 401) {
+        console.log('Auth check response status:', response.status);
+        
+        if (response.status === 401 || response.status === 403) {
+            console.log('Authentication failed, redirecting to login');
+            localStorage.removeItem('token');
             window.location.href = '/login';
             return false;
         }
         
+        if (!response.ok) {
+            console.warn('Auth check failed with status:', response.status);
+            return false;
+        }
+        
+        const userData = await response.json();
+        console.log('User authenticated successfully:', userData.username);
         return true;
     } catch (error) {
-        console.error('Auth error:', error);
+        console.error('Auth check error:', error);
         window.location.href = '/login';
         return false;
     }
@@ -32,11 +50,11 @@ async function checkPlanLimit() {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            console.error('No token found');
-            window.location.href = '/login';
+            console.error('No token found for plan limit check');
             return false;
         }
 
+        console.log('Checking plan limit...');
         const response = await fetch('/api/product/check-limit', {
             method: 'GET',
             headers: {
@@ -45,32 +63,22 @@ async function checkPlanLimit() {
             }
         });
         
+        console.log('Plan limit response status:', response.status);
         const data = await response.json();
+        console.log('Plan limit response data:', data);
         
         if (!response.ok) {
-            // اگر خطای 403 باشد (محدودیت پلن)
             if (response.status === 403) {
-                const submitButton = document.querySelector('.submit-button');
-                const form = document.getElementById('productForm');
-                
-                // غیرفعال کردن فرم
-                if (submitButton) {
-                    submitButton.disabled = true;
-                    submitButton.textContent = 'محدودیت پلن';
-                }
-                if (form) {
-                    form.style.opacity = '0.6';
-                    form.style.pointerEvents = 'none';
-                }
-                
-                // نمایش پیام محدودیت
+                // محدودیت پلن
+                console.log('Plan limit reached');
+                disableForm();
                 showMessage(data.error || 'شما به حد مجاز ایجاد آگهی رسیده‌اید', 'error');
                 return false;
             }
             
-            // اگر خطای 401 باشد (مشکل احراز هویت)
             if (response.status === 401) {
-                console.error('Authentication error:', data.error);
+                // مشکل احراز هویت
+                console.error('Authentication error during plan check');
                 showMessage('مشکل در احراز هویت. لطفا دوباره وارد شوید.', 'error');
                 setTimeout(() => {
                     window.location.href = '/login';
@@ -78,33 +86,133 @@ async function checkPlanLimit() {
                 return false;
             }
             
-            // برای سایر خطاها، اجازه ادامه بده
-            console.warn('Could not check plan limit:', data.error);
+            // سایر خطاها - اجازه ادامه
+            console.warn('Plan limit check failed, but allowing to continue:', data);
             return true;
         }
         
-        // اگر همه چیز اوکی است
-        console.log('Plan check successful:', data);
-        
-        // نمایش اطلاعات پلن در بالای صفحه
+        // نمایش اطلاعات پلن
         if (data.userLevel !== undefined) {
-            const planInfo = document.createElement('div');
-            planInfo.className = 'plan-info-success';
-            planInfo.innerHTML = `
-                <p>سطح کاربری: ${data.userLevel} | آگهی‌های ایجاد شده: ${data.used}/${data.limit === null ? 'نامحدود' : data.limit}</p>
-            `;
-            
-            const container = document.querySelector('.container');
-            if (container) {
-                container.insertBefore(planInfo, container.firstChild);
-            }
+            showPlanInfo(data);
         }
         
+        console.log('Plan check passed successfully');
         return true;
     } catch (error) {
         console.error('Error checking plan limit:', error);
-        // در صورت خطا، فرم را فعال نگه دار
+        // در صورت خطا، اجازه ادامه
         return true;
+    }
+}
+
+// غیرفعال کردن فرم
+function disableForm() {
+    const form = document.getElementById('productForm');
+    const submitButton = document.querySelector('.submit-button');
+    
+    if (form) {
+        form.style.opacity = '0.6';
+        form.style.pointerEvents = 'none';
+        
+        // غیرفعال کردن همه input ها
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.disabled = true;
+        });
+    }
+    
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'محدودیت پلن';
+        submitButton.style.backgroundColor = '#ccc';
+    }
+}
+
+// نمایش اطلاعات پلن
+function showPlanInfo(data) {
+    const planInfo = document.createElement('div');
+    planInfo.className = 'plan-info-success';
+    planInfo.style.cssText = `
+        background: #e8f5e8;
+        border: 1px solid #4caf50;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        text-align: center;
+        color: #2e7d32;
+    `;
+    planInfo.innerHTML = `
+        <p>سطح کاربری: ${data.userLevel} | آگهی‌های ایجاد شده: ${data.used}/${data.limit === null ? 'نامحدود' : data.limit}</p>
+    `;
+    
+    const container = document.querySelector('.container');
+    if (container && container.firstChild) {
+        container.insertBefore(planInfo, container.firstChild.nextSibling);
+    }
+}
+
+// نمایش پیام
+function showMessage(text, type) {
+    const messageDiv = document.getElementById('message');
+    if (messageDiv) {
+        messageDiv.className = `message ${type}`;
+        messageDiv.textContent = text;
+        messageDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 5000);
+    } else {
+        // اگر element پیام وجود نداشت، alert استفاده کن
+        alert(text);
+    }
+}
+
+// تبدیل وضعیت فیلدهای قیمت
+function togglePriceFields() {
+    const propertyType = document.getElementById('propertyType').value;
+    const saleFields = document.getElementById('saleFields');
+    const rentFields = document.getElementById('rentFields');
+    
+    if (!propertyType || !saleFields || !rentFields) return;
+    
+    if (propertyType === 'sale') {
+        saleFields.style.display = 'block';
+        rentFields.style.display = 'none';
+        
+        const salePrice = document.getElementById('salePrice');
+        const deposit = document.getElementById('deposit');
+        
+        if (salePrice) salePrice.required = true;
+        if (deposit) deposit.required = false;
+    } else if (propertyType === 'rent') {
+        saleFields.style.display = 'none';
+        rentFields.style.display = 'block';
+        
+        const salePrice = document.getElementById('salePrice');
+        const deposit = document.getElementById('deposit');
+        
+        if (salePrice) salePrice.required = false;
+        if (deposit) deposit.required = true;
+    } else {
+        saleFields.style.display = 'none';
+        rentFields.style.display = 'none';
+        
+        const salePrice = document.getElementById('salePrice');
+        const deposit = document.getElementById('deposit');
+        
+        if (salePrice) salePrice.required = false;
+        if (deposit) deposit.required = false;
+    }
+}
+
+// تبدیل وضعیت فیلدهای تبدیل ودیعه
+function toggleConversionFields() {
+    const allowConversion = document.getElementById('allowConversion');
+    const conversionFields = document.getElementById('conversionFields');
+    
+    if (allowConversion && conversionFields) {
+        conversionFields.style.display = allowConversion.checked ? 'block' : 'none';
     }
 }
 
@@ -112,6 +220,8 @@ async function checkPlanLimit() {
 function toggleOptionalFeatures() {
     const section = document.getElementById('optionalFeatures');
     const button = document.querySelector('.toggle-button');
+    
+    if (!section || !button) return;
     
     if (section.classList.contains('show')) {
         section.classList.remove('show');
@@ -124,46 +234,10 @@ function toggleOptionalFeatures() {
     }
 }
 
-// تبدیل وضعیت فیلدهای قیمت بر اساس نوع آگهی
-function togglePriceFields() {
-    const propertyType = document.getElementById('propertyType').value;
-    const saleFields = document.getElementById('saleFields');
-    const rentFields = document.getElementById('rentFields');
-    
-    if (propertyType === 'sale') {
-        saleFields.style.display = 'block';
-        rentFields.style.display = 'none';
-        
-        // تنظیم required برای فیلدهای فروش
-        document.getElementById('salePrice').required = true;
-        document.getElementById('deposit').required = false;
-    } else if (propertyType === 'rent') {
-        saleFields.style.display = 'none';
-        rentFields.style.display = 'block';
-        
-        // تنظیم required برای فیلدهای اجاره
-        document.getElementById('salePrice').required = false;
-        document.getElementById('deposit').required = true;
-    } else {
-        saleFields.style.display = 'none';
-        rentFields.style.display = 'none';
-        
-        // حذف همه required ها
-        document.getElementById('salePrice').required = false;
-        document.getElementById('deposit').required = false;
-    }
-}
-
-// تبدیل وضعیت فیلدهای تبدیل ودیعه
-function toggleConversionFields() {
-    const allowConversion = document.getElementById('allowConversion').checked;
-    const conversionFields = document.getElementById('conversionFields');
-    
-    conversionFields.style.display = allowConversion ? 'block' : 'none';
-}
-
 // فرمت‌دهی قیمت با کاما
 function formatPrice(input) {
+    if (!input || !input.value) return;
+    
     let value = input.value.replace(/,/g, '');
     if (value && !isNaN(value)) {
         input.value = parseInt(value).toLocaleString();
@@ -193,16 +267,20 @@ function initPriceFormatting() {
 function updateCharCount() {
     const textarea = document.getElementById('description');
     const charCount = document.getElementById('charCount');
+    
+    if (!textarea || !charCount) return;
+    
     const count = textarea.value.length;
     charCount.textContent = count + '/200';
+    
     if (count >= 180) {
         charCount.classList.add('warning');
-        } else {
+    } else {
         charCount.classList.remove('warning');
-        }
+    }
 }
 
-// فشرده‌سازی تصویر در سمت کلاینت
+// فشرده‌سازی تصویر
 function compressImage(file, quality = 0.7, maxWidth = 1200, maxHeight = 900) {
     return new Promise((resolve) => {
         const canvas = document.createElement('canvas');
@@ -210,7 +288,6 @@ function compressImage(file, quality = 0.7, maxWidth = 1200, maxHeight = 900) {
         const img = new Image();
 
         img.onload = function() {
-            // محاسبه ابعاد جدید
             let { width, height } = img;
             
             if (width > maxWidth || height > maxHeight) {
@@ -221,11 +298,7 @@ function compressImage(file, quality = 0.7, maxWidth = 1200, maxHeight = 900) {
 
             canvas.width = width;
             canvas.height = height;
-
-            // رسم تصویر
             ctx.drawImage(img, 0, 0, width, height);
-
-            // تبدیل به blob
             canvas.toBlob(resolve, 'image/jpeg', quality);
         };
 
@@ -236,26 +309,24 @@ function compressImage(file, quality = 0.7, maxWidth = 1200, maxHeight = 900) {
 // نمایش پیش‌نمایش تصاویر
 async function previewImages(event) {
     const preview = document.getElementById('imagePreview');
-    // اگر قبلاً عکس‌هایی انتخاب شده‌اند، آن‌ها را نگه دار
-    let compressedFiles = window.compressedFiles ? [...window.compressedFiles] : [];
-
+    if (!preview) return;
+    
     const files = Array.from(event.target.files);
 
-    // مجموع عکس‌های قبلی و جدید نباید بیشتر از 5 شود
     if (compressedFiles.length + files.length > 5) {
         showMessage('حداکثر 5 تصویر می‌توانید آپلود کنید', 'error');
         event.target.value = '';
         return;
     }
 
-    // فشرده‌سازی و اضافه کردن عکس‌های جدید
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        // بررسی حجم اولیه
         const fileSizeMB = file.size / (1024 * 1024);
+        
         let quality = 0.8;
         let maxWidth = 1200;
         let maxHeight = 900;
+        
         if (fileSizeMB > 8) {
             quality = 0.5;
             maxWidth = 800;
@@ -264,14 +335,15 @@ async function previewImages(event) {
             quality = 0.6;
             maxWidth = 1000;
             maxHeight = 750;
-        } else if (fileSizeMB > 2) {
-            quality = 0.7;
         }
+        
         try {
             let compressedFile = await compressImage(file, quality, maxWidth, maxHeight);
+            
             if (compressedFile.size > 4 * 1024 * 1024) {
                 compressedFile = await compressImage(file, quality * 0.5, maxWidth * 0.8, maxHeight * 0.8);
             }
+            
             compressedFiles.push(compressedFile);
         } catch (error) {
             console.error('Error compressing image:', error);
@@ -280,10 +352,7 @@ async function previewImages(event) {
         }
     }
 
-    // ذخیره فایل‌های فشرده شده
-    window.compressedFiles = compressedFiles;
-
-    // نمایش پیش‌نمایش همه عکس‌ها
+    // نمایش پیش‌نمایش
     preview.innerHTML = '';
     for (let i = 0; i < compressedFiles.length; i++) {
         const file = compressedFiles[i];
@@ -291,96 +360,116 @@ async function previewImages(event) {
         reader.onload = function(e) {
             const img = document.createElement('img');
             img.src = e.target.result;
+            img.style.cssText = 'width: 100px; height: 100px; object-fit: cover; margin: 5px; border-radius: 5px;';
             preview.appendChild(img);
         }
         reader.readAsDataURL(file);
     }
-    // ریست input تا بتوان دوباره همان عکس را انتخاب کرد
-    event.target.value = '';
-}
-
-// نمایش پیام
-function showMessage(text, type) {
-    const messageDiv = document.getElementById('message');
-    messageDiv.className = `message ${type}`;
-    messageDiv.textContent = text;
-    messageDiv.style.display = 'block';
     
-    setTimeout(() => {
-        messageDiv.style.display = 'none';
-    }, 5000);
+    event.target.value = '';
 }
 
 // ارسال فرم
 async function handleFormSubmit(e) {
     e.preventDefault();
 
-    const submitButton = document.querySelector('.submit-button');
-    submitButton.disabled = true;
-    submitButton.textContent = 'در حال ارسال...';
-
-    const formData = new FormData();
-    
-    // اطلاعات اصلی
-    formData.append('propertyType', document.getElementById('propertyType').value);
-    formData.append('bedrooms', document.getElementById('bedrooms').value);
-    formData.append('area', document.getElementById('area').value);
-    formData.append('constructionYear', document.getElementById('constructionYear').value);
-
-    // قیمت‌گذاری
-    const propertyType = document.getElementById('propertyType').value;
-    if (propertyType === 'sale') {
-        formData.append('salePrice', unformatPrice(document.getElementById('salePrice').value));
-    } else if (propertyType === 'rent') {
-        formData.append('deposit', unformatPrice(document.getElementById('deposit').value));
-        formData.append('monthlyRent', unformatPrice(document.getElementById('monthlyRent').value));
-        formData.append('allowConversion', document.getElementById('allowConversion').checked);
-        
-        if (document.getElementById('allowConversion').checked) {
-            formData.append('conversionDeductAmount', unformatPrice(document.getElementById('conversionDeductAmount').value));
-            formData.append('conversionAddAmount', unformatPrice(document.getElementById('conversionAddAmount').value));
-        }
+    if (!userCanCreateProduct) {
+        showMessage('شما اجازه ایجاد آگهی ندارید', 'error');
+        return;
     }
 
-    // امکانات
-    formData.append('parking', document.querySelector('input[name="parking"]').checked);
-    formData.append('storage', document.querySelector('input[name="storage"]').checked);
-    formData.append('elevator', document.querySelector('input[name="elevator"]').checked);
-    formData.append('balcony', document.querySelector('input[name="balcony"]').checked);
-    formData.append('parquet', document.querySelector('input[name="parquet"]').checked);
-    formData.append('westernToilet', document.querySelector('input[name="westernToilet"]').checked);
-
-    // اطلاعات خصوصی
-    formData.append('propertyAddress', document.getElementById('propertyAddress').value);
-    formData.append('ownerName', document.getElementById('ownerName').value);
-    formData.append('ownerPhone', document.getElementById('ownerPhone').value);
-    formData.append('propertyNumber', document.getElementById('propertyNumber').value);
-    formData.append('tenantName', document.getElementById('tenantName').value);
-    formData.append('tenantPhone', document.getElementById('tenantPhone').value);
-
-    // توضیحات
-    formData.append('description', document.getElementById('description').value);
-
-    // تصاویر
-    if (window.compressedFiles && window.compressedFiles.length > 0) {
-        for (let i = 0; i < window.compressedFiles.length; i++) {
-            const file = window.compressedFiles[i];
-            const fileName = `compressed_image_${i}.jpg`;
-            const namedFile = new File([file], fileName, { type: 'image/jpeg' });
-            formData.append('images', namedFile);
-        }
-    } else {
-        const imageInput = document.getElementById('images');
-        for (const file of imageInput.files) {
-            formData.append('images', file);
-        }
+    const submitButton = document.querySelector('.submit-button');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'در حال ارسال...';
     }
 
     try {
+        const formData = new FormData();
+        
+        // اطلاعات اصلی
+        const propertyType = document.getElementById('propertyType');
+        const bedrooms = document.getElementById('bedrooms');
+        const area = document.getElementById('area');
+        const constructionYear = document.getElementById('constructionYear');
+        
+        if (!propertyType || !bedrooms || !area) {
+            throw new Error('فیلدهای اصلی ناقص هستند');
+        }
+        
+        formData.append('propertyType', propertyType.value);
+        formData.append('bedrooms', bedrooms.value);
+        formData.append('area', area.value);
+        formData.append('constructionYear', constructionYear ? constructionYear.value : '');
+
+        // قیمت‌گذاری
+        if (propertyType.value === 'sale') {
+            const salePrice = document.getElementById('salePrice');
+            if (salePrice) {
+                formData.append('salePrice', unformatPrice(salePrice.value));
+            }
+        } else if (propertyType.value === 'rent') {
+            const deposit = document.getElementById('deposit');
+            const monthlyRent = document.getElementById('monthlyRent');
+            const allowConversion = document.getElementById('allowConversion');
+            
+            if (deposit) formData.append('deposit', unformatPrice(deposit.value));
+            if (monthlyRent) formData.append('monthlyRent', unformatPrice(monthlyRent.value));
+            if (allowConversion) formData.append('allowConversion', allowConversion.checked);
+            
+            if (allowConversion && allowConversion.checked) {
+                const conversionDeductAmount = document.getElementById('conversionDeductAmount');
+                const conversionAddAmount = document.getElementById('conversionAddAmount');
+                
+                if (conversionDeductAmount) {
+                    formData.append('conversionDeductAmount', unformatPrice(conversionDeductAmount.value));
+                }
+                if (conversionAddAmount) {
+                    formData.append('conversionAddAmount', unformatPrice(conversionAddAmount.value));
+                }
+            }
+        }
+
+        // امکانات
+        const facilities = ['parking', 'storage', 'elevator', 'balcony', 'parquet', 'westernToilet'];
+        facilities.forEach(facility => {
+            const checkbox = document.querySelector(`input[name="${facility}"]`);
+            if (checkbox) {
+                formData.append(facility, checkbox.checked);
+            }
+        });
+
+        // اطلاعات خصوصی
+        const privateFields = [
+            'propertyAddress', 'ownerName', 'ownerPhone', 
+            'propertyNumber', 'tenantName', 'tenantPhone'
+        ];
+        privateFields.forEach(field => {
+            const input = document.getElementById(field);
+            if (input) {
+                formData.append(field, input.value);
+            }
+        });
+
+        // توضیحات
+        const description = document.getElementById('description');
+        if (description) {
+            formData.append('description', description.value);
+        }
+
+        // تصاویر
+        if (compressedFiles.length > 0) {
+            for (let i = 0; i < compressedFiles.length; i++) {
+                const file = compressedFiles[i];
+                const fileName = `compressed_image_${i}.jpg`;
+                const namedFile = new File([file], fileName, { type: 'image/jpeg' });
+                formData.append('images', namedFile);
+            }
+        }
+
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = '/login';
-            return;
+            throw new Error('توکن یافت نشد');
         }
 
         const response = await fetch('/api/product/create', {
@@ -399,55 +488,81 @@ async function handleFormSubmit(e) {
                 window.location.href = '/panel';
             }, 2000);
         } else {
-            showMessage(data.error || 'خطا در ایجاد آگهی', 'error');
+            throw new Error(data.error || 'خطا در ایجاد آگهی');
         }
     } catch (error) {
-        console.error('Error:', error);
-        showMessage('خطا در ایجاد آگهی', 'error');
+        console.error('Error submitting form:', error);
+        showMessage(error.message || 'خطا در ایجاد آگهی', 'error');
     } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'ایجاد آگهی';
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = 'ایجاد آگهی';
+        }
     }
 }
 
-// راه‌اندازی اولیه
+// راه‌اندازی اولیه صفحه
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('Page loaded, starting initialization...');
     
-    // بررسی احراز هویت ابتدا
-    const isAuthenticated = await checkAuth();
-    if (!isAuthenticated) {
-        return; // اگر احراز هویت نشده، صفحه redirect می‌شود
+    try {
+        // بررسی احراز هویت
+        const isAuthenticated = await checkAuth();
+        if (!isAuthenticated) {
+            console.log('User not authenticated, stopping initialization');
+            return;
+        }
+        
+        // بررسی محدودیت پلن
+        userCanCreateProduct = await checkPlanLimit();
+        
+        if (!userCanCreateProduct) {
+            console.log('User cannot create products, form disabled');
+            return;
+        }
+        
+        console.log('User can create products, initializing form...');
+        
+        // راه‌اندازی event listener ها
+        const form = document.getElementById('productForm');
+        if (form) {
+            form.addEventListener('submit', handleFormSubmit);
+        }
+        
+        const imageInput = document.getElementById('images');
+        if (imageInput) {
+            imageInput.addEventListener('change', previewImages);
+        }
+        
+        const description = document.getElementById('description');
+        if (description) {
+            description.addEventListener('input', updateCharCount);
+            updateCharCount(); // اولیه
+        }
+        
+        const propertyType = document.getElementById('propertyType');
+        if (propertyType) {
+            propertyType.addEventListener('change', togglePriceFields);
+        }
+        
+        const allowConversion = document.getElementById('allowConversion');
+        if (allowConversion) {
+            allowConversion.addEventListener('change', toggleConversionFields);
+        }
+        
+        // راه‌اندازی فرمت‌دهی قیمت‌ها
+        initPriceFormatting();
+        
+        console.log('Form initialization completed successfully');
+        
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        showMessage('خطا در بارگذاری صفحه', 'error');
     }
-    
-    console.log('User authenticated, checking plan limits...');
-    
-    // بررسی محدودیت پلن
-    const canCreateProduct = await checkPlanLimit();
-    if (!canCreateProduct) {
-        console.log('Plan limit reached, form disabled');
-        return;
-    }
-    
-    console.log('Plan check passed, enabling form...');
-    
-    // راه‌اندازی شمارنده کاراکتر
-    updateCharCount();
-    
-    // راه‌اندازی فرمت‌دهی قیمت‌ها
-    initPriceFormatting();
-    
-    // تنظیم event listener برای فرم
-    const form = document.getElementById('productForm');
-    if (form) {
-        form.addEventListener('submit', handleFormSubmit);
-    }
-    
-    // تنظیم event listener برای آپلود تصاویر
-    const imageInput = document.getElementById('images');
-    if (imageInput) {
-        imageInput.addEventListener('change', previewImages);
-    }
-    
-    console.log('Form initialization completed successfully');
 });
+
+// اضافه کردن تابع‌های سراسری برای HTML
+window.togglePriceFields = togglePriceFields;
+window.toggleConversionFields = toggleConversionFields;
+window.toggleOptionalFeatures = toggleOptionalFeatures;
+window.updateCharCount = updateCharCount;

@@ -224,8 +224,10 @@ function initThemeToggle() {
     const themeToggle = document.getElementById('theme-toggle');
     
     themeToggle.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        console.log('Theme changing from:', currentTheme, 'to:', newTheme); // برای debugging
         
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
@@ -235,6 +237,8 @@ function initThemeToggle() {
 
 function updateThemeIcon(theme) {
     const icon = document.querySelector('#theme-toggle i');
+    // وقتی تم تاریک است، آیکون خورشید نمایش می‌دهیم (برای تغییر به روشن)
+    // وقتی تم روشن است، آیکون ماه نمایش می‌دهیم (برای تغییر به تاریک)
     icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 }
 

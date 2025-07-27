@@ -12,7 +12,7 @@
     "profileImagePath": null,
     "profileCompleted": true,
     "updated_at": "2025-06-29T22:30:00.000Z",
-    "failedLoginAttempts": 0,
+    "failedLoginAttempts": 1,
     "lockoutUntil": null
   },
   {

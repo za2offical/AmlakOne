@@ -227,11 +227,16 @@ function initThemeToggle() {
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         
-        console.log('Theme changing from:', currentTheme, 'to:', newTheme); // برای debugging
+        console.log('Current theme:', currentTheme);
+        console.log('New theme:', newTheme);
         
+        // Force set the attribute
         document.documentElement.setAttribute('data-theme', newTheme);
+        document.body.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         updateThemeIcon(newTheme);
+        
+        console.log('Theme applied:', document.documentElement.getAttribute('data-theme'));
     });
 }
 

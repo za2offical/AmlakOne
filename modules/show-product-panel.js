@@ -16,48 +16,71 @@ router.use(limiter);
 // خواندن محصولات کاربر
 async function getUserProducts(username) {
     try {
+        console.log('Getting products for user:', username);
         const products = await getProductsByUser(username);
+        console.log('Raw products from database:', products);
+
+        if (!products || !Array.isArray(products)) {
+            console.log('No products found or invalid format');
+            return [];
+        }
 
         // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
-        return products.sort((a, b) => 
+        const sortedProducts = products.sort((a, b) => 
             new Date(b.created_at) - new Date(a.created_at)
         );
+        
+        console.log('Sorted products:', sortedProducts.length);
+        return sortedProducts;
     } catch (error) {
         console.error('Error reading user products:', error);
         return [];
     }
 }
 
+// Export the function for external use
+module.exports.getUserProducts = getUserProducts;
+
 // دریافت محصولات برای نمایش در پنل
 router.get('/user-products', authenticateToken, async (req, res) => {
     try {
         const username = req.user.username;
         console.log('Loading products for user:', username);
+        
         const products = await getUserProducts(username);
         console.log('Found', products.length, 'products for user:', username);
 
-        // آماده‌سازی داده‌های امن برای نمایش
-        const safeProducts = products.map(product => ({
-            id: product.id,
-            bedrooms: product.bedrooms,
-            area: product.area,
-            mainImage: product.images[0] || '',
-            created_at: product.created_at,
-            url: `/${encodeURIComponent(username)}/${product.id}-n`,
-            propertyType: product.propertyType || 'rent', // default value
-            salePrice: product.salePrice || null,
-            deposit: product.deposit || null,
-            monthlyRent: product.monthlyRent || null,
-            pricePerMeter: product.pricePerMeter || null,
-            allowConversion: product.allowConversion || false,
-            conversionDeductAmount: product.conversionDeductAmount || null,
-            conversionAddAmount: product.conversionAddAmount || null
-        }));
+        if (!products || products.length === 0) {
+            console.log('No products found for user:', username);
+            return res.json([]);
+        }
 
+        // آماده‌سازی داده‌های امن برای نمایش
+        const safeProducts = products.map(product => {
+            console.log('Processing product:', product.id, 'for user:', username);
+            return {
+                id: product.id,
+                bedrooms: product.bedrooms || 0,
+                area: product.area || 0,
+                mainImage: (product.images && product.images.length > 0) ? product.images[0] : '',
+                created_at: product.created_at,
+                url: `/${encodeURIComponent(username)}/${product.id}-n`,
+                propertyType: product.propertyType || 'rent', // default value
+                salePrice: product.salePrice || null,
+                deposit: product.deposit || null,
+                monthlyRent: product.monthlyRent || null,
+                pricePerMeter: product.pricePerMeter || null,
+                allowConversion: product.allowConversion || false,
+                conversionDeductAmount: product.conversionDeductAmount || null,
+                conversionAddAmount: product.conversionAddAmount || null
+            };
+        });
+
+        console.log('Sending safe products:', safeProducts.length);
         res.json(safeProducts);
     } catch (error) {
         console.error('Error fetching products for panel:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 

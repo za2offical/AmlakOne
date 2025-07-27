@@ -372,27 +372,19 @@
 }
 
 .request-status.pending {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+    background: #fbbf24;
     color: white;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    box-shadow: 
-        0 0 25px rgba(251, 191, 36, 0.6),
-        0 0 50px rgba(251, 191, 36, 0.3),
-        0 4px 20px rgba(251, 191, 36, 0.4);
-    border: 2px solid rgba(251, 191, 36, 0.8);
-    animation: statusBadgePending 2s ease-in-out infinite alternate;
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+    border: 1px solid rgba(251, 191, 36, 0.5);
 }
 
 .request-status.approved {
-    background: linear-gradient(135deg, #10b981, #059669, #047857);
+    background: #10b981;
     color: white;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    box-shadow: 
-        0 0 25px rgba(16, 185, 129, 0.6),
-        0 0 50px rgba(16, 185, 129, 0.3),
-        0 4px 20px rgba(16, 185, 129, 0.4);
-    border: 2px solid rgba(16, 185, 129, 0.8);
-    animation: statusBadgeApproved 2s ease-in-out infinite alternate;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    border: 1px solid rgba(16, 185, 129, 0.5);
 }
 
 @keyframes statusBadgePending {
@@ -1346,12 +1338,12 @@
         margin-bottom: 20px;
         height: 50px;
     }
-    
+
     .upload-dot {
         width: 10px;
         height: 10px;
     }
-    
+
     @keyframes uploadDotBounce {
         0%, 60%, 100% {
             transform: translateY(0);
@@ -1360,23 +1352,23 @@
             transform: translateY(-15px);
         }
     }
-    
+
     .upload-loading-text {
         font-size: 1rem;
     }
-    
+
     .upload-loading-description {
         font-size: 0.85rem;
         max-width: 250px;
         padding: 0 1rem;
     }
-    
+
     .upload-progress-ring {
         width: 60px;
         height: 60px;
         margin-bottom: 16px;
     }
-    
+
     .upload-progress-percentage {
         font-size: 0.875rem;
     }

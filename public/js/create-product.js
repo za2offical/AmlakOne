@@ -1,14 +1,82 @@
-// بررسی وضعیت احراز هویت
+// بررسی وضعیت احراز هویت و محدودیت‌ها
 async function checkAuth() {
     try {
         const response = await fetch('/api/panel/user-info');
         if (response.status === 401) {
             window.location.href = '/login';
         }
+        
+        // بررسی محدودیت ایجاد آگهی
+        await checkCreateLimit();
     } catch (error) {
         console.error('Auth error:', error);
         window.location.href = '/login';
     }
+}
+
+// بررسی محدودیت ایجاد آگهی
+async function checkCreateLimit() {
+    try {
+        const response = await fetch('/api/product/check-limit');
+        const data = await response.json();
+        
+        if (!data.canCreate) {
+            // نمایش پیام محدودیت
+            showLimitWarning(data);
+            // غیرفعال کردن فرم
+            disableForm();
+        } else {
+            // نمایش وضعیت فعلی کاربر
+            showCurrentStatus(data);
+        }
+    } catch (error) {
+        console.error('Error checking limit:', error);
+    }
+}
+
+// نمایش هشدار محدودیت
+function showLimitWarning(data) {
+    const warningDiv = document.createElement('div');
+    warningDiv.className = 'limit-warning';
+    warningDiv.innerHTML = `
+        <div class="warning-content">
+            <h3>🚫 محدودیت ایجاد آگهی</h3>
+            <p>${data.error}</p>
+            <p>تعداد آگهی‌های ایجاد شده: ${data.used} از ${data.limit || 'نامحدود'}</p>
+            <p>سطح کاربری شما: ${data.userLevel}</p>
+            <a href="/panel" class="back-link">بازگشت به پنل</a>
+        </div>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(warningDiv, container.firstChild);
+}
+
+// نمایش وضعیت فعلی
+function showCurrentStatus(data) {
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'status-info';
+    statusDiv.innerHTML = `
+        <div class="status-content">
+            <p>📊 وضعیت آگهی‌های شما: ${data.used} از ${data.limit || 'نامحدود'} آگهی ایجاد شده</p>
+        </div>
+    `;
+    
+    const header = document.querySelector('.page-header');
+    header.appendChild(statusDiv);
+}
+
+// غیرفعال کردن فرم
+function disableForm() {
+    const form = document.getElementById('productForm');
+    const inputs = form.querySelectorAll('input, select, textarea, button');
+    
+    inputs.forEach(input => {
+        input.disabled = true;
+    });
+    
+    form.style.opacity = '0.5';
+    form.style.pointerEvents = 'none';
 }
 
 // نمایش/مخفی کردن امکانات اختیاری
@@ -220,8 +288,28 @@ async function handleFormSubmit(e) {
 
     const submitButton = document.querySelector('.submit-button');
     submitButton.disabled = true;
-    submitButton.textContent = 'در حال ارسال...';
+    submitButton.textContent = 'در حال بررسی محدودیت...';
 
+    // بررسی مجدد محدودیت قبل از ارسال
+    try {
+        const limitResponse = await fetch('/api/product/check-limit');
+        const limitData = await limitResponse.json();
+        
+        if (!limitData.canCreate) {
+            showMessage(limitData.error, 'error');
+            submitButton.disabled = false;
+            submitButton.textContent = 'ایجاد آگهی';
+            return;
+        }
+    } catch (error) {
+        console.error('Error checking limit:', error);
+        showMessage('خطا در بررسی محدودیت', 'error');
+        submitButton.disabled = false;
+        submitButton.textContent = 'ایجاد آگهی';
+        return;
+    }
+
+    submitButton.textContent = 'در حال ارسال...';
     const formData = new FormData();
     
     // اطلاعات اصلی

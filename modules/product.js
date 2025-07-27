@@ -187,7 +187,13 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
         const { bedrooms, area } = req.body;
 
         // اعتبارسنجی داده‌ها
-        validateProductData({ bedrooms, area });
+        validateProductData({ 
+            bedrooms, 
+            area, 
+            ownerPhone: req.body.ownerPhone, 
+            tenantPhone: req.body.tenantPhone,
+            description: req.body.description
+        });
 
         const { dataPath, imagesDir } = await ensureDirectories(username);
         const userData = await readUserProducts(dataPath);
@@ -195,6 +201,8 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
         // بررسی محدودیت با تابع داخلی
         const limitCheck = checkUserLimit(userData);
         if (!limitCheck.canCreate) {
+            // لاگ کردن تلاش نامعتبر
+            console.log(`User ${username} tried to create product but exceeded limit. Current: ${limitCheck.used}, Limit: ${limitCheck.limit}`);
             return res.status(403).json(limitCheck);
         }
 
@@ -271,6 +279,16 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
             }
         }
 
+        // بررسی نهایی محدودیت قبل از ذخیره
+        const finalLimitCheck = checkUserLimit(userData);
+        if (!finalLimitCheck.canCreate) {
+            console.log(`Final limit check failed for user ${username}`);
+            return res.status(403).json({
+                error: 'محدودیت ایجاد آگهی در آخرین بررسی رعایت نشد',
+                ...finalLimitCheck
+            });
+        }
+
         userData.products.push(newProduct);
 
         // افزایش تعداد کل آگهی‌های ایجاد شده
@@ -282,6 +300,8 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
 
         // ذخیره اطلاعات
         await fs.writeFile(dataPath, JSON.stringify(userData, null, 2));
+
+        console.log(`Product created successfully for user ${username}. Total products: ${userData.products.length}, Total created: ${userData.total_products_created}`);
 
         res.status(201).json({ 
             success: true, 
@@ -336,22 +356,32 @@ router.get('/check-limit', authenticateToken, async (req, res) => {
 function checkUserLimit(userData) {
     const limit = userData.product_limit;
     const totalCreated = userData.total_products_created || 0;
+    const currentProducts = userData.products?.length || 0;
     const userLevel = userData.user_level || 0;
 
-    // بررسی محدودیت
-    if (limit !== null && totalCreated >= limit) {
-        return {
-            canCreate: false,
-            error: `شما به حد مجاز ایجاد آگهی رسیده‌اید. حداکثر ${limit} آگهی مجاز است.`,
-            used: totalCreated,
-            limit: limit,
-            userLevel: userLevel
-        };
+    // اطمینان از صحت تعداد کل آگهی‌های ایجاد شده
+    if (totalCreated < currentProducts) {
+        userData.total_products_created = currentProducts;
+    }
+
+    // بررسی محدودیت بر اساس آگهی‌های فعلی موجود
+    if (limit !== null && limit !== undefined) {
+        if (currentProducts >= limit) {
+            return {
+                canCreate: false,
+                error: `شما به حد مجاز آگهی فعال رسیده‌اید. حداکثر ${limit} آگهی فعال مجاز است. برای ایجاد آگهی جدید، ابتدا یکی از آگهی‌های قبلی را حذف کنید.`,
+                used: currentProducts,
+                total_created: userData.total_products_created,
+                limit: limit,
+                userLevel: userLevel
+            };
+        }
     }
 
     return {
         canCreate: true,
-        used: totalCreated,
+        used: currentProducts,
+        total_created: userData.total_products_created,
         limit: limit,
         userLevel: userLevel
     };

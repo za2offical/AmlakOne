@@ -192,13 +192,17 @@ router.post('/create', authenticateToken, handleUpload, async (req, res) => {
         const { dataPath, imagesDir } = await ensureDirectories(username);
         const userData = await readUserProducts(dataPath);
 
-        // بررسی محدودیت تعداد آگهی
+        // بررسی محدودیت تعداد آگهی مستقیماً از فایل کاربر
         const totalCreated = userData.total_products_created || 0;
         const limit = userData.product_limit;
         
         if (limit !== null && totalCreated >= limit) {
             return res.status(403).json({
-                error: `شما به حد مجاز ایجاد آگهی رسیده‌اید. حداکثر ${limit} آگهی مجاز است.`
+                error: `شما به حد مجاز ایجاد آگهی رسیده‌اید. حداکثر ${limit} آگهی مجاز است.`,
+                used: totalCreated,
+                limit: limit,
+                userLevel: userData.user_level || 0,
+                canCreate: false
             });
         }
 

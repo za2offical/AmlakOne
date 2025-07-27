@@ -28,8 +28,8 @@ async function checkPlanLimit() {
         
         const data = await response.json();
         
-        // فقط در صورتی که واقعاً محدودیت وجود دارد، فرم را غیرفعال کن
-        if (data.error && data.used !== undefined && data.limit !== null && data.used >= data.limit) {
+        // بررسی محدودیت بر اساس پاسخ API
+        if (data.error && !data.canCreate) {
             const submitButton = document.querySelector('.submit-button');
             const form = document.getElementById('productForm');
             
@@ -48,7 +48,7 @@ async function checkPlanLimit() {
                 planInfo.className = 'plan-info-warning';
                 planInfo.innerHTML = `
                     <h3>اطلاعات پلن شما:</h3>
-                    <p>پلن فعلی: ${data.planInfo?.plan?.name || 'نامشخص'}</p>
+                    <p>پلن فعلی: سطح ${data.userLevel !== undefined ? data.userLevel : 'نامشخص'}</p>
                     <p>آگهی‌های ایجاد شده: ${data.used}</p>
                     <p>حد مجاز: ${data.limit === null ? 'نامحدود' : data.limit}</p>
                 `;
@@ -61,11 +61,12 @@ async function checkPlanLimit() {
         }
         
         // نمایش اطلاعات پلن در بالای صفحه
-        if (data.plan) {
+        if (data.plan || data.userLevel !== undefined) {
             const planInfo = document.createElement('div');
             planInfo.className = 'plan-info-success';
+            const planName = data.plan?.name || `سطح ${data.userLevel}`;
             planInfo.innerHTML = `
-                <p>پلن: ${data.plan.name} | آگهی‌های ایجاد شده: ${data.used}/${data.limit === null ? 'نامحدود' : data.limit}</p>
+                <p>پلن: ${planName} | آگهی‌های ایجاد شده: ${data.used}/${data.limit === null ? 'نامحدود' : data.limit}</p>
             `;
             
             const container = document.querySelector('.container');

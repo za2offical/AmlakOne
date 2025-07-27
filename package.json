@@ -31,7 +31,8 @@
     "react-multi-date-picker": "^4.5.2",
     "sanitize-filename": "^1.6.3",
     "sanitize-html": "^2.17.0",
-    "sharp": "^0.32.1"
+    "sharp": "^0.32.1",
+    "sqlite3": "^5.1.7"
   },
   "description": "",
   "devDependencies": {

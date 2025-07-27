@@ -187,10 +187,18 @@
 
 .product-card.has-pending-request {
     border: 2px solid #fbbf24 !important;
+    box-shadow: 
+        0 0 8px rgba(251, 191, 36, 0.6),
+        0 0 16px rgba(251, 191, 36, 0.3),
+        inset 0 0 0 1px rgba(251, 191, 36, 0.4) !important;
 }
 
 .product-card.has-approved-request {
     border: 2px solid #10b981 !important;
+    box-shadow: 
+        0 0 8px rgba(16, 185, 129, 0.6),
+        0 0 16px rgba(16, 185, 129, 0.3),
+        inset 0 0 0 1px rgba(16, 185, 129, 0.4) !important;
 }
 
 

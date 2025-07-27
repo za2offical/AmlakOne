@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const path = require('path');
@@ -89,7 +88,7 @@ async function update3DPlans(plans) {
 async function checkUserPlan(username) {
     const plans = await read3DPlans();
     const userPlan = plans[username];
-    
+
     return {
         hasPlan: userPlan !== undefined,
         remainingUses: userPlan || 0
@@ -102,22 +101,22 @@ async function decrementPlanUsage(username) {
         console.log(`Attempting to decrement plan usage for user: ${username}`);
         const plans = await read3DPlans();
         console.log('Current plans before decrement:', plans);
-        
+
         if (plans[username] && plans[username] > 0) {
             const oldValue = plans[username];
             plans[username]--;
             console.log(`Decremented ${username} from ${oldValue} to ${plans[username]}`);
-            
+
             // اگر تعداد استفاده به صفر رسید، کاربر را حذف کن
             if (plans[username] === 0) {
                 console.log(`Removing user ${username} from plan (reached 0)`);
                 delete plans[username];
             }
-            
+
             const updateResult = await update3DPlans(plans);
             console.log('Plan update result:', updateResult);
             console.log('Plans after update:', await read3DPlans());
-            
+
             return updateResult;
         } else {
             console.log(`User ${username} not found in plans or has 0 remaining uses`);
@@ -137,7 +136,7 @@ router.get('/check-plan', async (req, res) => {
     try {
         const username = req.user.username;
         const planStatus = await checkUserPlan(username);
-        
+
         res.json(planStatus);
     } catch (error) {
         console.error('Error checking user plan:', error);
@@ -150,6 +149,15 @@ router.get('/user-products', async (req, res) => {
     try {
         const username = req.user.username;
         const products = await getUserProducts(username);
+
+        // بررسی وضعیت پلن کاربر
+        const planStatus = await checkUserPlan(username);
+
+        // همیشه محصولات را نمایش دهید، فقط وضعیت پلن را ارسال کنید
+        // نمایش تعداد استفاده‌های باقی‌مانده (اگر پلن دارد)
+        if (planStatus.hasPlan) {
+            updatePlanDisplay(planStatus.remainingUses);
+        }
 
         // آماده‌سازی داده‌های محصولات برای نمایش
         const safeProducts = products.map(product => ({
@@ -226,21 +234,21 @@ router.post('/submit-request', async (req, res) => {
             }
 
             const { dataFile, userVideoDir } = await ensureDirectories(username);
-            
+
             // خواندن درخواست‌های موجود
             const requestsData = await read3DRequests(dataFile);
-            
+
             // بررسی وجود درخواست قبلی برای همین محصول
             const requestId = `${username}-${productId}`;
             const existingRequest = requestsData.requests.find(r => r.id === requestId);
-            
+
             if (existingRequest) {
                 return res.status(400).json({ 
                     error: 'برای این محصول قبلاً درخواست ارسال شده است',
                     existingStatus: existingRequest.status
                 });
             }
-            
+
             // ذخیره فایل ویدیو
             const videoFileName = `${productId}.mp4`;
             const videoPath = path.join(userVideoDir, videoFileName);
@@ -268,11 +276,11 @@ router.post('/submit-request', async (req, res) => {
             try {
                 const decrementResult = await decrementPlanUsage(username);
                 console.log(`Plan usage decrement result for ${username}:`, decrementResult);
-                
+
                 if (!decrementResult) {
                     console.error(`Failed to decrement plan usage for user: ${username}`);
                 }
-                
+
                 // خواندن مجدد پلن برای اطمینان از به‌روزرسانی
                 const updatedPlanStatus = await checkUserPlan(username);
                 console.log(`Updated plan status for ${username}:`, updatedPlanStatus);
@@ -308,30 +316,30 @@ router.post('/submit-request', async (req, res) => {
 router.post('/approve-request', async (req, res) => {
     try {
         const { requestId, url } = req.body;
-        
+
         if (!requestId) {
             return res.status(400).json({ error: 'Request ID is required' });
         }
 
         const { dataFile } = await ensureDirectories('temp');
         const requestsData = await read3DRequests(dataFile);
-        
+
         // پیدا کردن درخواست
         const requestIndex = requestsData.requests.findIndex(r => r.id === requestId);
-        
+
         if (requestIndex === -1) {
             return res.status(404).json({ error: 'Request not found' });
         }
 
         const request = requestsData.requests[requestIndex];
-        
+
         // اگر درخواست قبلاً تایید نشده باشد
         if (request.status !== 'تایید شده') {
             // تایید درخواست
             requestsData.requests[requestIndex].status = 'تایید شده';
             requestsData.requests[requestIndex].url = url || null;
             requestsData.requests[requestIndex].updatedAt = new Date().toISOString();
-            
+
             // ذخیره تغییرات درخواست
             await fs.writeFile(dataFile, JSON.stringify(requestsData, null, 2));
         }

@@ -54,14 +54,13 @@ async function loadUserProducts() {
         // بررسی وضعیت پلن کاربر
         const planStatus = await checkUserPlan();
         
-        // اگر کاربر پلن ندارد، حالت ماتی نمایش داده شود
-        if (!planStatus.hasPlan) {
-            showNoPlanState();
-            return;
+        // نمایش تعداد استفاده‌های باقی‌مانده (اگر پلن دارد)
+        if (planStatus.hasPlan) {
+            updatePlanDisplay(planStatus.remainingUses);
+        } else {
+            // نمایش هدر متحرک برای کاربرانی که پلن ندارند
+            showNoPlanHeader();
         }
-        
-        // نمایش تعداد استفاده‌های باقی‌مانده
-        updatePlanDisplay(planStatus.remainingUses);
 
         // بارگذاری محصولات با داده‌های زنده - هیچ کش‌ای استفاده نمی‌شود
         const timestamp = Date.now() + Math.random(); // اطمینان از یکتا بودن
@@ -138,12 +137,16 @@ function displayProducts(products) {
         // اضافه کردن attribute برای آسان‌تر شدن شناسایی
         productCard.setAttribute('data-product-id', product.id);
 
-        // فقط اگر درخواست تایید نشده باشد کلیک کردن مجاز است
-        if (!hasActiveRequest) {
+        // اگر درخواست فعال ندارد و پلن دارد، کلیک مجاز است
+        if (!hasActiveRequest && userPlanStatus.hasPlan) {
             productCard.onclick = () => openUploadModal(product);
             productCard.style.cursor = 'pointer';
         } else {
             productCard.style.cursor = 'default';
+            if (!userPlanStatus.hasPlan && !hasActiveRequest) {
+                // برای کاربران بدون پلن پیغام مناسب نمایش دهید
+                productCard.onclick = () => showError('برای استفاده از این بخش باید پلن خریداری کنید.');
+            }
         }
 
         productCard.innerHTML = `
@@ -203,11 +206,11 @@ function displayProducts(products) {
                                 در حال بررسی`
                             }
                         </button>` :
-                        `<button class="btn-primary btn-small">
+                        `<button class="btn-primary btn-small" ${!userPlanStatus.hasPlan ? 'disabled' : ''}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.99.99 0 013 16.5v-9c0-.38.21.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9z"/>
                             </svg>
-                            درخواست 3D
+                            ${userPlanStatus.hasPlan ? 'درخواست 3D' : 'نیاز به پلن'}
                         </button>`
                     }
                 </div>
@@ -427,6 +430,12 @@ function openUploadModal(product) {
     const hasActiveRequest = activeRequests.some(req => req.productId === product.id);
     if (hasActiveRequest) {
         showError('برای این ملک قبلاً درخواست ارسال شده است.');
+        return;
+    }
+    
+    // بررسی وضعیت پلن کاربر
+    if (!userPlanStatus.hasPlan) {
+        showError('برای استفاده از این بخش باید پلن خریداری کنید.');
         return;
     }
 
@@ -1060,92 +1069,51 @@ function forceRefresh() {
     loadUserProducts();
 }
 
-// نمایش حالت بدون پلن
-function showNoPlanState() {
-    const mainContent = document.querySelector('.main-content');
-    mainContent.innerHTML = `
-        <div class="no-plan-overlay">
-            <div class="no-plan-content">
-                <div class="no-plan-icon">
-                    <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
-                        <path d="M12.5 2.5L21 7v10l-8.5 4.5L4 17V7l8.5-4.5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                        <path d="M12.5 2.5v19M4 7l8.5 4.5L21 7" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                    </svg>
-                </div>
-                <h2>پلن 3D فعالی ندارید</h2>
-                <p>برای استفاده از سرویس درخواست 3D، ابتدا باید از فروشگاه یک پلن سه‌بعدی تهیه کنید.</p>
-                <div class="no-plan-actions">
-                    <button class="btn-primary" onclick="window.location.href='/shop'">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.41c-.15.25-.25.55-.25.85 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                        </svg>
-                        خرید پلن 3D
-                    </button>
-                    <button class="btn-outline" onclick="window.location.href='/panel'">
-                        بازگشت به پنل
-                    </button>
-                </div>
+// نمایش هدر بدون پلن
+function showNoPlanHeader() {
+    const headerCenter = document.querySelector('.header-center');
+    
+    // حذف هدر قبلی
+    const existingNoPlanHeader = document.querySelector('.no-plan-moving-header');
+    if (existingNoPlanHeader) {
+        existingNoPlanHeader.remove();
+    }
+    
+    // اضافه کردن هدر متحرک
+    const noPlanHeader = document.createElement('div');
+    noPlanHeader.className = 'no-plan-moving-header';
+    noPlanHeader.innerHTML = `
+        <div class="moving-text-container">
+            <div class="moving-text">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.5 2.5L21 7v10l-8.5 4.5L4 17V7l8.5-4.5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <path d="M12.5 2.5v19M4 7l8.5 4.5L21 7" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+                برای استفاده از این بخش باید پلن خریداری کنید
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.5 2.5L21 7v10l-8.5 4.5L4 17V7l8.5-4.5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <path d="M12.5 2.5v19M4 7l8.5 4.5L21 7" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+                برای استفاده از این بخش باید پلن خریداری کنید
             </div>
+        </div>
+        <div class="no-plan-actions">
+            <button class="btn-primary no-plan-shop-btn" onclick="window.location.href='/shop'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.41c-.15.25-.25.55-.25.85 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+                خرید پلن 3D
+            </button>
+            <button class="btn-outline no-plan-back-btn" onclick="window.location.href='/panel'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                بازگشت به پنل
+            </button>
         </div>
     `;
     
-    // اضافه کردن استایل برای حالت ماتی
-    document.body.style.overflow = 'hidden';
-    const style = document.createElement('style');
-    style.textContent = `
-        .no-plan-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        
-        .no-plan-content {
-            text-align: center;
-            padding: 3rem;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            margin: 2rem;
-        }
-        
-        .no-plan-icon {
-            margin-bottom: 2rem;
-            color: #6b7280;
-        }
-        
-        .no-plan-content h2 {
-            color: #1f2937;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-        
-        .no-plan-content p {
-            color: #6b7280;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-        
-        .no-plan-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .no-plan-actions button {
-            min-width: 140px;
-        }
-    `;
-    document.head.appendChild(style);
+    headerCenter.appendChild(noPlanHeader);
 }
 
 // نمایش تعداد استفاده‌های باقی‌مانده

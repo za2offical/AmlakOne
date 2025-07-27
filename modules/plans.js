@@ -1,9 +1,9 @@
-
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
-const fsSync = require('fs');
 const path = require('path');
+const fs = require('fs').promises;
+const { authenticateToken } = require('./auth');
+const fsSync = require('fs');
 const { readUsers } = require('./auth');
 
 const plansFilePath = path.join(__dirname, '../data/plans.json');
@@ -42,7 +42,7 @@ async function applyProductLimitToUser(username, level, levelChangedAt = null) {
     const limit = LEVEL_LIMITS[level];
     const userProductsPath = path.join(productsDir, `${username}.json`);
     const currentTime = levelChangedAt || new Date().toISOString();
-    
+
     // بررسی وجود فایل محصولات کاربر
     try {
       await fs.access(userProductsPath);
@@ -75,11 +75,11 @@ async function applyProductLimitToUser(username, level, levelChangedAt = null) {
     // بررسی تغییر سطح و ثبت زمان دقیق
     const oldLevel = userData.user_level;
     const levelChanged = oldLevel !== level;
-    
+
     // به‌روزرسانی اطلاعات سطح کاربر در فایل محصولات
     userData.user_level = level;
     userData.product_limit = limit;
-    
+
     // اگر سطح تغییر کرده باشد، زمان تغییر را ثبت کن
     if (levelChanged) {
       userData.level_changed_at = currentTime;
@@ -95,10 +95,10 @@ async function applyProductLimitToUser(username, level, levelChangedAt = null) {
       userData.products.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       const removedProducts = userData.products.slice(limit);
       userData.products = userData.products.slice(0, limit);
-      
+
       console.log(`محصولات کاربر ${username} از ${userData.products.length + removedProducts.length} به ${limit} عدد محدود شد`);
     }
-    
+
     await fs.writeFile(userProductsPath, JSON.stringify(userData, null, 2));
     console.log(`فایل محصولات کاربر ${username} با محدودیت ${limit === null ? 'نامحدود' : limit} ذخیره شد`);
   } catch (error) {
@@ -110,12 +110,12 @@ async function applyProductLimitToUser(username, level, levelChangedAt = null) {
 async function applyLimitsToAllUsers() {
   try {
     const plans = await readPlans();
-    
+
     for (const username in plans) {
       const userPlan = plans[username];
       await applyProductLimitToUser(username, userPlan.level, userPlan.level_changed_at);
     }
-    
+
     console.log('محدودیت‌ها برای تمام کاربران اعمال شد');
   } catch (error) {
     console.error('خطا در اعمال محدودیت‌ها:', error);
@@ -127,10 +127,10 @@ async function syncPlansWithUsers() {
   try {
     const users = await readUsers();
     const plans = await readPlans();
-    
+
     let hasChanges = false;
     const currentTime = new Date().toISOString();
-    
+
     // بررسی زمان تغییر فایل plans.json
     let plansFileTime = null;
     try {
@@ -139,7 +139,7 @@ async function syncPlansWithUsers() {
     } catch (error) {
       // فایل وجود ندارد
     }
-    
+
     // برای هر کاربر موجود در users.json
     for (const user of users) {
       // اگر کاربر در plans.json وجود نداشت، اضافه کن با level 0
@@ -154,7 +154,7 @@ async function syncPlansWithUsers() {
         };
         hasChanges = true;
         console.log(`کاربر جدید ${user.username} به plans اضافه شد با زمان ${newUserTime}`);
-        
+
         // اعمال محدودیت محصول با زمان دقیق
         await applyProductLimitToUser(user.username, 0, newUserTime);
       } else {
@@ -162,7 +162,7 @@ async function syncPlansWithUsers() {
         const userProductsPath = path.join(productsDir, `${user.username}.json`);
         let previousLevel = null;
         let shouldUpdateTime = false;
-        
+
         try {
           const userProductsData = await fs.readFile(userProductsPath, 'utf8');
           const userData = JSON.parse(userProductsData);
@@ -174,18 +174,18 @@ async function syncPlansWithUsers() {
           }
           previousLevel = 0;
         }
-        
+
         const currentLevel = plans[user.username].level;
         const lastChanged = plans[user.username].level_changed_at;
         const lastUpdated = plans[user.username].updated_at;
-        
+
         // اگر سطح تغییر کرده باشد (تغییر دستی)
         if (previousLevel !== currentLevel) {
           plans[user.username].level_changed_at = currentTime;
           plans[user.username].updated_at = currentTime;
           hasChanges = true;
           console.log(`تشخیص تغییر دستی سطح: کاربر ${user.username} سطح ${previousLevel} → ${currentLevel} در ${currentTime}`);
-          
+
           // اعمال محدودیت محصول جدید با زمان جدید
           await applyProductLimitToUser(user.username, currentLevel, currentTime);
         }
@@ -195,11 +195,11 @@ async function syncPlansWithUsers() {
           plans[user.username].updated_at = currentTime;
           hasChanges = true;
           console.log(`به‌روزرسانی زمان‌های کاربر ${user.username} در ${currentTime}`);
-          
+
           // همگام‌سازی زمان در فایل محصولات کاربر
           await applyProductLimitToUser(user.username, currentLevel, currentTime);
         }
-        
+
         // اگر کاربر وجود دارد ولی level_changed_at ندارد، اضافه کن
         if (!plans[user.username].level_changed_at) {
           const fallbackTime = plans[user.username].created_at || currentTime;
@@ -207,13 +207,13 @@ async function syncPlansWithUsers() {
           plans[user.username].updated_at = currentTime;
           hasChanges = true;
           console.log(`زمان تغییر سطح برای کاربر ${user.username} اضافه شد: ${fallbackTime}`);
-          
+
           // همگام‌سازی زمان در فایل محصولات کاربر
           await applyProductLimitToUser(user.username, plans[user.username].level, fallbackTime);
         }
       }
     }
-    
+
     // حذف کاربرانی که در users.json موجود نیستند
     const currentUsernames = users.map(user => user.username);
     for (const username in plans) {
@@ -223,13 +223,13 @@ async function syncPlansWithUsers() {
         console.log(`کاربر ${username} از plans حذف شد`);
       }
     }
-    
+
     // اگر تغییری ایجاد شده، فایل را ذخیره کن
     if (hasChanges) {
       await writePlans(plans);
       console.log(`فایل plans.json به‌روزرسانی شد در ${currentTime}`);
     }
-    
+
     return plans;
   } catch (error) {
     console.error('خطا در هماهنگ‌سازی plans با users:', error);
@@ -247,7 +247,7 @@ function startFileWatcher() {
     const watcher = fsSync.watch(usersFilePath, { persistent: true }, async (eventType, filename) => {
       if (eventType === 'change' || eventType === 'rename') {
         console.log(`تغییر در فایل users.json تشخیص داده شد (${eventType})`);
-        
+
         setTimeout(async () => {
           try {
             await syncPlansWithUsers();
@@ -272,7 +272,7 @@ function startFileWatcher() {
     }, 10000);
 
     console.log('رصدگر فایل users.json شروع شد - plans و محدودیت‌ها real-time اعمال می‌شوند');
-    
+
     // همگام‌سازی اولیه
     syncPlansWithUsers().then(async () => {
       await applyLimitsToAllUsers();
@@ -306,33 +306,33 @@ async function setUserLevel(username, level) {
   if (level < 0 || level > 3 || !Number.isInteger(level)) {
     throw new Error('سطح باید عددی صحیح بین 0 تا 3 باشد');
   }
-  
+
   const plans = await syncPlansWithUsers();
-  
+
   if (!plans[username]) {
     throw new Error('کاربر یافت نشد');
   }
-  
+
   const oldLevel = plans[username].level;
   const currentTime = new Date().toISOString();
-  
+
   // اگر سطح تغییر کرده باشد
   if (oldLevel !== level) {
     // به‌روزرسانی اطلاعات در plans.json
     plans[username].level = level;
     plans[username].level_changed_at = currentTime;
     plans[username].updated_at = currentTime;
-    
+
     // ذخیره تغییرات در plans.json
     await writePlans(plans);
     console.log(`plans.json به‌روزرسانی شد: کاربر ${username} سطح ${oldLevel} → ${level} در ${currentTime}`);
-    
+
     // اعمال محدودیت محصول جدید در real-time با زمان دقیق
     await applyProductLimitToUser(username, level, currentTime);
-    
+
     console.log(`سطح کاربر ${username} از ${oldLevel} به ${level} تغییر کرد در ${currentTime} و محدودیت‌ها اعمال شد`);
   }
-  
+
   return plans[username];
 }
 
@@ -360,11 +360,11 @@ router.get('/:username', async (req, res) => {
     const { username } = req.params;
     const plans = await syncPlansWithUsers();
     const userPlan = plans[username];
-    
+
     if (!userPlan) {
       return res.status(404).json({ error: 'کاربر یافت نشد' });
     }
-    
+
     res.json(userPlan);
   } catch (error) {
     console.error('خطا در دریافت سطح کاربر:', error);
@@ -389,11 +389,11 @@ router.put('/:username', async (req, res) => {
   try {
     const { username } = req.params;
     const { level } = req.body;
-    
+
     if (level === undefined) {
       return res.status(400).json({ error: 'level ضروری است' });
     }
-    
+
     const updatedPlan = await setUserLevel(username, level);
     res.json({ 
       message: 'سطح کاربر با موفقیت به‌روزرسانی شد و محدودیت‌ها اعمال شد',
@@ -406,7 +406,7 @@ router.put('/:username', async (req, res) => {
 });
 
 // بررسی محدودیت برای ایجاد آگهی جدید
-router.get('/check-limit', require('./auth').authenticateToken, async (req, res) => {
+router.get('/check-limit', authenticateToken, async (req, res) => {
   try {
     const username = req.user?.username;
     if (!username) {
@@ -414,7 +414,7 @@ router.get('/check-limit', require('./auth').authenticateToken, async (req, res)
     }
 
     const userProductsPath = path.join(productsDir, `${username}.json`);
-    
+
     // خواندن اطلاعات کاربر
     let userData;
     try {
@@ -425,7 +425,7 @@ router.get('/check-limit', require('./auth').authenticateToken, async (req, res)
       const plans = await syncPlansWithUsers();
       const userLevel = plans[username]?.level || 0;
       const limit = LEVEL_LIMITS[userLevel];
-      
+
       userData = {
         products: [],
         user_level: userLevel,
@@ -436,7 +436,7 @@ router.get('/check-limit', require('./auth').authenticateToken, async (req, res)
 
     const limit = userData.product_limit;
     const totalCreated = userData.total_products_created || 0;
-    
+
     // بررسی محدودیت
     if (limit !== null && totalCreated >= limit) {
       return res.status(403).json({

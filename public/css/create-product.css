@@ -92,78 +92,19 @@
     line-height: 1.5;
 }
 
-.upgrade-suggestion {
-    font-weight: 500;
-    margin-top: 15px !important;
-    margin-bottom: 20px !important;
-    color: #fff3cd;
-    background: rgba(255, 243, 205, 0.1);
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 243, 205, 0.3);
-}
-
-.action-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
-.purchase-plan-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    background: #28a745;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-}
-
-.purchase-plan-link:hover {
-    background: #218838;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
-}
-
-.purchase-plan-link svg {
-    flex-shrink: 0;
-}
-
 .back-link {
-    display: inline-flex;
-    align-items: center;
+    display: inline-block;
+    margin-top: 15px;
     padding: 10px 20px;
     background: rgba(255, 255, 255, 0.2);
     color: white;
     text-decoration: none;
     border-radius: 6px;
     transition: background-color 0.3s ease;
-    font-weight: 500;
 }
 
 .back-link:hover {
     background: rgba(255, 255, 255, 0.3);
-}
-
-@media (max-width: 480px) {
-    .action-buttons {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .purchase-plan-link,
-    .back-link {
-        width: 100%;
-        justify-content: center;
-        padding: 12px 16px;
-    }
 }
 
 /* استایل‌های وضعیت */

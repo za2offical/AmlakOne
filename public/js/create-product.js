@@ -14,7 +14,7 @@ async function checkAuth() {
 // بررسی محدودیت پلن کاربر
 async function checkPlanLimit() {
     try {
-        const response = await fetch('/api/plans/check-limit', {
+        const response = await fetch('/api/product/check-limit', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }

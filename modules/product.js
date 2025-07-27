@@ -314,4 +314,44 @@ router.get('/my-products', authenticateToken, async (req, res) => {
     }
 });
 
+// بررسی محدودیت برای ایجاد آگهی جدید
+router.get('/check-limit', authenticateToken, async (req, res) => {
+    try {
+        const username = req.user?.username;
+        if (!username) {
+            return res.status(401).json({ error: 'کاربر احراز هویت نشده است' });
+        }
+
+        const { dataPath } = await ensureDirectories(username);
+        const userData = await readUserProducts(dataPath);
+
+        const limit = userData.product_limit;
+        const totalCreated = userData.total_products_created || 0;
+        const userLevel = userData.user_level || 0;
+
+        // بررسی محدودیت
+        if (limit !== null && totalCreated >= limit) {
+            return res.status(403).json({
+                error: `شما به حد مجاز ایجاد آگهی رسیده‌اید. حداکثر ${limit} آگهی مجاز است.`,
+                canCreate: false,
+                used: totalCreated,
+                limit: limit,
+                userLevel: userLevel
+            });
+        }
+
+        // اگر مجاز است
+        res.json({
+            canCreate: true,
+            used: totalCreated,
+            limit: limit,
+            userLevel: userLevel
+        });
+
+    } catch (error) {
+        console.error('خطا در بررسی محدودیت:', error);
+        res.status(500).json({ error: 'خطا در بررسی محدودیت' });
+    }
+});
+
 module.exports = router;

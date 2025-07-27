@@ -39,21 +39,31 @@
             // نمایش نام و نام خانوادگی
             const firstName = userData.firstName || userData.username || '';
             const lastName = userData.lastName || '';
-            document.getElementById('firstName').textContent = firstName;
-            document.getElementById('lastName').textContent = lastName;
+            
+            // به‌روزرسانی اطلاعات دسکتاپ
+            const firstNameEl = document.getElementById('firstName');
+            const lastNameEl = document.getElementById('lastName');
+            if (firstNameEl) firstNameEl.textContent = firstName;
+            if (lastNameEl) lastNameEl.textContent = lastName;
 
             // نمایش عکس پروفایل یا placeholder
             const profileImage = document.getElementById('profileImage');
             const profilePlaceholder = document.getElementById('profilePlaceholder');
 
-            if (userData.profileImagePath) {
+            if (userData.profileImagePath && profileImage && profilePlaceholder) {
                 profileImage.src = userData.profileImagePath;
                 profileImage.style.display = 'block';
                 profilePlaceholder.style.display = 'none';
-            } else {
+            } else if (profileImage && profilePlaceholder) {
                 profileImage.style.display = 'none';
                 profilePlaceholder.style.display = 'flex';
             }
+
+            // همگام‌سازی منوی موبایل
+            setTimeout(() => {
+                updateMobileProfile();
+                updateMobileNotificationBadge();
+            }, 100);
         }
     } catch (error) {
         console.error('Error loading user info:', error);
@@ -460,10 +470,45 @@
     loadProducts();
   });
 
+  // بارگذاری اعلان‌ها
+  async function loadNotifications() {
+    try {
+      const response = await fetch('/api/panel/notifications/unread-count', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const badge = document.getElementById('notificationBadge');
+        const mobileBadge = document.getElementById('mobileNotificationBadge');
+        
+        if (data.unreadCount > 0) {
+          if (badge) {
+            badge.textContent = data.unreadCount;
+            badge.style.display = 'flex';
+          }
+          if (mobileBadge) {
+            mobileBadge.textContent = data.unreadCount;
+            mobileBadge.style.display = 'flex';
+          }
+        } else {
+          if (badge) badge.style.display = 'none';
+          if (mobileBadge) mobileBadge.style.display = 'none';
+        }
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
+  }
+
   // بارگذاری اولیه
   document.addEventListener('DOMContentLoaded', () => {
-    loadUserInfo();
-    loadProducts();
+    // تاخیر کوتاه برای اطمینان از رندر کامل DOM
+    setTimeout(() => {
+      loadUserInfo();
+      loadProducts();
+      loadNotifications();
+    }, 50);
   });
 
   // --- Menu Functions ---
@@ -565,23 +610,37 @@
   });
   // Enhanced user info loading for mobile menu
   function updateMobileProfile() {
-    const firstName = document.getElementById('firstName').textContent;
-    const lastName = document.getElementById('lastName').textContent;
-    const profileImage = document.getElementById('profileImage');
+    try {
+      const firstNameEl = document.getElementById('firstName');
+      const lastNameEl = document.getElementById('lastName');
+      const profileImage = document.getElementById('profileImage');
+      const mobileFirstNameEl = document.getElementById('mobileFirstName');
+      const mobileLastNameEl = document.getElementById('mobileLastName');
+      const mobileProfileImage = document.getElementById('mobileProfileImage');
+      const mobileProfilePlaceholder = document.getElementById('mobileProfilePlaceholder');
 
-    document.getElementById('mobileFirstName').textContent = firstName;
-    document.getElementById('mobileLastName').textContent = lastName;
+      // چک کردن وجود المان‌های اصلی
+      if (firstNameEl && mobileFirstNameEl) {
+        mobileFirstNameEl.textContent = firstNameEl.textContent;
+      }
+      
+      if (lastNameEl && mobileLastNameEl) {
+        mobileLastNameEl.textContent = lastNameEl.textContent;
+      }
 
-    const mobileProfileImage = document.getElementById('mobileProfileImage');
-    const mobileProfilePlaceholder = document.getElementById('mobileProfilePlaceholder');
-
-    if (profileImage.style.display !== 'none' && profileImage.src) {
-      mobileProfileImage.src = profileImage.src;
-      mobileProfileImage.style.display = 'block';
-      mobileProfilePlaceholder.style.display = 'none';
-    } else {
-      mobileProfileImage.style.display = 'none';
-      mobileProfilePlaceholder.style.display = 'flex';
+      // همگام‌سازی تصویر پروفایل
+      if (profileImage && mobileProfileImage && mobileProfilePlaceholder) {
+        if (profileImage.style.display !== 'none' && profileImage.src && profileImage.src !== window.location.href) {
+          mobileProfileImage.src = profileImage.src;
+          mobileProfileImage.style.display = 'block';
+          mobileProfilePlaceholder.style.display = 'none';
+        } else {
+          mobileProfileImage.style.display = 'none';
+          mobileProfilePlaceholder.style.display = 'flex';
+        }
+      }
+    } catch (error) {
+      console.error('Error updating mobile profile:', error);
     }
   }
 

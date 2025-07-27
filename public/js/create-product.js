@@ -1,152 +1,13 @@
-
 // بررسی وضعیت احراز هویت
 async function checkAuth() {
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.log('No token found, redirecting to login');
+        const response = await fetch('/api/panel/user-info');
+        if (response.status === 401) {
             window.location.href = '/login';
-            return false;
         }
-        
-        // بررسی اعتبار توکن با ارسال درخواست به سرور
-        const response = await fetch('/api/panel/user-info', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        // فقط برای خطاهای 401 و 403 redirect کن
-        if (response.status === 401 || response.status === 403) {
-            console.log('Token invalid or expired, redirecting to login');
-            localStorage.removeItem('token');
-            window.location.href = '/login';
-            return false;
-        }
-        
-        // برای سایر خطاها، اجازه ادامه بده
-        if (!response.ok) {
-            console.warn('Auth check failed but continuing:', response.status);
-            return true; // اجازه ادامه
-        }
-        
-        return true;
     } catch (error) {
         console.error('Auth error:', error);
-        // فقط برای خطاهای شبکه کاربر را redirect نکن
-        console.warn('Network error in auth check, but continuing...');
-        return true;
-    }
-}
-
-// بررسی محدودیت پلن کاربر
-async function checkPlanLimit() {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('No token found');
-            window.location.href = '/login';
-            return false;
-        }
-
-        const response = await fetch('/api/product/check-limit', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        // بررسی خطاهای احراز هویت
-        if (response.status === 401) {
-            console.log('Authentication failed, redirecting to login');
-            localStorage.removeItem('token');
-            window.location.href = '/login';
-            return false;
-        }
-        
-        if (response.status === 403) {
-            const data = await response.json();
-            
-            // فقط اگر خطای احراز هویت باشد redirect کن
-            if (data.error && (data.error.includes('Authentication') || data.error.includes('Invalid') || data.error.includes('expired'))) {
-                console.log('Token expired, redirecting to login');
-                localStorage.removeItem('token');
-                window.location.href = '/login';
-                return false;
-            }
-            
-            // اگر خطای محدودیت پلن باشد (403 غیر احراز هویت)
-            const submitButton = document.querySelector('.submit-button');
-            const form = document.getElementById('productForm');
-            
-            // غیرفعال کردن فرم
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.textContent = 'محدودیت پلن';
-            }
-            if (form) {
-                form.style.opacity = '0.6';
-                form.style.pointerEvents = 'none';
-            }
-            
-            // نمایش پیام محدودیت
-            showMessage(data.error || 'شما به حد مجاز ایجاد آگهی رسیده‌اید', 'error');
-            return false;
-        }
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            // برای سایر خطاها، اجازه ادامه بده
-            console.warn('Could not check plan limit:', data.error);
-            return true;
-        }
-        
-        // بررسی canCreate حتی اگر response موفق باشد
-        if (data.canCreate === false) {
-            const submitButton = document.querySelector('.submit-button');
-            const form = document.getElementById('productForm');
-            
-            // غیرفعال کردن فرم
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.textContent = 'محدودیت پلن';
-            }
-            if (form) {
-                form.style.opacity = '0.6';
-                form.style.pointerEvents = 'none';
-            }
-            
-            // نمایش پیام محدودیت
-            showMessage(data.error || 'شما به حد مجاز ایجاد آگهی رسیده‌اید', 'error');
-            return false;
-        }
-        
-        // اگر همه چیز اوکی است
-        console.log('Plan check successful:', data);
-        
-        // نمایش اطلاعات پلن در بالای صفحه
-        if (data.userLevel !== undefined) {
-            const planInfo = document.createElement('div');
-            planInfo.className = 'plan-info-success';
-            planInfo.innerHTML = `
-                <p>سطح کاربری: ${data.userLevel} | آگهی‌های ایجاد شده: ${data.used}/${data.limit === null ? 'نامحدود' : data.limit}</p>
-            `;
-            
-            const container = document.querySelector('.container');
-            if (container) {
-                container.insertBefore(planInfo, container.firstChild);
-            }
-        }
-        
-        return true;
-    } catch (error) {
-        console.error('Error checking plan limit:', error);
-        // در صورت خطا، فرم را فعال نگه دار
-        return true;
+        window.location.href = '/login';
     }
 }
 
@@ -419,30 +280,10 @@ async function handleFormSubmit(e) {
     }
 
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = '/login';
-            return;
-        }
-
         const response = await fetch('/api/product/create', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
             body: formData
         });
-
-        // بررسی خطاهای احراز هویت
-        if (response.status === 401 || response.status === 403) {
-            const data = await response.json();
-            if (data.error && (data.error.includes('Authentication') || data.error.includes('Invalid') || data.error.includes('expired'))) {
-                console.log('Token expired during form submission, redirecting to login');
-                localStorage.removeItem('token');
-                window.location.href = '/login';
-                return;
-            }
-        }
 
         const data = await response.json();
 
@@ -464,25 +305,9 @@ async function handleFormSubmit(e) {
 }
 
 // راه‌اندازی اولیه
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Page loaded, starting initialization...');
-    
-    // بررسی احراز هویت ابتدا
-    const isAuthenticated = await checkAuth();
-    if (!isAuthenticated) {
-        return; // اگر احراز هویت نشده، صفحه redirect می‌شود
-    }
-    
-    console.log('User authenticated, checking plan limits...');
-    
-    // بررسی محدودیت پلن
-    const canCreateProduct = await checkPlanLimit();
-    if (!canCreateProduct) {
-        console.log('Plan limit reached, form disabled');
-        return;
-    }
-    
-    console.log('Plan check passed, enabling form...');
+document.addEventListener('DOMContentLoaded', function() {
+    // بررسی احراز هویت
+    checkAuth();
     
     // راه‌اندازی شمارنده کاراکتر
     updateCharCount();
@@ -491,16 +316,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     initPriceFormatting();
     
     // تنظیم event listener برای فرم
-    const form = document.getElementById('productForm');
-    if (form) {
-        form.addEventListener('submit', handleFormSubmit);
-    }
+    document.getElementById('productForm').addEventListener('submit', handleFormSubmit);
     
     // تنظیم event listener برای آپلود تصاویر
-    const imageInput = document.getElementById('images');
-    if (imageInput) {
-        imageInput.addEventListener('change', previewImages);
-    }
-    
-    console.log('Form initialization completed successfully');
+    document.getElementById('images').addEventListener('change', previewImages);
 });

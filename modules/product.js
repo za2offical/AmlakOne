@@ -309,31 +309,20 @@ router.get('/my-products', authenticateToken, async (req, res) => {
 // بررسی محدودیت برای ایجاد آگهی جدید
 router.get('/check-limit', authenticateToken, async (req, res) => {
     try {
-        console.log('Check limit request received');
-        console.log('User from token:', req.user);
-        
         const username = req.user?.username;
         if (!username) {
-            console.log('No username found in token');
             return res.status(401).json({ error: 'کاربر احراز هویت نشده است' });
         }
 
-        console.log('Checking limit for username:', username);
         const { dataPath } = await ensureDirectories(username);
-        console.log('Data path:', dataPath);
-        
         const userData = await readUserProducts(dataPath);
-        console.log('User data loaded:', userData);
 
         const limitCheck = checkUserLimit(userData);
-        console.log('Limit check result:', limitCheck);
         
         if (!limitCheck.canCreate) {
-            console.log('User cannot create more products');
             return res.status(403).json(limitCheck);
         }
 
-        console.log('User can create products');
         // اگر مجاز است
         res.json(limitCheck);
 

@@ -250,10 +250,18 @@ router.post('/submit-request', async (req, res) => {
             // ذخیره درخواست‌ها
             await fs.writeFile(dataFile, JSON.stringify(requestsData, null, 2));
 
+            // کاهش تعداد استفاده از پلن کاربر هنگام ثبت درخواست
+            const decrementResult = await decrementPlanUsage(username);
+            
+            if (!decrementResult) {
+                console.warn(`Could not decrement plan usage for user: ${username}`);
+            }
+
             res.status(201).json({
                 success: true,
                 message: 'درخواست 3D با موفقیت ارسال شد',
-                request: newRequest
+                request: newRequest,
+                remainingUses: planStatus.remainingUses - 1 // ارسال تعداد باقی‌مانده جدید
             });
 
         } catch (error) {
@@ -293,14 +301,6 @@ router.post('/approve-request', async (req, res) => {
             
             // ذخیره تغییرات درخواست
             await fs.writeFile(dataFile, JSON.stringify(requestsData, null, 2));
-            
-            // کاهش تعداد استفاده از پلن کاربر
-            const username = request.username;
-            const decrementResult = await decrementPlanUsage(username);
-            
-            if (!decrementResult) {
-                console.warn(`Could not decrement plan usage for user: ${username}`);
-            }
         }
 
         res.json({

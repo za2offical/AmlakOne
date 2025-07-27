@@ -634,10 +634,21 @@ async function submitRequest() {
                 loadActiveRequests(); // بارگذاری مجدد درخواست‌های فعال
                 displayProducts(allProducts); // به‌روزرسانی نمایش محصولات
                 
-                // کاهش تعداد استفاده‌های نمایش داده شده
-                if (userPlanStatus.remainingUses > 0) {
+                // استفاده از تعداد باقی‌مانده جدید از سرور
+                if (response.remainingUses !== undefined) {
+                    userPlanStatus.remainingUses = response.remainingUses;
+                    updatePlanDisplay(response.remainingUses);
+                } else if (userPlanStatus.remainingUses > 0) {
+                    // fallback اگر سرور تعداد جدید نفرستاد
                     userPlanStatus.remainingUses--;
                     updatePlanDisplay(userPlanStatus.remainingUses);
+                }
+                
+                // اگر تعداد استفاده به صفر رسید، نمایش حالت بدون پلن
+                if (userPlanStatus.remainingUses <= 0) {
+                    setTimeout(() => {
+                        showNoPlanState();
+                    }, 2000); // با تاخیر 2 ثانیه بعد از نمایش پیام موفقیت
                 }
             } else {
                 const errorResponse = JSON.parse(xhr.responseText);

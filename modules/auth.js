@@ -5,7 +5,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
-// اگر JWT_SECRET در فایل .env تعریف نشده باشد، یک کلید تصادفی ایجاد می‌کند
+// احراز هویت - بدون سیستم کش
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
 const USERS_FILE = path.join(__dirname, '..', 'data', 'users.json');
 

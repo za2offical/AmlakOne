@@ -1,13 +1,29 @@
+
 // بررسی وضعیت احراز هویت
 async function checkAuth() {
     try {
-        const response = await fetch('/api/panel/user-info');
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            return false;
+        }
+        
+        const response = await fetch('/api/panel/user-info', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
         if (response.status === 401) {
             window.location.href = '/login';
+            return false;
         }
+        
+        return true;
     } catch (error) {
         console.error('Auth error:', error);
         window.location.href = '/login';
+        return false;
     }
 }
 
@@ -29,76 +45,56 @@ async function checkPlanLimit() {
             }
         });
         
-        // اگر درخواست ناموفق بود، اجازه ادامه بده
+        const data = await response.json();
+        
         if (!response.ok) {
-            console.warn('Could not check plan limit, allowing form usage');
+            // اگر خطای 403 باشد (محدودیت پلن)
+            if (response.status === 403) {
+                const submitButton = document.querySelector('.submit-button');
+                const form = document.getElementById('productForm');
+                
+                // غیرفعال کردن فرم
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'محدودیت پلن';
+                }
+                if (form) {
+                    form.style.opacity = '0.6';
+                    form.style.pointerEvents = 'none';
+                }
+                
+                // نمایش پیام محدودیت
+                showMessage(data.error || 'شما به حد مجاز ایجاد آگهی رسیده‌اید', 'error');
+                return false;
+            }
+            
+            // برای سایر خطاها، اجازه ادامه بده
+            console.warn('Could not check plan limit:', data.error);
             return true;
         }
         
-        const data = await response.json();
-        
-        // بررسی محدودیت بر اساس پاسخ API
-        if (data.error && !data.canCreate) {
-            const submitButton = document.querySelector('.submit-button');
-            const form = document.getElementById('productForm');
-            
-            // غیرفعال کردن فرم
-            submitButton.disabled = true;
-            submitButton.textContent = 'محدودیت پلن';
-            form.style.opacity = '0.6';
-            form.style.pointerEvents = 'none';
-            
-            // نمایش پیام محدودیت
-            showMessage(data.error, 'error');
-            
-            // نمایش اطلاعات پلن
-            if (data.planInfo || data.used !== undefined) {
-                const planInfo = document.createElement('div');
-                planInfo.className = 'plan-info-warning';
-                planInfo.innerHTML = `
-                    <h3>اطلاعات پلن شما:</h3>
-                    <p>پلن فعلی: سطح ${data.userLevel !== undefined ? data.userLevel : 'نامشخص'}</p>
-                    <p>آگهی‌های ایجاد شده: ${data.used}</p>
-                    <p>حد مجاز: ${data.limit === null ? 'نامحدود' : data.limit}</p>
-                `;
-                
-                const container = document.querySelector('.container');
-                container.insertBefore(planInfo, container.firstChild);
-            }
-            
-            return false;
-        }
+        // اگر همه چیز اوکی است
+        console.log('Plan check successful:', data);
         
         // نمایش اطلاعات پلن در بالای صفحه
-        if (data.plan || data.userLevel !== undefined) {
+        if (data.userLevel !== undefined) {
             const planInfo = document.createElement('div');
             planInfo.className = 'plan-info-success';
-            const planName = data.plan?.name || `سطح ${data.userLevel}`;
             planInfo.innerHTML = `
-                <p>پلن: ${planName} | آگهی‌های ایجاد شده: ${data.used}/${data.limit === null ? 'نامحدود' : data.limit}</p>
+                <p>سطح کاربری: ${data.userLevel} | آگهی‌های ایجاد شده: ${data.used}/${data.limit === null ? 'نامحدود' : data.limit}</p>
             `;
             
             const container = document.querySelector('.container');
-            container.insertBefore(planInfo, container.firstChild);
+            if (container) {
+                container.insertBefore(planInfo, container.firstChild);
+            }
         }
         
         return true;
     } catch (error) {
         console.error('Error checking plan limit:', error);
         // در صورت خطا، فرم را فعال نگه دار
-        const submitButton = document.querySelector('.submit-button');
-        const form = document.getElementById('productForm');
-        
-        if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.textContent = 'ایجاد آگهی';
-        }
-        if (form) {
-            form.style.opacity = '1';
-            form.style.pointerEvents = 'auto';
-        }
-        
-        return true; // در صورت خطا اجازه ادامه
+        return true;
     }
 }
 
@@ -404,42 +400,26 @@ async function handleFormSubmit(e) {
     }
 }
 
-// فعال کردن مجدد فرم در صورت مشکل
-function resetForm() {
-    const submitButton = document.querySelector('.submit-button');
-    const form = document.getElementById('productForm');
-    
-    if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = 'ایجاد آگهی';
-    }
-    if (form) {
-        form.style.opacity = '1';
-        form.style.pointerEvents = 'auto';
-    }
-    
-    // حذف پیام‌های قبلی
-    const existingWarnings = document.querySelectorAll('.plan-info-warning');
-    existingWarnings.forEach(warning => warning.remove());
-    
-    showMessage('فرم دوباره فعال شد', 'success');
-}
-
 // راه‌اندازی اولیه
 document.addEventListener('DOMContentLoaded', async function() {
-    // بررسی احراز هویت
-    checkAuth();
+    console.log('Page loaded, starting initialization...');
     
-    // اطمینان از فعال بودن اولیه فرم
-    resetForm();
+    // بررسی احراز هویت ابتدا
+    const isAuthenticated = await checkAuth();
+    if (!isAuthenticated) {
+        return; // اگر احراز هویت نشده، صفحه redirect می‌شود
+    }
+    
+    console.log('User authenticated, checking plan limits...');
     
     // بررسی محدودیت پلن
-    const planCheckResult = await checkPlanLimit();
-    
-    // اگر بررسی پلن ناموفق بود، فرم را فعال نگه دار
-    if (!planCheckResult) {
+    const canCreateProduct = await checkPlanLimit();
+    if (!canCreateProduct) {
         console.log('Plan limit reached, form disabled');
+        return;
     }
+    
+    console.log('Plan check passed, enabling form...');
     
     // راه‌اندازی شمارنده کاراکتر
     updateCharCount();
@@ -448,17 +428,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     initPriceFormatting();
     
     // تنظیم event listener برای فرم
-    document.getElementById('productForm').addEventListener('submit', handleFormSubmit);
+    const form = document.getElementById('productForm');
+    if (form) {
+        form.addEventListener('submit', handleFormSubmit);
+    }
     
     // تنظیم event listener برای آپلود تصاویر
-    document.getElementById('images').addEventListener('change', previewImages);
+    const imageInput = document.getElementById('images');
+    if (imageInput) {
+        imageInput.addEventListener('change', previewImages);
+    }
     
-    // اضافه کردن کلیدهای میانبر برای دیباگ
-    document.addEventListener('keydown', function(e) {
-        // Ctrl + Shift + R برای ریست فرم
-        if (e.ctrlKey && e.shiftKey && e.key === 'R') {
-            e.preventDefault();
-            resetForm();
-        }
-    });
+    console.log('Form initialization completed successfully');
 });

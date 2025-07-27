@@ -7,7 +7,8 @@ const connectDB = async () => {
     try {
         const databaseUrl = process.env.DATABASE_URL;
         if (!databaseUrl) {
-            throw new Error('DATABASE_URL environment variable is not set');
+            console.warn('DATABASE_URL not set, using fallback configuration');
+            return;
         }
         
         pool = new Pool({
@@ -67,6 +68,10 @@ const createUsersTable = async () => {
 // خواندن تمام کاربران
 const readUsers = async () => {
     try {
+        if (!pool) {
+            console.warn('Database pool not initialized');
+            return [];
+        }
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM users ORDER BY created_at DESC');
         client.release();
@@ -98,6 +103,10 @@ const readUsers = async () => {
 // نوشتن تمام کاربران (برای سازگاری با کد قدیمی)
 const writeUsers = async (users) => {
     try {
+        if (!pool) {
+            console.warn('Database pool not initialized');
+            return;
+        }
         const client = await pool.connect();
         
         // پاک کردن تمام کاربران موجود
@@ -119,6 +128,10 @@ const writeUsers = async (users) => {
 // پیدا کردن کاربر با نام کاربری
 const findUserByUsername = async (username) => {
     try {
+        if (!pool) {
+            console.warn('Database pool not initialized');
+            return null;
+        }
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
         client.release();
@@ -153,6 +166,10 @@ const findUserByUsername = async (username) => {
 // به‌روزرسانی کاربر
 const updateUser = async (username, updateData) => {
     try {
+        if (!pool) {
+            console.warn('Database pool not initialized');
+            return null;
+        }
         const client = await pool.connect();
         
         const setClause = [];
@@ -230,6 +247,10 @@ const updateUser = async (username, updateData) => {
 // ایجاد کاربر جدید
 const createUser = async (userData) => {
     try {
+        if (!pool) {
+            console.warn('Database pool not initialized');
+            return null;
+        }
         const client = await pool.connect();
         
         const query = `
@@ -290,6 +311,10 @@ const createUser = async (userData) => {
 // حذف کاربر
 const deleteUser = async (username) => {
     try {
+        if (!pool) {
+            console.warn('Database pool not initialized');
+            return;
+        }
         const client = await pool.connect();
         await client.query('DELETE FROM users WHERE username = $1', [username]);
         client.release();

@@ -7,7 +7,8 @@ const {
     updateUser, 
     getAllUsers, 
     createUser, 
-    createNotification 
+    createNotification,
+    getDB
 } = require('./database');
 
 // استفاده از میدلور احراز هویت
@@ -155,9 +156,16 @@ router.post('/send-notification', async (req, res) => {
 // دریافت لیست اعلان‌ها (برای ادمین)
 router.get('/notifications', async (req, res) => {
     try {
-        const notifications = JSON.parse(await fs.readFile(NOTIFICATIONS_FILE, 'utf8'));
+        const db = getDB();
+        const notifications = await new Promise((resolve, reject) => {
+            db.all("SELECT * FROM notifications ORDER BY created_at DESC", [], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows || []);
+            });
+        });
         res.json(notifications);
     } catch (error) {
+        console.error('Error loading notifications:', error);
         res.status(500).json({ error: 'خطا در بارگذاری اعلان‌ها' });
     }
 });
@@ -166,15 +174,22 @@ router.get('/notifications', async (req, res) => {
 router.delete('/notifications/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const notifications = JSON.parse(await fs.readFile(NOTIFICATIONS_FILE, 'utf8'));
-        const notificationIndex = notifications.findIndex(n => n.id === id);
-        if (notificationIndex === -1) {
+        const db = getDB();
+
+        const result = await new Promise((resolve, reject) => {
+            db.run("DELETE FROM notifications WHERE id = ?", [id], function(err) {
+                if (err) reject(err);
+                else resolve(this);
+            });
+        });
+
+        if (result.changes === 0) {
             return res.status(404).json({ error: 'اعلان یافت نشد' });
         }
-        notifications.splice(notificationIndex, 1);
-        await fs.writeFile(NOTIFICATIONS_FILE, JSON.stringify(notifications, null, 2));
+
         res.json({ success: true, message: 'اعلان با موفقیت حذف شد' });
     } catch (error) {
+        console.error('Error deleting notification:', error);
         res.status(500).json({ error: 'خطا در حذف اعلان' });
     }
 });

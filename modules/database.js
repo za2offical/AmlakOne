@@ -133,8 +133,16 @@ const createTables = () => {
                 username TEXT NOT NULL,
                 subject TEXT NOT NULL,
                 message TEXT NOT NULL,
-                status TEXT DEFAULT 'باز',
+                status TEXT DEFAULT 'open',
                 response TEXT,
+                priority TEXT DEFAULT 'medium',
+                category TEXT DEFAULT 'general',
+                messages TEXT,
+                assignedTo TEXT,
+                resolvedAt TEXT,
+                closedAt TEXT,
+                tags TEXT,
+                attachments TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (username) REFERENCES users (username)
@@ -144,10 +152,16 @@ const createTables = () => {
             db.run(`CREATE TABLE IF NOT EXISTS appointments (
                 id TEXT PRIMARY KEY,
                 username TEXT NOT NULL,
+                propertyId TEXT,
+                clientName TEXT NOT NULL,
+                clientPhone TEXT NOT NULL,
                 date TEXT NOT NULL,
                 time TEXT NOT NULL,
+                appointmentType TEXT DEFAULT 'consultation',
+                notes TEXT,
+                propertyAddress TEXT,
                 description TEXT,
-                status TEXT DEFAULT 'در انتظار تایید',
+                status TEXT DEFAULT 'scheduled',
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (username) REFERENCES users (username)
@@ -601,6 +615,30 @@ const deleteTicket = async (ticketId) => {
     });
 };
 
+const getTicketsByUser = async (username) => {
+    return new Promise((resolve, reject) => {
+        db.all("SELECT * FROM tickets WHERE username = ? ORDER BY created_at DESC", [username], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+
+const getTicketById = async (ticketId) => {
+    return new Promise((resolve, reject) => {
+        db.get("SELECT * FROM tickets WHERE id = ?", [ticketId], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row);
+            }
+        });
+    });
+};
+
 // Appointments Operations
 const createAppointment = async (appointmentData) => {
     return new Promise((resolve, reject) => {
@@ -625,6 +663,61 @@ const createAppointment = async (appointmentData) => {
             }
         });
         stmt.finalize();
+    });
+};
+
+const getAllAppointments = async () => {
+    return new Promise((resolve, reject) => {
+        db.all("SELECT * FROM appointments ORDER BY created_at DESC", [], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+
+const getAppointmentsByUser = async (username) => {
+    return new Promise((resolve, reject) => {
+        db.all("SELECT * FROM appointments WHERE username = ? ORDER BY created_at DESC", [username], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+
+const updateAppointment = async (appointmentId, updateData) => {
+    return new Promise((resolve, reject) => {
+        const fields = Object.keys(updateData);
+        const values = Object.values(updateData);
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
+
+        const query = `UPDATE appointments SET ${setClause} WHERE id = ?`;
+        values.push(appointmentId);
+
+        db.run(query, values, function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
+            }
+        });
+    });
+};
+
+const deleteAppointment = async (appointmentId) => {
+    return new Promise((resolve, reject) => {
+        db.run("DELETE FROM appointments WHERE id = ?", [appointmentId], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
+            }
+        });
     });
 };
 
@@ -653,6 +746,62 @@ const createNotification = async (notificationData) => {
     });
 };
 
+// Notifications Operations
+const getAllNotifications = async () => {
+    return new Promise((resolve, reject) => {
+        db.all("SELECT * FROM notifications ORDER BY created_at DESC", [], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+
+const getNotificationsByUser = async (username) => {
+    return new Promise((resolve, reject) => {
+        db.all("SELECT * FROM notifications WHERE username = ? OR username = 'all' ORDER BY created_at DESC", [username], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+
+const updateNotification = async (notificationId, updateData) => {
+    return new Promise((resolve, reject) => {
+        const fields = Object.keys(updateData);
+        const values = Object.values(updateData);
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
+
+        const query = `UPDATE notifications SET ${setClause} WHERE id = ?`;
+        values.push(notificationId);
+
+        db.run(query, values, function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
+            }
+        });
+    });
+};
+
+const deleteNotification = async (notificationId) => {
+    return new Promise((resolve, reject) => {
+        db.run("DELETE FROM notifications WHERE id = ?", [notificationId], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
+            }
+        });
+    });
+};
+
 // Signup Operations
 const createSignupEntry = async (phone) => {
     return new Promise((resolve, reject) => {
@@ -674,6 +823,30 @@ const createSignupEntry = async (phone) => {
             }
         });
         stmt.finalize();
+    });
+};
+
+const getAllSignupEntries = async () => {
+    return new Promise((resolve, reject) => {
+        db.all("SELECT * FROM signup ORDER BY created_at DESC", [], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+
+const deleteSignupEntry = async (phone) => {
+    return new Promise((resolve, reject) => {
+        db.run("DELETE FROM signup WHERE phone = ?", [phone], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
+            }
+        });
     });
 };
 
@@ -798,15 +971,27 @@ module.exports = {
     getAllTickets,
     updateTicket,
     deleteTicket,
+    getTicketsByUser,
+    getTicketById,
 
     // Appointments
     createAppointment,
+    getAllAppointments,
+    getAppointmentsByUser,
+    updateAppointment,
+    deleteAppointment,
 
     // Notifications
     createNotification,
+    getAllNotifications,
+    getNotificationsByUser,
+    updateNotification,
+    deleteNotification,
 
     // Signup
     createSignupEntry,
+    getAllSignupEntries,
+    deleteSignupEntry,
 
     // 3D Data operations
     create3DData,

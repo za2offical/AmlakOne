@@ -1150,15 +1150,15 @@ function showNoPlanState() {
 
 // نمایش تعداد استفاده‌های باقی‌مانده
 function updatePlanDisplay(remainingUses) {
-    const header = document.querySelector('.page-header .header-center');
+    const headerLeft = document.querySelector('.page-header .header-left');
     
     // حذف نمایش قبلی
-    const existingPlanDisplay = header.querySelector('.plan-status');
+    const existingPlanDisplay = document.querySelector('.plan-status');
     if (existingPlanDisplay) {
         existingPlanDisplay.remove();
     }
     
-    // اضافه کردن نمایش جدید
+    // اضافه کردن نمایش جدید بعد از دکمه بازگشت
     const planDisplay = document.createElement('div');
     planDisplay.className = 'plan-status';
     planDisplay.innerHTML = `
@@ -1170,11 +1170,18 @@ function updatePlanDisplay(remainingUses) {
         </div>
     `;
     
-    header.appendChild(planDisplay);
+    headerLeft.appendChild(planDisplay);
     
     // اضافه کردن استایل
     const style = document.createElement('style');
     style.textContent = `
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        
         .plan-status {
             margin-top: 0.5rem;
         }

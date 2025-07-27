@@ -487,8 +487,108 @@ const closeConnection = async () => {
     });
 };
 
-// سایر عملیات نیز به همین شکل پیاده‌سازی می‌شوند...
-// برای کوتاه نگه داشتن پاسخ، فقط عملیات اصلی را نشان دادم
+// Tickets Operations
+const createTicket = async (ticketData) => {
+    return new Promise((resolve, reject) => {
+        const stmt = db.prepare(`INSERT INTO tickets (
+            id, username, subject, message, status, response, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+        
+        stmt.run([
+            ticketData.id,
+            ticketData.createdBy || ticketData.username,
+            ticketData.title || ticketData.subject,
+            ticketData.description || ticketData.message,
+            ticketData.status || 'باز',
+            ticketData.response || null,
+            ticketData.createdAt || new Date().toISOString(),
+            ticketData.updatedAt || new Date().toISOString()
+        ], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ insertedId: this.lastID });
+            }
+        });
+        stmt.finalize();
+    });
+};
+
+// Appointments Operations
+const createAppointment = async (appointmentData) => {
+    return new Promise((resolve, reject) => {
+        const stmt = db.prepare(`INSERT INTO appointments (
+            id, username, date, time, description, status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+        
+        stmt.run([
+            appointmentData.id,
+            appointmentData.agentUsername || appointmentData.username,
+            appointmentData.appointmentDate || appointmentData.date,
+            appointmentData.appointmentTime || appointmentData.time,
+            appointmentData.notes || appointmentData.description,
+            appointmentData.status || 'در انتظار تایید',
+            appointmentData.createdAt || new Date().toISOString(),
+            appointmentData.updatedAt || new Date().toISOString()
+        ], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ insertedId: this.lastID });
+            }
+        });
+        stmt.finalize();
+    });
+};
+
+// Notifications Operations
+const createNotification = async (notificationData) => {
+    return new Promise((resolve, reject) => {
+        const stmt = db.prepare(`INSERT INTO notifications (
+            id, username, title, message, read, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?)`);
+        
+        stmt.run([
+            notificationData.id,
+            notificationData.username || 'all',
+            notificationData.title,
+            notificationData.message,
+            0,
+            notificationData.sentAt || notificationData.created_at || new Date().toISOString()
+        ], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ insertedId: this.lastID });
+            }
+        });
+        stmt.finalize();
+    });
+};
+
+// Signup Operations
+const createSignupEntry = async (phone) => {
+    return new Promise((resolve, reject) => {
+        const stmt = db.prepare(`INSERT INTO signup (
+            id, username, phone, created_at
+        ) VALUES (?, ?, ?, ?)`);
+        
+        const id = Date.now().toString();
+        stmt.run([
+            id,
+            phone,
+            phone,
+            new Date().toISOString()
+        ], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ insertedId: this.lastID });
+            }
+        });
+        stmt.finalize();
+    });
+};
 
 module.exports = {
     connectDB,
@@ -515,5 +615,17 @@ module.exports = {
     get3DRequests,
     get3DRequestById,
     update3DRequest,
-    delete3DRequest
+    delete3DRequest,
+    
+    // Tickets
+    createTicket,
+    
+    // Appointments
+    createAppointment,
+    
+    // Notifications
+    createNotification,
+    
+    // Signup
+    createSignupEntry
 };

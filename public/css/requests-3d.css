@@ -1493,48 +1493,27 @@
 }
 
 .no-plan-shop-btn {
-    background: #475569;
-    border: 1px solid #475569;
+    background: #8b5cf6;
+    border: 1px solid #8b5cf6;
     color: white;
-    font-weight: 500;
-    min-width: 120px;
-    padding: 0.625rem 1.25rem;
-    border-radius: 8px;
-    font-size: 0.875rem;
+    font-weight: 600;
+    min-width: 140px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
     transition: all 0.2s ease;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
 }
 
 .no-plan-shop-btn:hover {
-    background: #334155;
-    border-color: #334155;
-}
-
-.no-plan-back-btn {
-    background: white;
-    border: 1px solid #cbd5e1;
-    color: #475569;
-    font-weight: 500;
-    min-width: 120px;
-    padding: 0.625rem 1.25rem;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.no-plan-back-btn:hover {
-    background: #f8fafc;
-    border-color: #94a3b8;
-    color: #334155;
+    background: #7c3aed;
+    border-color: #7c3aed;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
 }
 
 /* Responsive Design for No Plan Header */
@@ -1555,15 +1534,14 @@
     }
 
     .no-plan-actions {
-        flex-direction: column;
-        gap: 0.5rem;
+        justify-content: center;
+        gap: 0;
     }
 
-    .no-plan-shop-btn,
-    .no-plan-back-btn {
-        min-width: 100%;
-        padding: 0.75rem 1rem;
-        font-size: 0.875rem;
+    .no-plan-shop-btn {
+        min-width: 200px;
+        padding: 0.875rem 1.25rem;
+        font-size: 0.9rem;
     }
 }
 
@@ -1584,11 +1562,11 @@
         height: 16px;
     }
 
-    .no-plan-shop-btn,
-    .no-plan-back-btn {
-        padding: 0.625rem 0.875rem;
-        font-size: 0.8rem;
-        border-radius: 6px;
+    .no-plan-shop-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        min-width: 180px;
     }
 }
 

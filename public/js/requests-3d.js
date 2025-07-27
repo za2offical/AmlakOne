@@ -53,7 +53,7 @@ async function loadUserProducts() {
 
         // بررسی وضعیت پلن کاربر
         const planStatus = await checkUserPlan();
-        
+
         // نمایش تعداد استفاده‌های باقی‌مانده (اگر پلن دارد)
         if (planStatus.hasPlan) {
             updatePlanDisplay(planStatus.remainingUses);
@@ -73,7 +73,7 @@ async function loadUserProducts() {
                 'Expires': '0'
             }
         });
-        
+
         if (response.status === 401) {
             window.location.href = '/login';
             return;
@@ -119,7 +119,7 @@ function displayProducts(products) {
         if (hasActiveRequest) {
             console.log('Active request found:', activeRequest); // Debug log
             console.log('Request status:', activeRequest.status); // Debug log
-            
+
             if (activeRequest.status === 'تایید شده') {
                 requestStatus = 'approved';
                 cardClass += ' has-approved-request';
@@ -133,7 +133,7 @@ function displayProducts(products) {
         }
 
         productCard.className = cardClass;
-        
+
         // اضافه کردن attribute برای آسان‌تر شدن شناسایی
         productCard.setAttribute('data-product-id', product.id);
 
@@ -240,24 +240,24 @@ async function loadActiveRequests() {
             const newActiveRequests = await response.json();
             console.log('Live active requests loaded:', newActiveRequests); // Debug log
             console.log('Number of active requests:', newActiveRequests.length); // Debug log
-            
+
             // بررسی تغییرات و به‌روزرسانی فوری
             const hasChanges = JSON.stringify(activeRequests) !== JSON.stringify(newActiveRequests);
             activeRequests = newActiveRequests;
-            
+
             displayActiveRequests();
-            
+
             // همیشه محصولات را مجدد رندر کن تا وضعیت‌ها به‌روزرسانی شوند
             if (allProducts.length > 0) {
                 console.log('Refreshing products display with latest request status...'); // Debug log
                 displayProducts(allProducts);
             }
-            
+
             // اجبار به‌روزرسانی انیمیشن‌ها
             setTimeout(() => {
                 forceRefreshCardAnimations();
             }, 100);
-            
+
         } else {
             console.error('Failed to load active requests:', response.status);
         }
@@ -272,7 +272,7 @@ function toggleActiveRequests() {
     const toggleBtn = document.getElementById('toggleRequestsBtn');
     const toggleBtnText = document.getElementById('toggleBtnText');
     const toggleIcon = document.getElementById('toggleIcon');
-    
+
     if (activeRequestsSection.style.display === 'none' || activeRequestsSection.style.display === '') {
         activeRequestsSection.style.display = 'block';
         toggleBtnText.textContent = 'مخفی کردن درخواست‌های من';
@@ -311,7 +311,7 @@ function showSuccessMessage(message) {
         z-index: 1000;
         animation: fadeInOut 3s forwards;
     `;
-    
+
     // اضافه کردن انیمیشن
     const style = document.createElement('style');
     style.textContent = `
@@ -322,7 +322,7 @@ function showSuccessMessage(message) {
         }
     `;
     document.head.appendChild(style);
-    
+
     document.body.appendChild(successDiv);
     setTimeout(() => {
         document.body.removeChild(successDiv);
@@ -344,12 +344,12 @@ function displayActiveRequests() {
 
     // نمایش دکمه تغییر وضعیت و بخش درخواست‌ها
     toggleBtn.style.display = 'inline-flex';
-    
+
     // به‌روزرسانی تعداد درخواست‌ها
     if (requestsCount) {
         requestsCount.textContent = `${activeRequests.length} درخواست`;
     }
-    
+
     activeRequestsList.innerHTML = '';
 
     activeRequests.forEach(request => {
@@ -432,7 +432,7 @@ function openUploadModal(product) {
         showError('برای این ملک قبلاً درخواست ارسال شده است.');
         return;
     }
-    
+
     // بررسی وضعیت پلن کاربر
     if (!userPlanStatus.hasPlan) {
         showError('برای استفاده از این بخش باید پلن خریداری کنید.');
@@ -561,7 +561,7 @@ function showUploadLoadingOverlay() {
                 </div>
                 <div class="upload-loading-text">در حال ارسال درخواست...</div>
                 <div class="upload-loading-description">لطفاً صبر کنید، درخواست شما در حال پردازش است</div>
-                
+
                 <div class="upload-progress-ring" style="display: none;">
                     <svg>
                         <defs>
@@ -579,7 +579,7 @@ function showUploadLoadingOverlay() {
         `;
         document.body.appendChild(overlay);
     }
-    
+
     const overlay = document.getElementById('uploadLoadingOverlay');
     overlay.classList.add('show');
 }
@@ -601,13 +601,13 @@ function updateUploadProgress(percentage) {
         const progressBar = overlay.querySelector('.progress-bar-circle');
         const progressText = overlay.querySelector('.upload-progress-percentage');
         const loadingText = overlay.querySelector('.upload-loading-text');
-        
+
         if (percentage > 0) {
             // تغییر به حالت نمایش درصد
             dotsContainer.style.display = 'none';
             progressRing.style.display = 'block';
             loadingText.textContent = 'در حال آپلود فایل...';
-            
+
             // محاسبه stroke-dashoffset برای نمایش پیشرفت
             const circumference = 2 * Math.PI * 36;
             const offset = circumference - (percentage / 100) * circumference;
@@ -629,7 +629,7 @@ async function submitRequest() {
     try {
         submitBtn.disabled = true;
         submitBtn.textContent = 'در حال ارسال...';
-        
+
         // نمایش انیمیشن زیبا
         showUploadLoadingOverlay();
 
@@ -654,16 +654,16 @@ async function submitRequest() {
                 const response = JSON.parse(xhr.responseText);
                 closeUploadModal();
                 showSuccessModal();
-                
+
                 // به‌روزرسانی فوری وضعیت کارت محصول
                 updateProductCardStatusImmediately(selectedProductId, 'pending');
-                
+
                 loadActiveRequests(); // بارگذاری مجدد درخواست‌های فعال
                 displayProducts(allProducts); // به‌روزرسانی نمایش محصولات
-                
+
                 // بررسی و به‌روزرسانی تعداد باقی‌مانده بر اساس پاسخ سرور
                 console.log('Server response:', response);
-                
+
                 if (response.remainingUses !== undefined) {
                     console.log(`Updating remaining uses from ${userPlanStatus.remainingUses} to ${response.remainingUses}`);
                     userPlanStatus.remainingUses = response.remainingUses;
@@ -674,14 +674,14 @@ async function submitRequest() {
                     userPlanStatus.remainingUses--;
                     updatePlanDisplay(userPlanStatus.remainingUses);
                 }
-                
+
                 // نمایش وضعیت به‌روزرسانی پلن
                 if (response.planDecremented === false) {
                     console.warn('Plan was not decremented on server');
                     // نمایش هشدار به کاربر
                     alert('هشدار: ممکن است پلن شما به درستی به‌روزرسانی نشده باشد');
                 }
-                
+
                 // اگر تعداد استفاده به صفر رسید، نمایش حالت بدون پلن
                 if (userPlanStatus.remainingUses <= 0) {
                     setTimeout(() => {
@@ -691,7 +691,7 @@ async function submitRequest() {
                 }
             } else {
                 const errorResponse = JSON.parse(xhr.responseText);
-                
+
                 // اگر خطای نبود پلن باشد
                 if (errorResponse.needsPlan) {
                     closeUploadModal();
@@ -813,7 +813,7 @@ document.addEventListener('keydown', (e) => {
 async function softUpdateRequestsStatus() {
     try {
         console.log('Soft updating requests status...');
-        
+
         // بارگذاری آرام درخواست‌های جدید
         const timestamp = Date.now() + Math.random();
         const response = await fetch(`/api/requests-3d/my-requests?live=${timestamp}`, {
@@ -825,21 +825,21 @@ async function softUpdateRequestsStatus() {
                 'Expires': '0'
             }
         });
-        
+
         if (response.ok) {
             const newActiveRequests = await response.json();
-            
+
             // بررسی تغییرات در درخواست‌ها
             const hasChanges = JSON.stringify(activeRequests) !== JSON.stringify(newActiveRequests);
-            
+
             if (hasChanges || newActiveRequests.length !== activeRequests.length) {
                 console.log('Request status changes detected, updating display...');
                 activeRequests = newActiveRequests;
-                
+
                 // به‌روزرسانی نرم نمایش بدون پرش
                 updateProductCardsStatus();
                 displayActiveRequests();
-                
+
                 // اجبار رندر مجدد کارت‌ها برای اطمینان از نمایش صحیح
                 setTimeout(() => {
                     displayProducts(allProducts);
@@ -856,44 +856,44 @@ async function softUpdateRequestsStatus() {
 // به‌روزرسانی فوری وضعیت یک کارت محصول خاص
 function updateProductCardStatusImmediately(productId, status) {
     console.log('Updating product card immediately:', productId, status);
-    
+
     // پیدا کردن کارت با استفاده از data attribute
     const targetCard = document.querySelector(`[data-product-id="${productId}"]`);
-    
+
     if (!targetCard) {
         console.log('Target card not found, trying fallback method');
         // fallback method
         const productCards = document.querySelectorAll('.product-card');
         const productData = allProducts.find(product => product.id === productId);
-        
+
         if (!productData) return;
-        
+
         productCards.forEach(card => {
             const cardText = card.textContent;
             const isTargetCard = cardText.includes(`${productData.bedrooms} خوابه`) && 
                                 cardText.includes(`${productData.area} متر`);
-            
+
             if (isTargetCard) {
                 updateSingleCard(card, status, productData);
             }
         });
         return;
     }
-    
+
     const productData = allProducts.find(product => product.id === productId);
     if (!productData) return;
-    
+
     updateSingleCard(targetCard, status, productData);
 }
 
 // تابع کمکی برای به‌روزرسانی یک کارت
 function updateSingleCard(card, status, productData) {
-        
+
         console.log('Updating single card:', productData.id, status);
-    
+
     // حذف کلاس‌های قدیمی
     card.classList.remove('has-approved-request', 'has-pending-request', 'has-rejected-request');
-    
+
     // اضافه کردن کلاس جدید
     if (status === 'pending') {
         card.classList.add('has-pending-request');
@@ -902,15 +902,15 @@ function updateSingleCard(card, status, productData) {
     } else if (status === 'rejected') {
         card.classList.add('has-rejected-request');
     }
-    
+
     // غیرفعال کردن کلیک
     card.style.cursor = 'default';
     card.onclick = null;
-    
+
     // اضافه کردن badge وضعیت
     const imageContainer = card.querySelector('.product-image-container');
     const existingStatus = card.querySelector('.request-status');
-    
+
     if (!existingStatus) {
         const statusBadge = document.createElement('div');
         statusBadge.className = `request-status ${status}`;
@@ -926,7 +926,7 @@ function updateSingleCard(card, status, productData) {
         `;
         imageContainer.appendChild(statusBadge);
     }
-    
+
     // به‌روزرسانی دکمه
     const actionButton = card.querySelector('.product-actions button');
     if (actionButton) {
@@ -938,7 +938,7 @@ function updateSingleCard(card, status, productData) {
             در حال بررسی
         `;
     }
-    
+
     // اجبار بازنویسی انیمیشن با تاخیر کوتاه
     setTimeout(() => {
         card.style.animationName = 'none';
@@ -950,7 +950,7 @@ function updateSingleCard(card, status, productData) {
 // به‌روزرسانی وضعیت کارت‌های محصول بدون رندر مجدد
 function updateProductCardsStatus() {
     const productCards = document.querySelectorAll('.product-card');
-    
+
     productCards.forEach(card => {
         // پیدا کردن محصول مربوطه
         const productData = allProducts.find(product => {
@@ -958,20 +958,20 @@ function updateProductCardsStatus() {
             return cardText.includes(`${product.bedrooms} خوابه`) && 
                    cardText.includes(`${product.area} متر`);
         });
-        
+
         if (!productData) return;
-        
+
         // پیدا کردن درخواست مربوط به این محصول
         const activeRequest = activeRequests.find(req => req.productId === productData.id);
         const hasActiveRequest = !!activeRequest;
-        
+
         // حذف کلاس‌های قدیمی
         card.classList.remove('has-approved-request', 'has-pending-request', 'has-rejected-request');
-        
+
         // پیدا کردن المنت‌های مربوط به وضعیت
         const existingStatus = card.querySelector('.request-status');
         const actionButton = card.querySelector('.product-actions button');
-        
+
         if (hasActiveRequest) {
             // تعیین وضعیت جدید
             let requestStatus = null;
@@ -985,10 +985,10 @@ function updateProductCardsStatus() {
                 requestStatus = 'rejected';
                 card.classList.add('has-rejected-request');
             }
-            
+
             card.style.cursor = 'default';
             card.onclick = null;
-            
+
             // اضافه کردن badge وضعیت اگر وجود ندارد
             if (!existingStatus) {
                 const imageContainer = card.querySelector('.product-image-container');
@@ -1018,7 +1018,7 @@ function updateProductCardsStatus() {
                     ${requestStatus === 'approved' ? 'تایید شده' : requestStatus === 'rejected' ? 'رد شده' : 'در حال بررسی'}
                 `;
             }
-            
+
             // به‌روزرسانی دکمه action
             if (actionButton) {
                 actionButton.disabled = true;
@@ -1045,10 +1045,10 @@ function updateProductCardsStatus() {
             if (existingStatus) {
                 existingStatus.remove();
             }
-            
+
             card.style.cursor = 'pointer';
             card.onclick = () => openUploadModal(productData);
-            
+
             // بازگردانی دکمه به حالت عادی
             if (actionButton) {
                 actionButton.disabled = false;
@@ -1072,13 +1072,13 @@ function forceRefresh() {
 // نمایش هدر بدون پلن
 function showNoPlanHeader() {
     const headerCenter = document.querySelector('.header-center');
-    
+
     // حذف هدر قبلی
     const existingNoPlanHeader = document.querySelector('.no-plan-moving-header');
     if (existingNoPlanHeader) {
         existingNoPlanHeader.remove();
     }
-    
+
     // اضافه کردن هدر متحرک
     const noPlanHeader = document.createElement('div');
     noPlanHeader.className = 'no-plan-moving-header';
@@ -1098,34 +1098,25 @@ function showNoPlanHeader() {
             </div>
         </div>
         <div class="no-plan-actions">
-            <button class="btn-primary no-plan-shop-btn" onclick="window.location.href='/shop'">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.41c-.15.25-.25.55-.25.85 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                </svg>
-                خرید پلن 3D
-            </button>
-            <button class="btn-outline no-plan-back-btn" onclick="window.location.href='/panel'">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-                </svg>
-                بازگشت به پنل
-            </button>
+            <a href="/page2.html" class="no-plan-shop-btn">
+                خرید پلن
+            </a>
         </div>
     `;
-    
+
     headerCenter.appendChild(noPlanHeader);
 }
 
 // نمایش تعداد استفاده‌های باقی‌مانده
 function updatePlanDisplay(remainingUses) {
     const headerLeft = document.querySelector('.page-header .header-left');
-    
+
     // حذف نمایش قبلی
     const existingPlanDisplay = document.querySelector('.plan-status');
     if (existingPlanDisplay) {
         existingPlanDisplay.remove();
     }
-    
+
     // اضافه کردن نمایش جدید بعد از دکمه بازگشت
     const planDisplay = document.createElement('div');
     planDisplay.className = 'plan-status';
@@ -1137,9 +1128,9 @@ function updatePlanDisplay(remainingUses) {
             <span>${remainingUses} درخواست باقی‌مانده</span>
         </div>
     `;
-    
+
     headerLeft.appendChild(planDisplay);
-    
+
     // اضافه کردن استایل
     const style = document.createElement('style');
     style.textContent = `
@@ -1149,11 +1140,11 @@ function updatePlanDisplay(remainingUses) {
             align-items: flex-start;
             gap: 0.75rem;
         }
-        
+
         .plan-status {
             margin-top: 0.5rem;
         }
-        
+
         .plan-badge {
             display: inline-flex;
             align-items: center;
@@ -1166,7 +1157,7 @@ function updatePlanDisplay(remainingUses) {
             font-weight: 500;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
-        
+
         .plan-badge svg {
             opacity: 0.9;
         }
@@ -1183,14 +1174,14 @@ function forceRefreshCardAnimations() {
         const animationClasses = classes.filter(cls => 
             cls.includes('has-') && (cls.includes('request') || cls.includes('pending') || cls.includes('approved'))
         );
-        
+
         if (animationClasses.length > 0) {
             // حذف موقت
             animationClasses.forEach(cls => card.classList.remove(cls));
-            
+
             // اجبار reflow
             card.offsetHeight;
-            
+
             // اضافه مجدد
             setTimeout(() => {
                 animationClasses.forEach(cls => card.classList.add(cls));
@@ -1202,12 +1193,12 @@ function forceRefreshCardAnimations() {
 // بارگذاری اولیه
 document.addEventListener('DOMContentLoaded', () => {
     loadUserProducts();
-    
+
     // سیستم به‌روزرسانی نرم هر 5 ثانیه برای واکنش سریع‌تر
     setInterval(() => {
         softUpdateRequestsStatus();
     }, 5000); // هر 5 ثانیه
-    
+
     // به‌روزرسانی فوری پس از 2 ثانیه از بارگذاری اولیه
     setTimeout(() => {
         softUpdateRequestsStatus();

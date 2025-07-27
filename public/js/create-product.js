@@ -73,6 +73,26 @@ async function checkPlanLimit() {
             return true;
         }
         
+        // بررسی canCreate حتی اگر response موفق باشد
+        if (data.canCreate === false) {
+            const submitButton = document.querySelector('.submit-button');
+            const form = document.getElementById('productForm');
+            
+            // غیرفعال کردن فرم
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'محدودیت پلن';
+            }
+            if (form) {
+                form.style.opacity = '0.6';
+                form.style.pointerEvents = 'none';
+            }
+            
+            // نمایش پیام محدودیت
+            showMessage(data.error || 'شما به حد مجاز ایجاد آگهی رسیده‌اید', 'error');
+            return false;
+        }
+        
         // اگر همه چیز اوکی است
         console.log('Plan check successful:', data);
         

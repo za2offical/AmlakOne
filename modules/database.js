@@ -47,6 +47,31 @@ const createTables = () => {
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )`);
 
+            // اضافه کردن ستون‌های جدید اگر وجود ندارند
+            db.run(`ALTER TABLE users ADD COLUMN level INTEGER DEFAULT 0`, (err) => {
+                if (err && !err.message.includes('duplicate column name')) {
+                    console.log('خطا در اضافه کردن ستون level:', err.message);
+                }
+            });
+
+            db.run(`ALTER TABLE users ADD COLUMN level_changed_at TEXT`, (err) => {
+                if (err && !err.message.includes('duplicate column name')) {
+                    console.log('خطا در اضافه کردن ستون level_changed_at:', err.message);
+                }
+            });
+
+            db.run(`ALTER TABLE users ADD COLUMN created_at TEXT DEFAULT CURRENT_TIMESTAMP`, (err) => {
+                if (err && !err.message.includes('duplicate column name')) {
+                    console.log('خطا در اضافه کردن ستون created_at:', err.message);
+                }
+            });
+
+            db.run(`ALTER TABLE users ADD COLUMN updated_at TEXT DEFAULT CURRENT_TIMESTAMP`, (err) => {
+                if (err && !err.message.includes('duplicate column name')) {
+                    console.log('خطا در اضافه کردن ستون updated_at:', err.message);
+                }
+            });
+
             // جدول محصولات
             db.run(`CREATE TABLE IF NOT EXISTS products (
                 id TEXT PRIMARY KEY,

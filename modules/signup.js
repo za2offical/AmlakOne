@@ -1,27 +1,19 @@
-
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
-const path = require('path');
 const bcrypt = require('bcryptjs');
 const { readUsers, writeUsers } = require('./auth');
+const { createSignupEntry } = require('./database');
 
-const SIGNUP_FILE = path.join(__dirname, '..', 'data', 'signup.json');
+// خواندن لیست شماره‌های ثبت‌نام شده (حذف شد - اکنون مستقیماً در دیتابیس ذخیره می‌شود)
+const readSignupList = async () => {
+    // این تابع دیگر استفاده نمی‌شود اما برای سازگاری نگه داشته شده
+    return [];
+};
 
-// خواندن شماره‌های مجاز از فایل
-async function readAuthorizedPhones() {
-    try {
-        const data = await fs.readFile(SIGNUP_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-}
-
-// نوشتن شماره‌های مجاز در فایل
-async function writeAuthorizedPhones(phones) {
-    await fs.writeFile(SIGNUP_FILE, JSON.stringify(phones, null, 2));
-}
+// نوشتن لیست شماره‌های ثبت‌نام شده (حذف شد - اکنون مستقیماً در دیتابیس ذخیره می‌شود)
+const writeSignupList = async (signupList) => {
+    // این تابع دیگر استفاده نمی‌شود اما برای سازگاری نگه داشته شده
+};
 
 // مرحله اول: بررسی شماره تلفن
 router.post('/verify-phone', async (req, res) => {

@@ -3,6 +3,14 @@ const router = express.Router();
 const { authenticateToken } = require('./auth');
 const fs = require('fs').promises;
 const path = require('path');
+const jwt = require('jsonwebtoken');
+const { 
+    getUserByUsername, 
+    getProductsByUser,
+    get3DRequests,
+    closeConnection,
+    getDB
+} = require('./database');
 
 const USERS_FILE = path.join(__dirname, '..', 'data', 'users.json');
 const NOTIFICATIONS_FILE = path.join(__dirname, '..', 'data', 'notifications.json');
@@ -55,13 +63,33 @@ router.post('/initialize', async (req, res) => {
 // دریافت اعلان‌های کاربر
 router.get('/notifications', async (req, res) => {
     try {
-        const notifications = JSON.parse(await fs.readFile(NOTIFICATIONS_FILE, 'utf8'));
         const username = req.user.username;
-        
+
+        // خواندن اعلان‌ها از دیتابیس
+        let notifications = [];
+        try {
+            const db = getDB();
+            notifications = await new Promise((resolve, reject) => {
+                db.all(
+                    "SELECT * FROM notifications WHERE username = ? OR username = 'all' ORDER BY created_at DESC LIMIT 10", 
+                    [username], 
+                    (err, rows) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(rows || []);
+                        }
+                    }
+                );
+            });
+        } catch (error) {
+            console.log('خطا در خواندن اعلان‌ها از دیتابیس:', error);
+        }
+
         // اضافه کردن وضعیت خوانده شدن برای هر اعلان
         const notificationsWithReadStatus = notifications.map(notification => ({
             ...notification,
-            isRead: notification.readBy.includes(username)
+            isRead: notification.readBy ? notification.readBy.includes(username) : false
         }));
 
         res.json(notificationsWithReadStatus);
@@ -76,10 +104,10 @@ router.post('/notifications/:id/read', async (req, res) => {
     try {
         const { id } = req.params;
         const username = req.user.username;
-        
+
         const notifications = JSON.parse(await fs.readFile(NOTIFICATIONS_FILE, 'utf8'));
         const notificationIndex = notifications.findIndex(n => n.id === id);
-        
+
         if (notificationIndex === -1) {
             return res.status(404).json({ error: 'اعلان یافت نشد' });
         }
@@ -102,7 +130,7 @@ router.get('/notifications/unread-count', async (req, res) => {
     try {
         const notifications = JSON.parse(await fs.readFile(NOTIFICATIONS_FILE, 'utf8'));
         const username = req.user.username;
-        
+
         const unreadCount = notifications.filter(notification => 
             !notification.readBy.includes(username)
         ).length;

@@ -96,8 +96,8 @@ function showLimitWarning(data) {
             <h3>🚫 محدودیت ایجاد آگهی</h3>
             <p>${data.error}</p>
             <p>تعداد آگهی‌های ایجاد شده: ${data.used} از ${data.limit || 'نامحدود'}</p>
-            <p>سطح کاربری شما: ${data.userLevel}</p>
-            <p class="upgrade-suggestion">یا برای افزایش محدودیت می‌تونید پلن پیشرفته‌تری خریداری کنید</p>
+            
+            <p class="upgrade-suggestion"> برای افزایش محدودیت می‌تونید پلن پیشرفته‌تری خریداری کنید</p>
             <div class="action-buttons">
                 <a href="/requests-3d" class="purchase-plan-link">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

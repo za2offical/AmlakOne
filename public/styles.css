@@ -1,5 +1,67 @@
-/* Persian Font */
-@import url('https://fonts.googleapis.com/css2?family=Vazir:wght@300;400;500;600;700;800;900&display=swap');
+/* Vazir Font Import */
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css');
+
+/* Ensure all elements use Vazir font */
+*,
+*::before,
+*::after {
+    font-family: var(--font-family);
+}
+
+::selection {
+  background: #6366f1; /* بنفش tailwind */
+  color: #ffffff;
+}
+
+/* Specific elements that might need explicit font-family */
+input,
+textarea,
+select,
+button,
+input::placeholder,
+textarea::placeholder {
+    font-family: var(--font-family) !important;
+}
+
+/* Font Awesome icons should use their own font */
+.fas,
+.far,
+.fab,
+.fa,
+[class*="fa-"],
+[class*="fas-"],
+[class*="far-"],
+[class*="fab-"],
+i[class*="fa-"],
+i[class*="fas"],
+i[class*="far"],
+i[class*="fab"] {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Pro", "Font Awesome 6 Brands" !important;
+    font-weight: 900;
+}
+
+/* Ensure Font Awesome icons are visible */
+.fas::before,
+.far::before,
+.fab::before,
+.fa::before {
+    font-family: inherit;
+}
+
+/* Additional icon visibility rules */
+.feature-icon i,
+.nav-actions i,
+.hero-buttons i,
+.scroll-arrow i,
+.step-icon i,
+.social-link i,
+.faq-question i {
+    display: inline-block !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+}
 
 /* Reset and Base Styles */
 * {
@@ -27,7 +89,7 @@
     --shadow-heavy: rgba(0, 0, 0, 0.25);
     
     /* Typography */
-    --font-family: 'Vazir', 'Tahoma', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-family: 'Vazir', 'Vazir FD', 'Vazir Farsi', 'Vazir Arabic', 'Vazir Persian', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-size-xs: 0.75rem;
     --font-size-sm: 0.875rem;
     --font-size-base: 1rem;
@@ -348,6 +410,7 @@ body {
     gap: var(--spacing-sm);
     padding: var(--spacing-md) var(--spacing-xl);
     border-radius: var(--radius-xl);
+    font-family: var(--font-family);
     font-weight: 600;
     font-size: var(--font-size-base);
     cursor: pointer;
@@ -382,15 +445,6 @@ body {
 
 .btn-primary:hover::before {
     left: 100%;
-}
-
-/* RTL Support */
-[dir="rtl"] .btn-primary::before {
-    left: 100%;
-}
-
-[dir="rtl"] .btn-primary:hover::before {
-    left: -100%;
 }
 
 .btn-secondary {
@@ -1072,6 +1126,7 @@ body {
     border-radius: var(--radius-lg);
     background: var(--background-color);
     color: var(--text-primary);
+    font-family: var(--font-family);
     font-size: var(--font-size-base);
     transition: all var(--transition-fast);
     outline: none;
@@ -1342,4 +1397,65 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--primary-dark);
+}
+
+/* Back to Top Button */
+.back-to-top {
+    position: fixed;
+    bottom: 2.5rem;
+    right: 2.5rem;
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
+    box-shadow: 0 8px 30px var(--shadow-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1200;
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+    transform: translateY(40px);
+    overflow: hidden;
+}
+.back-to-top::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+    pointer-events: none;
+}
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.back-to-top:hover {
+    /* فقط افکت shine و سایه، بدون تغییر رنگ پس‌زمینه */
+    box-shadow: 0 15px 40px var(--shadow-medium);
+    transform: translateY(-4px) scale(1.08);
+}
+.back-to-top:hover::before {
+    left: 100%;
+}
+.back-to-top i {
+    pointer-events: none;
+}
+@media (max-width: 600px) {
+    .back-to-top {
+        bottom: 1.2rem;
+        right: 1.2rem;
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+    }
 }

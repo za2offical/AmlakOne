@@ -411,6 +411,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Back to Top Button
+(function initBackToTop() {
+    const backToTop = document.getElementById('back-to-top');
+    if (!backToTop) return;
+    
+    // نمایش دکمه هنگام اسکرول پایین
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTop.classList.add('show');
+        } else {
+            backToTop.classList.remove('show');
+        }
+    });
+
+    // اسکرول نرم به بالا هنگام کلیک
+    backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+})();
+
 // Performance optimization
 function debounce(func, wait) {
     let timeout;

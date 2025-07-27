@@ -131,6 +131,15 @@ async function syncPlansWithUsers() {
     let hasChanges = false;
     const currentTime = new Date().toISOString();
     
+    // بررسی زمان تغییر فایل plans.json
+    let plansFileTime = null;
+    try {
+      const stats = await fs.stat(plansFilePath);
+      plansFileTime = stats.mtime.toISOString();
+    } catch (error) {
+      // فایل وجود ندارد
+    }
+    
     // برای هر کاربر موجود در users.json
     for (const user of users) {
       // اگر کاربر در plans.json وجود نداشت، اضافه کن با level 0
@@ -152,26 +161,42 @@ async function syncPlansWithUsers() {
         // بررسی تغییر سطح نسبت به فایل محصولات کاربر
         const userProductsPath = path.join(productsDir, `${user.username}.json`);
         let previousLevel = null;
+        let shouldUpdateTime = false;
         
         try {
           const userProductsData = await fs.readFile(userProductsPath, 'utf8');
           const userData = JSON.parse(userProductsData);
           previousLevel = userData.user_level;
         } catch (error) {
-          // اگر فایل محصولات وجود نداشت، سطح قبلی را 0 در نظر بگیر
+          // اگر فایل محصولات وجود نداشت، بررسی کن که آیا level_changed_at در plans موجود است
+          if (!plans[user.username].level_changed_at) {
+            shouldUpdateTime = true;
+          }
           previousLevel = 0;
         }
         
         const currentLevel = plans[user.username].level;
+        const lastChanged = plans[user.username].level_changed_at;
+        const lastUpdated = plans[user.username].updated_at;
         
         // اگر سطح تغییر کرده باشد (تغییر دستی)
-        if (previousLevel !== null && previousLevel !== currentLevel) {
+        if (previousLevel !== currentLevel) {
           plans[user.username].level_changed_at = currentTime;
           plans[user.username].updated_at = currentTime;
           hasChanges = true;
           console.log(`تشخیص تغییر دستی سطح: کاربر ${user.username} سطح ${previousLevel} → ${currentLevel} در ${currentTime}`);
           
           // اعمال محدودیت محصول جدید با زمان جدید
+          await applyProductLimitToUser(user.username, currentLevel, currentTime);
+        }
+        // اگر سطح تغییر نکرده ولی زمان‌ها باید به‌روزرسانی شوند
+        else if (shouldUpdateTime || !lastChanged) {
+          plans[user.username].level_changed_at = currentTime;
+          plans[user.username].updated_at = currentTime;
+          hasChanges = true;
+          console.log(`به‌روزرسانی زمان‌های کاربر ${user.username} در ${currentTime}`);
+          
+          // همگام‌سازی زمان در فایل محصولات کاربر
           await applyProductLimitToUser(user.username, currentLevel, currentTime);
         }
         

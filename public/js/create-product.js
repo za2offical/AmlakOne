@@ -68,6 +68,16 @@ async function checkPlanLimit() {
                 return false;
             }
             
+            // اگر خطای 401 باشد (مشکل احراز هویت)
+            if (response.status === 401) {
+                console.error('Authentication error:', data.error);
+                showMessage('مشکل در احراز هویت. لطفا دوباره وارد شوید.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+                return false;
+            }
+            
             // برای سایر خطاها، اجازه ادامه بده
             console.warn('Could not check plan limit:', data.error);
             return true;

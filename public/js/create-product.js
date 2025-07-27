@@ -4,21 +4,13 @@ async function checkAuth() {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
+            console.log('No token found, redirecting to login');
             window.location.href = '/login';
             return false;
         }
         
-        const response = await fetch('/api/panel/user-info', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.status === 401) {
-            window.location.href = '/login';
-            return false;
-        }
-        
+        // بررسی ساده‌تر - فقط بررسی می‌کنیم که token وجود دارد
+        // بررسی اصلی در checkPlanLimit انجام می‌شود
         return true;
     } catch (error) {
         console.error('Auth error:', error);

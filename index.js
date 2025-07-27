@@ -20,7 +20,7 @@ const appointmentsRouter = require('./modules/appointments');
 const ticketingRouter = require('./modules/ticketing');
 const signupRouter = require('./modules/signup'); // Added signup router
 const requests3dRouter = require('./modules/requests-3d');
-const plansModule = require('./modules/plans');
+const plansRouter = require('./modules/plans');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -72,7 +72,7 @@ app.use('/api/admin/tickets', adminTicketsRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/ticketing', ticketingRouter);
 app.use('/api/requests-3d', requests3dRouter);
-app.use('/api/plans', plansModule.router);
+app.use('/api/plans', plansRouter.router);
 
 // Serve HTML files
 app.get('/editor', (req, res) => {

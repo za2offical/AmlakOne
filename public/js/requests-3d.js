@@ -1085,15 +1085,6 @@ function showNoPlanHeader() {
     noPlanHeader.innerHTML = `
         <div class="moving-text-container">
             <div class="moving-text">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12.5 2.5L21 7v10l-8.5 4.5L4 17V7l8.5-4.5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                    <path d="M12.5 2.5v19M4 7l8.5 4.5L21 7" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                </svg>
-                برای استفاده از این بخش باید پلن خریداری کنید
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12.5 2.5L21 7v10l-8.5 4.5L4 17V7l8.5-4.5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                    <path d="M12.5 2.5v19M4 7l8.5 4.5L21 7" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                </svg>
                 برای استفاده از این بخش باید پلن خریداری کنید
             </div>
         </div>

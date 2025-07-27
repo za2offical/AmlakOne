@@ -1,4 +1,6 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const { authenticateToken } = require('./auth');
 const router = express.Router();
 const { getAllUsers, getUserByUsername, updateUser } = require('./database');
@@ -65,50 +67,13 @@ async function syncPlansWithUsers() {
   }
 }
 
-// رصد تغییرات فایل users.json و همگام‌سازی خودکار
-function startFileWatcher() {
+// همگام‌سازی اولیه plans
+async function initializePlans() {
   try {
-    if (!fsSync.existsSync(usersFilePath)) {
-      console.log('فایل users.json موجود نیست، رصدگر منتظر ایجاد فایل است...');
-    }
-
-    const watcher = fsSync.watch(usersFilePath, { persistent: true }, async (eventType, filename) => {
-      if (eventType === 'change' || eventType === 'rename') {
-        console.log(`تغییر در فایل users.json تشخیص داده شد (${eventType})`);
-
-        setTimeout(async () => {
-          try {
-            await syncPlansWithUsers();
-            console.log('همگام‌سازی خودکار plans انجام شد');
-          } catch (error) {
-            console.error('خطا در همگام‌سازی خودکار:', error);
-          }
-        }, 100);
-      }
-    });
-
-    // همگام‌سازی دوره‌ای هر 10 ثانیه
-    const periodicSync = setInterval(async () => {
-      try {
-        await syncPlansWithUsers();
-        console.log('همگام‌سازی دوره‌ای plans انجام شد');
-      } catch (error) {
-        console.error('خطا در همگام‌سازی دوره‌ای:', error);
-      }
-    }, 10000);
-
-    console.log('رصدگر فایل users.json شروع شد - plans real-time همگام‌سازی می‌شوند');
-
-    // همگام‌سازی اولیه
-    syncPlansWithUsers().then(() => {
-      console.log('همگام‌سازی اولیه plans انجام شد');
-    }).catch(error => {
-      console.error('خطا در همگام‌سازی اولیه:', error);
-    });
-
-    return { watcher, periodicSync };
+    await syncPlansWithUsers();
+    console.log('همگام‌سازی اولیه plans انجام شد');
   } catch (error) {
-    console.error('خطا در شروع رصدگر فایل:', error);
+    console.error('خطا در همگام‌سازی اولیه:', error);
   }
 }
 
@@ -227,8 +192,8 @@ router.post('/sync', async (req, res) => {
   }
 });
 
-// شروع خودکار رصدگر فایل و همگام‌سازی دوره‌ای
-const fileWatcherSystem = startFileWatcher();
+// اجرای همگام‌سازی اولیه
+initializePlans();
 
 module.exports = {
   router,
@@ -238,6 +203,5 @@ module.exports = {
   getUserLevel,
   setUserLevel,
   getAllPlans,
-  startFileWatcher,
-  fileWatcherSystem
+  initializePlans
 };

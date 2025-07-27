@@ -1,4 +1,3 @@
-
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
@@ -7,9 +6,9 @@ let db;
 const connectDB = async () => {
     try {
         const dbPath = path.join(__dirname, '..', 'data', 'amlakone.db');
-        
+
         console.log('در حال اتصال به SQLite...', dbPath);
-        
+
         db = new sqlite3.Database(dbPath, (err) => {
             if (err) {
                 throw err;
@@ -155,6 +154,22 @@ const createTables = () => {
                     resolve();
                 }
             });
+
+            // جدول 3D data
+            db.run(`CREATE TABLE IF NOT EXISTS data_3d (
+                id TEXT PRIMARY KEY,
+                key TEXT UNIQUE NOT NULL,
+                value TEXT NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )`, (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    console.log('جدول data_3d ایجاد شد');
+                    resolve();
+                }
+            });
         });
     });
 };
@@ -175,7 +190,7 @@ const createUser = async (userData) => {
             profileCompleted, failedLoginAttempts, lockoutUntil,
             level, level_changed_at, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-        
+
         stmt.run([
             userData.username,
             userData.hashedPassword,
@@ -221,10 +236,10 @@ const updateUser = async (username, updateData) => {
         const fields = Object.keys(updateData);
         const values = Object.values(updateData);
         const setClause = fields.map(field => `${field} = ?`).join(', ');
-        
+
         const query = `UPDATE users SET ${setClause}, updated_at = ? WHERE username = ?`;
         values.push(new Date().toISOString(), username);
-        
+
         db.run(query, values, function(err) {
             if (err) {
                 reject(err);
@@ -268,7 +283,7 @@ const createProduct = async (username, productData) => {
             deposit, monthlyRent, allowConversion, conversionDeductAmount,
             conversionAddAmount, pricePerMeter, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-        
+
         stmt.run([
             productData.id,
             username,
@@ -347,10 +362,10 @@ const updateProduct = async (productId, updateData) => {
             typeof value === 'object' ? JSON.stringify(value) : value
         );
         const setClause = fields.map(field => `${field} = ?`).join(', ');
-        
+
         const query = `UPDATE products SET ${setClause}, updated_at = ? WHERE id = ?`;
         values.push(new Date().toISOString(), productId);
-        
+
         db.run(query, values, function(err) {
             if (err) {
                 reject(err);
@@ -398,7 +413,7 @@ const create3DRequest = async (requestData) => {
         const stmt = db.prepare(`INSERT INTO requests_3d (
             id, username, productId, videoPath, status, url, submittedAt, updatedAt
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
-        
+
         stmt.run([
             requestData.id,
             requestData.username,
@@ -448,10 +463,10 @@ const update3DRequest = async (requestId, updateData) => {
         const fields = Object.keys(updateData);
         const values = Object.values(updateData);
         const setClause = fields.map(field => `${field} = ?`).join(', ');
-        
+
         const query = `UPDATE requests_3d SET ${setClause}, updatedAt = ? WHERE id = ?`;
         values.push(new Date().toISOString(), requestId);
-        
+
         db.run(query, values, function(err) {
             if (err) {
                 reject(err);
@@ -497,7 +512,7 @@ const createTicket = async (ticketData) => {
         const stmt = db.prepare(`INSERT INTO tickets (
             id, username, subject, message, status, response, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
-        
+
         stmt.run([
             ticketData.id,
             ticketData.createdBy || ticketData.username,
@@ -535,10 +550,10 @@ const updateTicket = async (ticketId, updateData) => {
         const fields = Object.keys(updateData);
         const values = Object.values(updateData);
         const setClause = fields.map(field => `${field} = ?`).join(', ');
-        
+
         const query = `UPDATE tickets SET ${setClause}, updated_at = ? WHERE id = ?`;
         values.push(new Date().toISOString(), ticketId);
-        
+
         db.run(query, values, function(err) {
             if (err) {
                 reject(err);
@@ -567,7 +582,7 @@ const createAppointment = async (appointmentData) => {
         const stmt = db.prepare(`INSERT INTO appointments (
             id, username, date, time, description, status, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
-        
+
         stmt.run([
             appointmentData.id,
             appointmentData.agentUsername || appointmentData.username,
@@ -594,7 +609,7 @@ const createNotification = async (notificationData) => {
         const stmt = db.prepare(`INSERT INTO notifications (
             id, username, title, message, read, created_at
         ) VALUES (?, ?, ?, ?, ?, ?)`);
-        
+
         stmt.run([
             notificationData.id,
             notificationData.username || 'all',
@@ -619,7 +634,7 @@ const createSignupEntry = async (phone) => {
         const stmt = db.prepare(`INSERT INTO signup (
             id, username, phone, created_at
         ) VALUES (?, ?, ?, ?)`);
-        
+
         const id = Date.now().toString();
         stmt.run([
             id,
@@ -637,18 +652,107 @@ const createSignupEntry = async (phone) => {
     });
 };
 
+// 3D Data operations
+const create3DData = async (key, value) => {
+    return new Promise((resolve, reject) => {
+        const stmt = db.prepare('INSERT INTO data_3d (key, value) VALUES (?, ?)');
+        stmt.run([key, JSON.stringify(value)], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ id: this.lastID, key, value });
+            }
+        });
+    });
+};
+
+const get3DDataByKey = async (key) => {
+    return new Promise((resolve, reject) => {
+        db.get("SELECT * FROM data_3d WHERE key = ?", [key], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                if (row) {
+                    row.value = JSON.parse(row.value);
+                }
+                resolve(row);
+            }
+        });
+    });
+};
+
+const getAll3DData = async () => {
+    return new Promise((resolve, reject) => {
+        db.all("SELECT * FROM data_3d ORDER BY created_at DESC", [], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                const data = {};
+                rows.forEach(row => {
+                    data[row.key] = JSON.parse(row.value);
+                });
+                resolve(data);
+            }
+        });
+    });
+};
+
+const update3DData = async (key, value) => {
+    return new Promise((resolve, reject) => {
+        const stmt = db.prepare('UPDATE data_3d SET value = ?, updated_at = CURRENT_TIMESTAMP WHERE key = ?');
+        stmt.run([JSON.stringify(value), key], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ key, value, changes: this.changes });
+            }
+        });
+    });
+};
+
+const upsert3DData = async (key, value) => {
+    return new Promise((resolve, reject) => {
+        const stmt = db.prepare(`
+            INSERT INTO data_3d (key, value) 
+            VALUES (?, ?) 
+            ON CONFLICT(key) DO UPDATE SET 
+                value = excluded.value,
+                updated_at = CURRENT_TIMESTAMP
+        `);
+        stmt.run([key, JSON.stringify(value)], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ key, value, id: this.lastID });
+            }
+        });
+    });
+};
+
+const delete3DData = async (key) => {
+    return new Promise((resolve, reject) => {
+        db.run("DELETE FROM data_3d WHERE key = ?", [key], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
+            }
+        });
+    });
+};
+
 module.exports = {
     connectDB,
     getDB,
     closeConnection,
-    
+
     // Users
     createUser,
     getUserByUsername,
     updateUser,
     getAllUsers,
     deleteUser,
-    
+
     // Products
     createProduct,
     getProductsByUser,
@@ -656,26 +760,34 @@ module.exports = {
     updateProduct,
     deleteProduct,
     getAllProducts,
-    
+
     // 3D Requests
     create3DRequest,
     get3DRequests,
     get3DRequestById,
     update3DRequest,
     delete3DRequest,
-    
+
     // Tickets
     createTicket,
     getAllTickets,
     updateTicket,
     deleteTicket,
-    
+
     // Appointments
     createAppointment,
-    
+
     // Notifications
     createNotification,
-    
+
     // Signup
-    createSignupEntry
+    createSignupEntry,
+
+    // 3D Data operations
+    create3DData,
+    get3DDataByKey,
+    getAll3DData,
+    update3DData,
+    upsert3DData,
+    delete3DData
 };

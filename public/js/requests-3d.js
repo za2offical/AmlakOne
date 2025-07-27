@@ -631,6 +631,10 @@ async function submitRequest() {
                 const response = JSON.parse(xhr.responseText);
                 closeUploadModal();
                 showSuccessModal();
+                
+                // به‌روزرسانی فوری وضعیت کارت محصول
+                updateProductCardStatusImmediately(selectedProductId, 'pending');
+                
                 loadActiveRequests(); // بارگذاری مجدد درخواست‌های فعال
                 displayProducts(allProducts); // به‌روزرسانی نمایش محصولات
                 
@@ -805,13 +809,18 @@ async function softUpdateRequestsStatus() {
             // بررسی تغییرات در درخواست‌ها
             const hasChanges = JSON.stringify(activeRequests) !== JSON.stringify(newActiveRequests);
             
-            if (hasChanges) {
+            if (hasChanges || newActiveRequests.length !== activeRequests.length) {
                 console.log('Request status changes detected, updating display...');
                 activeRequests = newActiveRequests;
                 
                 // به‌روزرسانی نرم نمایش بدون پرش
                 updateProductCardsStatus();
                 displayActiveRequests();
+                
+                // اجبار رندر مجدد کارت‌ها برای اطمینان از نمایش صحیح
+                setTimeout(() => {
+                    displayProducts(allProducts);
+                }, 500);
             } else {
                 console.log('No changes in request status');
             }
@@ -819,6 +828,73 @@ async function softUpdateRequestsStatus() {
     } catch (error) {
         console.error('Error in soft update:', error);
     }
+}
+
+// به‌روزرسانی فوری وضعیت یک کارت محصول خاص
+function updateProductCardStatusImmediately(productId, status) {
+    const productCards = document.querySelectorAll('.product-card');
+    
+    productCards.forEach(card => {
+        // پیدا کردن محصول مربوطه
+        const productData = allProducts.find(product => product.id === productId);
+        
+        if (!productData) return;
+        
+        // بررسی اینکه این کارت مربوط به محصول موردنظر است
+        const cardText = card.textContent;
+        const isTargetCard = cardText.includes(`${productData.bedrooms} خوابه`) && 
+                            cardText.includes(`${productData.area} متر`);
+        
+        if (!isTargetCard) return;
+        
+        // حذف کلاس‌های قدیمی
+        card.classList.remove('has-approved-request', 'has-pending-request', 'has-rejected-request');
+        
+        // اضافه کردن کلاس جدید
+        if (status === 'pending') {
+            card.classList.add('has-pending-request');
+        } else if (status === 'approved') {
+            card.classList.add('has-approved-request');
+        } else if (status === 'rejected') {
+            card.classList.add('has-rejected-request');
+        }
+        
+        // غیرفعال کردن کلیک
+        card.style.cursor = 'default';
+        card.onclick = null;
+        
+        // اضافه کردن badge وضعیت
+        const imageContainer = card.querySelector('.product-image-container');
+        const existingStatus = card.querySelector('.request-status');
+        
+        if (!existingStatus) {
+            const statusBadge = document.createElement('div');
+            statusBadge.className = `request-status ${status}`;
+            statusBadge.style.cssText = 'z-index: 10; position: absolute; top: 10px; right: 10px;';
+            statusBadge.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    ${status === 'approved' ? 
+                        `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>` :
+                        `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/>`
+                    }
+                </svg>
+                ${status === 'approved' ? 'تایید شده' : status === 'rejected' ? 'رد شده' : 'در حال بررسی'}
+            `;
+            imageContainer.appendChild(statusBadge);
+        }
+        
+        // به‌روزرسانی دکمه
+        const actionButton = card.querySelector('.product-actions button');
+        if (actionButton) {
+            actionButton.disabled = true;
+            actionButton.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/>
+                </svg>
+                در حال بررسی
+            `;
+        }
+    });
 }
 
 // به‌روزرسانی وضعیت کارت‌های محصول بدون رندر مجدد
@@ -1086,8 +1162,13 @@ function updatePlanDisplay(remainingUses) {
 document.addEventListener('DOMContentLoaded', () => {
     loadUserProducts();
     
-    // سیستم به‌روزرسانی نرم هر 8 ثانیه
+    // سیستم به‌روزرسانی نرم هر 5 ثانیه برای واکنش سریع‌تر
     setInterval(() => {
         softUpdateRequestsStatus();
-    }, 8000); // هر 8 ثانیه
+    }, 5000); // هر 5 ثانیه
+    
+    // به‌روزرسانی فوری پس از 2 ثانیه از بارگذاری اولیه
+    setTimeout(() => {
+        softUpdateRequestsStatus();
+    }, 2000);
 });

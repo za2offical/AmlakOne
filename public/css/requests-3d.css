@@ -190,10 +190,11 @@
     background: linear-gradient(white, white) padding-box,
                 linear-gradient(45deg, #fbbf24, #f59e0b, #fbbf24) border-box !important;
     box-shadow: 
-        0 0 25px rgba(251, 191, 36, 0.4) !important,
-        0 0 50px rgba(251, 191, 36, 0.2) !important,
+        0 0 25px rgba(251, 191, 36, 0.5) !important,
+        0 0 50px rgba(251, 191, 36, 0.3) !important,
         0 8px 32px rgba(0, 0, 0, 0.12) !important;
-    animation: pendingGlow 3s ease-in-out infinite alternate !important;
+    animation: pendingGlow 2s ease-in-out infinite alternate !important;
+    transition: all 0.3s ease !important;
 }
 
 .product-card.has-approved-request {
@@ -201,10 +202,11 @@
     background: linear-gradient(white, white) padding-box,
                 linear-gradient(45deg, #10b981, #059669, #10b981) border-box !important;
     box-shadow: 
-        0 0 25px rgba(16, 185, 129, 0.4) !important,
-        0 0 50px rgba(16, 185, 129, 0.2) !important,
+        0 0 25px rgba(16, 185, 129, 0.5) !important,
+        0 0 50px rgba(16, 185, 129, 0.3) !important,
         0 8px 32px rgba(0, 0, 0, 0.12) !important;
-    animation: approvedGlow 3s ease-in-out infinite alternate !important;
+    animation: approvedGlow 2s ease-in-out infinite alternate !important;
+    transition: all 0.3s ease !important;
 }
 
 @keyframes pendingGlow {
@@ -298,8 +300,9 @@
     font-size: 0.75rem;
     font-weight: 700;
     text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-    animation: pulseGlow 2s ease-in-out infinite alternate;
+    animation: pulseGlow 1.5s ease-in-out infinite alternate;
     z-index: 10;
+    transition: all 0.3s ease;
 }
 
 .request-status.pending {

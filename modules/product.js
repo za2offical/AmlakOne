@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateUser } = require('./auth');
+const { authenticateToken } = require('./auth');
 const { 
     createProduct, 
     getProductsByUser, 
@@ -11,7 +11,7 @@ const {
 const router = express.Router();
 
 // ایجاد محصول جدید
-router.post('/', authenticateUser, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     try {
         const username = req.user.username;
         const productData = {
@@ -35,7 +35,7 @@ router.post('/', authenticateUser, async (req, res) => {
 });
 
 // دریافت محصولات کاربر
-router.get('/user', authenticateUser, async (req, res) => {
+router.get('/user', authenticateToken, async (req, res) => {
     try {
         const username = req.user.username;
         const products = await getProductsByUser(username);
@@ -71,7 +71,7 @@ router.get('/:productId', async (req, res) => {
 });
 
 // به‌روزرسانی محصول
-router.put('/:productId', authenticateUser, async (req, res) => {
+router.put('/:productId', authenticateToken, async (req, res) => {
     try {
         const { productId } = req.params;
         const username = req.user.username;
@@ -99,7 +99,7 @@ router.put('/:productId', authenticateUser, async (req, res) => {
 });
 
 // حذف محصول
-router.delete('/:productId', authenticateUser, async (req, res) => {
+router.delete('/:productId', authenticateToken, async (req, res) => {
     try {
         const { productId } = req.params;
         const username = req.user.username;

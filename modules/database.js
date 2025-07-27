@@ -42,6 +42,8 @@ const createTables = () => {
                 profileCompleted BOOLEAN DEFAULT 0,
                 failedLoginAttempts INTEGER DEFAULT 0,
                 lockoutUntil INTEGER,
+                level INTEGER DEFAULT 0,
+                level_changed_at TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )`);
@@ -171,8 +173,8 @@ const createUser = async (userData) => {
             username, hashedPassword, firstName, lastName, gender, 
             phone, province, neighborhood, profileImagePath, 
             profileCompleted, failedLoginAttempts, lockoutUntil,
-            created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+            level, level_changed_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
         
         stmt.run([
             userData.username,
@@ -187,6 +189,8 @@ const createUser = async (userData) => {
             userData.profileCompleted ? 1 : 0,
             userData.failedLoginAttempts || 0,
             userData.lockoutUntil || null,
+            userData.level || 0,
+            userData.level_changed_at || userData.created_at || new Date().toISOString(),
             userData.created_at || new Date().toISOString(),
             userData.updated_at || new Date().toISOString()
         ], function(err) {
@@ -499,7 +503,7 @@ const createTicket = async (ticketData) => {
             ticketData.createdBy || ticketData.username,
             ticketData.title || ticketData.subject,
             ticketData.description || ticketData.message,
-            ticketData.status || 'باز',
+            ticketData.status || 'open',
             ticketData.response || null,
             ticketData.createdAt || new Date().toISOString(),
             ticketData.updatedAt || new Date().toISOString()
@@ -521,6 +525,37 @@ const getAllTickets = async () => {
                 reject(err);
             } else {
                 resolve(rows);
+            }
+        });
+    });
+};
+
+const updateTicket = async (ticketId, updateData) => {
+    return new Promise((resolve, reject) => {
+        const fields = Object.keys(updateData);
+        const values = Object.values(updateData);
+        const setClause = fields.map(field => `${field} = ?`).join(', ');
+        
+        const query = `UPDATE tickets SET ${setClause}, updated_at = ? WHERE id = ?`;
+        values.push(new Date().toISOString(), ticketId);
+        
+        db.run(query, values, function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
+            }
+        });
+    });
+};
+
+const deleteTicket = async (ticketId) => {
+    return new Promise((resolve, reject) => {
+        db.run("DELETE FROM tickets WHERE id = ?", [ticketId], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ changes: this.changes });
             }
         });
     });
@@ -632,6 +667,8 @@ module.exports = {
     // Tickets
     createTicket,
     getAllTickets,
+    updateTicket,
+    deleteTicket,
     
     // Appointments
     createAppointment,

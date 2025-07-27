@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
-const fs = require('fs').promises;
 const { authenticateToken } = require('./auth');
 const rateLimit = require('express-rate-limit');
+const { getProductsByUser } = require('./database');
 const sanitizeHtml = require('sanitize-html');
 
 // محدودیت درخواست
@@ -17,12 +16,10 @@ router.use(limiter);
 // خواندن محصولات کاربر
 async function getUserProducts(username) {
     try {
-        const dataPath = path.join(__dirname, '..', 'data', 'products', `${username}.json`);
-        const data = await fs.readFile(dataPath, 'utf8');
-        const userData = JSON.parse(data);
-
+        const products = await getProductsByUser(username);
+        
         // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
-        return userData.products.sort((a, b) => 
+        return products.sort((a, b) => 
             new Date(b.created_at) - new Date(a.created_at)
         );
     } catch (error) {

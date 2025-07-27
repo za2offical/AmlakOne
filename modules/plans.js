@@ -1,81 +1,61 @@
 const express = require('express');
-const fs = require('fs').promises;
-const fsSync = require('fs');
-const path = require('path');
 const { authenticateToken } = require('./auth');
 const router = express.Router();
-const { readUsers } = require('./auth');
+const { getAllUsers, getUserByUsername, updateUser } = require('./database');
 
-const plansFilePath = path.join(__dirname, '../data/plans.json');
-const usersFilePath = path.join(__dirname, '../data/users.json');
-
-// خواندن فایل plans.json
+// خواندن plans از دیتابیس
 async function readPlans() {
   try {
-    const data = await fs.readFile(plansFilePath, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      return {};
+    const users = await getAllUsers();
+    const plans = {};
+    
+    for (const user of users) {
+      plans[user.username] = {
+        username: user.username,
+        level: user.level || 0,
+        level_changed_at: user.level_changed_at || user.created_at,
+        created_at: user.created_at,
+        updated_at: user.updated_at
+      };
     }
-    throw error;
+    
+    return plans;
+  } catch (error) {
+    return {};
   }
 }
 
-// نوشتن فایل plans.json
+// نوشتن plans در دیتابیس (این تابع دیگر مورد استفاده قرار نمی‌گیرد)
 async function writePlans(plans) {
-  await fs.writeFile(plansFilePath, JSON.stringify(plans, null, 2));
+  // این تابع برای سازگاری باقی می‌ماند
+  return true;
 }
 
-// به‌روزرسانی plans.json بر اساس users.json
+// به‌روزرسانی plans از دیتابیس
 async function syncPlansWithUsers() {
   try {
-    const users = await readUsers();
-    const plans = await readPlans();
-
-    let hasChanges = false;
+    const users = await getAllUsers();
+    const plans = {};
     const currentTime = new Date().toISOString();
 
-    // برای هر کاربر موجود در users.json
+    // برای هر کاربر موجود در دیتابیس
     for (const user of users) {
-      // اگر کاربر در plans.json وجود نداشت، اضافه کن با level 0
-      if (!plans[user.username]) {
-        const newUserTime = currentTime;
-        plans[user.username] = {
-          username: user.username,
-          level: 0,
-          level_changed_at: newUserTime,
-          created_at: newUserTime,
-          updated_at: newUserTime
-        };
-        hasChanges = true;
-        console.log(`کاربر جدید ${user.username} به plans اضافه شد با زمان ${newUserTime}`);
-      } else {
-        // اگر کاربر وجود دارد ولی level_changed_at ندارد، اضافه کن
-        if (!plans[user.username].level_changed_at) {
-          const fallbackTime = plans[user.username].created_at || currentTime;
-          plans[user.username].level_changed_at = fallbackTime;
-          plans[user.username].updated_at = currentTime;
-          hasChanges = true;
-          console.log(`زمان تغییر سطح برای کاربر ${user.username} اضافه شد: ${fallbackTime}`);
-        }
+      // اگر کاربر level ندارد، به 0 تنظیم کن
+      if (user.level === undefined || user.level === null) {
+        await updateUser(user.username, { 
+          level: 0, 
+          level_changed_at: user.created_at || currentTime 
+        });
+        console.log(`سطح کاربر ${user.username} به 0 تنظیم شد`);
       }
-    }
 
-    // حذف کاربرانی که در users.json موجود نیستند
-    const currentUsernames = users.map(user => user.username);
-    for (const username in plans) {
-      if (!currentUsernames.includes(username)) {
-        delete plans[username];
-        hasChanges = true;
-        console.log(`کاربر ${username} از plans حذف شد`);
-      }
-    }
-
-    // اگر تغییری ایجاد شده، فایل را ذخیره کن
-    if (hasChanges) {
-      await writePlans(plans);
-      console.log(`فایل plans.json به‌روزرسانی شد در ${currentTime}`);
+      plans[user.username] = {
+        username: user.username,
+        level: user.level || 0,
+        level_changed_at: user.level_changed_at || user.created_at,
+        created_at: user.created_at,
+        updated_at: user.updated_at
+      };
     }
 
     return plans;
@@ -145,30 +125,35 @@ async function setUserLevel(username, level) {
     throw new Error('سطح باید عددی صحیح بین 0 تا 3 باشد');
   }
 
-  const plans = await syncPlansWithUsers();
+  const user = await getUserByUsername(username);
 
-  if (!plans[username]) {
+  if (!user) {
     throw new Error('کاربر یافت نشد');
   }
 
-  const oldLevel = plans[username].level;
+  const oldLevel = user.level || 0;
   const currentTime = new Date().toISOString();
 
   // اگر سطح تغییر کرده باشد
   if (oldLevel !== level) {
-    // به‌روزرسانی اطلاعات در plans.json
-    plans[username].level = level;
-    plans[username].level_changed_at = currentTime;
-    plans[username].updated_at = currentTime;
-
-    // ذخیره تغییرات در plans.json
-    await writePlans(plans);
-    console.log(`plans.json به‌روزرسانی شد: کاربر ${username} سطح ${oldLevel} → ${level} در ${currentTime}`);
+    // به‌روزرسانی اطلاعات در دیتابیس
+    await updateUser(username, {
+      level: level,
+      level_changed_at: currentTime,
+      updated_at: currentTime
+    });
 
     console.log(`سطح کاربر ${username} از ${oldLevel} به ${level} تغییر کرد در ${currentTime}`);
   }
 
-  return plans[username];
+  const updatedUser = await getUserByUsername(username);
+  return {
+    username: updatedUser.username,
+    level: updatedUser.level,
+    level_changed_at: updatedUser.level_changed_at,
+    created_at: updatedUser.created_at,
+    updated_at: updatedUser.updated_at
+  };
 }
 
 // دریافت تمام plans

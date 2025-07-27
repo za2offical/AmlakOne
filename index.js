@@ -66,7 +66,7 @@ app.use('/api/admin/tickets', adminTicketsRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/ticketing', ticketingRouter);
 app.use('/api/requests-3d', require('./modules/requests-3d'));
-app.use('/api', plansModule.router);
+app.use('/api/plans', plansModule.router);
 
 // Serve HTML files
 app.get('/editor', (req, res) => {

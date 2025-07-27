@@ -514,6 +514,18 @@ const createTicket = async (ticketData) => {
     });
 };
 
+const getAllTickets = async () => {
+    return new Promise((resolve, reject) => {
+        db.all("SELECT * FROM tickets ORDER BY created_at DESC", [], (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+};
+
 // Appointments Operations
 const createAppointment = async (appointmentData) => {
     return new Promise((resolve, reject) => {
@@ -619,6 +631,7 @@ module.exports = {
     
     // Tickets
     createTicket,
+    getAllTickets,
     
     // Appointments
     createAppointment,

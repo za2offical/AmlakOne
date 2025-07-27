@@ -78,25 +78,23 @@ async function checkPlanLimit() {
                 return false;
             }
             
-            // اگر خطای محدودیت پلن باشد
-            if (response.status === 403) {
-                const submitButton = document.querySelector('.submit-button');
-                const form = document.getElementById('productForm');
-                
-                // غیرفعال کردن فرم
-                if (submitButton) {
-                    submitButton.disabled = true;
-                    submitButton.textContent = 'محدودیت پلن';
-                }
-                if (form) {
-                    form.style.opacity = '0.6';
-                    form.style.pointerEvents = 'none';
-                }
-                
-                // نمایش پیام محدودیت
-                showMessage(data.error || 'شما به حد مجاز ایجاد آگهی رسیده‌اید', 'error');
-                return false;
+            // اگر خطای محدودیت پلن باشد (403 غیر احراز هویت)
+            const submitButton = document.querySelector('.submit-button');
+            const form = document.getElementById('productForm');
+            
+            // غیرفعال کردن فرم
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'محدودیت پلن';
             }
+            if (form) {
+                form.style.opacity = '0.6';
+                form.style.pointerEvents = 'none';
+            }
+            
+            // نمایش پیام محدودیت
+            showMessage(data.error || 'شما به حد مجاز ایجاد آگهی رسیده‌اید', 'error');
+            return false;
         }
         
         const data = await response.json();

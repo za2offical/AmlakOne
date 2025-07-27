@@ -46,7 +46,16 @@ async function comparePassword(password, hash) {
 // میدلور بررسی توکن
 const authenticateToken = async (req, res, next) => {
     try {
-        const token = req.cookies.token;
+        // ابتدا از Authorization header بررسی کن
+        let token = null;
+        const authHeader = req.headers['authorization'];
+        
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7);
+        } else if (req.cookies.token) {
+            // اگر Authorization header نبود، از cookie استفاده کن
+            token = req.cookies.token;
+        }
 
         if (!token) {
             return res.status(401).json({ error: 'Authentication required' });

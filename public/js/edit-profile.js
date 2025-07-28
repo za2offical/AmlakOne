@@ -19,33 +19,12 @@ async function checkAuth() {
 async function loadUserInfo() {
     const userData = await checkAuth();
     if (userData) {
-        // نمایش اطلاعات فعلی
-        document.getElementById('currentUsername').textContent = userData.username || 'نامشخص';
-        document.getElementById('currentFirstName').textContent = userData.firstName || 'وارد نشده';
-        document.getElementById('currentLastName').textContent = userData.lastName || 'وارد نشده';
-        document.getElementById('currentPhone').textContent = userData.phone || 'وارد نشده';
-        document.getElementById('currentProvince').textContent = userData.province || 'وارد نشده';
-        document.getElementById('currentNeighborhood').textContent = userData.neighborhood || 'وارد نشده';
-        
         // پر کردن فیلدهای فرم با اطلاعات فعلی
         document.getElementById('newUsername').value = userData.username || '';
         document.getElementById('firstName').value = userData.firstName || '';
         document.getElementById('lastName').value = userData.lastName || '';
         document.getElementById('province').value = userData.province || '';
         document.getElementById('neighborhood').value = userData.neighborhood || '';
-        
-        // نمایش عکس پروفایل فعلی
-        const currentImage = document.getElementById('currentImage');
-        const noImageText = document.getElementById('noImageText');
-        
-        if (userData.profileImagePath) {
-            currentImage.src = userData.profileImagePath;
-            currentImage.style.display = 'block';
-            noImageText.style.display = 'none';
-        } else {
-            currentImage.style.display = 'none';
-            noImageText.style.display = 'block';
-        }
     }
 }
 

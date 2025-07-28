@@ -156,8 +156,8 @@ router.post('/send', checkCookieLimit, (req, res) => {
         email: email.trim().toLowerCase(),
         message: message.trim(),
         timestamp: new Date().toISOString(),
-        ip: req.ip,
-        userAgent: req.get('User-Agent'),
+        ip: req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown',
+        userAgent: req.get('User-Agent') || 'unknown',
         status: 'unread'
     };
 
@@ -168,6 +168,14 @@ router.post('/send', checkCookieLimit, (req, res) => {
     if (messagesData.messages.length > 1000) {
         messagesData.messages = messagesData.messages.slice(0, 1000);
     }
+
+    // لاگ برای debugging
+    console.log('ثبت پیام جدید:', {
+        id: newMessage.id,
+        email: newMessage.email,
+        messageLength: newMessage.message.length,
+        timestamp: newMessage.timestamp
+    });
 
     // ذخیره پیام
     if (writeMessages(messagesData)) {
@@ -221,6 +229,20 @@ router.patch('/mark-read/:id', (req, res) => {
             error: 'خطا در بروزرسانی پیام'
         });
     }
+});
+
+// تست endpoint برای debugging
+router.get('/test', (req, res) => {
+    res.json({
+        success: true,
+        debug: {
+            ip: req.ip,
+            remoteAddress: req.connection?.remoteAddress,
+            socketAddress: req.socket?.remoteAddress,
+            userAgent: req.get('User-Agent'),
+            cookies: req.cookies
+        }
+    });
 });
 
 module.exports = router;

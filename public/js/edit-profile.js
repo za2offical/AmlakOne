@@ -21,13 +21,16 @@ async function loadUserInfo() {
     if (userData) {
         // نمایش اطلاعات فعلی
         document.getElementById('currentUsername').textContent = userData.username || 'نامشخص';
+        document.getElementById('currentFirstName').textContent = userData.firstName || 'وارد نشده';
+        document.getElementById('currentLastName').textContent = userData.lastName || 'وارد نشده';
         document.getElementById('currentPhone').textContent = userData.phone || 'وارد نشده';
         document.getElementById('currentProvince').textContent = userData.province || 'وارد نشده';
         document.getElementById('currentNeighborhood').textContent = userData.neighborhood || 'وارد نشده';
         
         // پر کردن فیلدهای فرم با اطلاعات فعلی
         document.getElementById('newUsername').value = userData.username || '';
-        document.getElementById('phone').value = userData.phone || '';
+        document.getElementById('firstName').value = userData.firstName || '';
+        document.getElementById('lastName').value = userData.lastName || '';
         document.getElementById('province').value = userData.province || '';
         document.getElementById('neighborhood').value = userData.neighborhood || '';
         
@@ -90,21 +93,15 @@ async function updateProfile(e) {
     
     const formData = new FormData();
     const newUsername = document.getElementById('newUsername').value;
-    const phone = document.getElementById('phone').value;
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
     const province = document.getElementById('province').value;
     const neighborhood = document.getElementById('neighborhood').value;
     const profileImage = document.getElementById('profileImage').files[0];
     
     // اعتبارسنجی کلی
-    if (!newUsername || !phone || !province || !neighborhood) {
+    if (!newUsername || !firstName || !lastName || !province || !neighborhood) {
         showMessage('لطفاً تمام فیلدهای اجباری را پر کنید');
-        return;
-    }
-    
-    // اعتبارسنجی شماره تلفن
-    const phoneRegex = /^09\d{9}$/;
-    if (!phoneRegex.test(phone)) {
-        showMessage('شماره تلفن باید با فرمت 09XXXXXXXXX باشد');
         return;
     }
     
@@ -122,7 +119,8 @@ async function updateProfile(e) {
     
     // ساخت FormData
     formData.append('newUsername', newUsername);
-    formData.append('phone', phone);
+    formData.append('firstName', firstName);
+    formData.append('lastName', lastName);
     formData.append('province', province);
     formData.append('neighborhood', neighborhood);
     

@@ -27,7 +27,6 @@ async function loadUserInfo() {
         
         // پر کردن فیلدهای فرم با اطلاعات فعلی
         document.getElementById('newUsername').value = userData.username || '';
-        document.getElementById('phone').value = userData.phone || '';
         document.getElementById('province').value = userData.province || '';
         document.getElementById('neighborhood').value = userData.neighborhood || '';
         
@@ -90,21 +89,13 @@ async function updateProfile(e) {
     
     const formData = new FormData();
     const newUsername = document.getElementById('newUsername').value;
-    const phone = document.getElementById('phone').value;
     const province = document.getElementById('province').value;
     const neighborhood = document.getElementById('neighborhood').value;
     const profileImage = document.getElementById('profileImage').files[0];
     
     // اعتبارسنجی کلی
-    if (!newUsername || !phone || !province || !neighborhood) {
+    if (!newUsername || !province || !neighborhood) {
         showMessage('لطفاً تمام فیلدهای اجباری را پر کنید');
-        return;
-    }
-    
-    // اعتبارسنجی شماره تلفن
-    const phoneRegex = /^09\d{9}$/;
-    if (!phoneRegex.test(phone)) {
-        showMessage('شماره تلفن باید با فرمت 09XXXXXXXXX باشد');
         return;
     }
     
@@ -122,7 +113,6 @@ async function updateProfile(e) {
     
     // ساخت FormData
     formData.append('newUsername', newUsername);
-    formData.append('phone', phone);
     formData.append('province', province);
     formData.append('neighborhood', neighborhood);
     

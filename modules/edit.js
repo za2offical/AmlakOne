@@ -213,11 +213,11 @@ router.put('/update-profile', (req, res) => {
         }
 
         try {
-            const { newUsername, phone, province, neighborhood } = req.body;
+            const { newUsername, province, neighborhood } = req.body;
             const currentUsername = req.user.username;
 
             // اعتبارسنجی داده‌های ورودی
-            if (!newUsername || !phone || !province || !neighborhood) {
+            if (!newUsername || !province || !neighborhood) {
                 return res.status(400).json({ 
                     error: 'تمام فیلدها الزامی هستند' 
                 });
@@ -236,27 +236,11 @@ router.put('/update-profile', (req, res) => {
                 });
             }
 
-            // اعتبارسنجی شماره تلفن (فرمت ایرانی)
-            const phoneRegex = /^09\d{9}$/;
-            if (!phoneRegex.test(phone)) {
-                return res.status(400).json({ 
-                    error: 'شماره تلفن باید با فرمت 09XXXXXXXXX باشد' 
-                });
-            }
-
             const users = await readUsers();
 
             // بررسی تکراری بودن نام کاربری
             if (users.some(u => u.username === newUsername && u.username !== currentUsername)) {
                 return res.status(400).json({ error: 'این نام کاربری قبلاً استفاده شده است' });
-            }
-
-            // بررسی تکراری بودن شماره تلفن
-            const phoneExists = users.some(u => u.phone === phone && u.username !== currentUsername);
-            if (phoneExists) {
-                return res.status(400).json({ 
-                    error: 'این شماره تلفن قبلاً ثبت شده است' 
-                });
             }
 
             const userIndex = users.findIndex(u => u.username === currentUsername);
@@ -299,7 +283,6 @@ router.put('/update-profile', (req, res) => {
             users[userIndex] = {
                 ...users[userIndex],
                 username: newUsername,
-                phone: phone,
                 province: province,
                 neighborhood: neighborhood,
                 profileImagePath: profileImagePath,

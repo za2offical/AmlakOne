@@ -1217,16 +1217,18 @@ body {
 }
 
 .form-group textarea {
-    resize: vertical;
-    min-height: 100px;
-    font-family: inherit;
-    padding: 1rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    background: var(--bg-secondary);
+    width: 100%;
+    padding: var(--spacing-lg) var(--spacing-md);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--background-color);
     color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-fast);
+    outline: none;
+    resize: vertical;
+    min-height: 140px;
 }
 
 .form-group textarea:focus {

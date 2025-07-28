@@ -2,28 +2,10 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const rateLimit = require('express-rate-limit');
-
 const router = express.Router();
 
 // مسیر فایل پیام‌ها
 const messagesPath = path.join(__dirname, '..', 'data', 'messages.json');
-
-// محدودیت نرخ: حداکثر 3 پیام در 24 ساعت
-const messageLimit = rateLimit({
-    windowMs: 24 * 60 * 60 * 1000, // 24 ساعت
-    max: 3, // حداکثر 3 درخواست
-    message: { 
-        success: false, 
-        error: 'شما در 24 ساعت گذشته بیش از حد مجاز پیام ارسال کرده‌اید. لطفاً بعداً تلاش کنید.'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: (req) => {
-        // استفاده از IP و User-Agent برای شناسایی کاربر
-        return `${req.ip}-${req.get('User-Agent')}`;
-    }
-});
 
 // بررسی وجود فایل پیام‌ها و ایجاد آن در صورت عدم وجود
 function ensureMessagesFile() {
@@ -64,27 +46,60 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-// دریافت تعداد پیام‌های باقی‌مانده کاربر
-router.get('/remaining', (req, res) => {
-    const key = `${req.ip}-${req.get('User-Agent')}`;
+// بررسی محدودیت کوکی (3 پیام در 24 ساعت)
+function checkCookieLimit(req, res, next) {
+    const cookieName = 'message_limit';
+    const limit = 3;
+    const windowMs = 24 * 60 * 60 * 1000; // 24 ساعت
+
+    let cookieData = req.cookies[cookieName];
     
-    // بررسی تعداد درخواست‌های فعلی
-    const store = messageLimit.store;
-    if (store && store.get) {
-        store.get(key, (err, result) => {
-            if (err) {
-                return res.json({ remaining: 3 });
-            }
-            const remaining = Math.max(0, 3 - (result || 0));
-            res.json({ remaining });
-        });
+    if (!cookieData) {
+        // ایجاد کوکی جدید
+        cookieData = {
+            count: 0,
+            resetTime: Date.now() + windowMs
+        };
     } else {
-        res.json({ remaining: 3 });
+        try {
+            cookieData = JSON.parse(cookieData);
+        } catch (error) {
+            cookieData = {
+                count: 0,
+                resetTime: Date.now() + windowMs
+            };
+        }
     }
-});
+
+    // بررسی انقضای زمان
+    if (Date.now() > cookieData.resetTime) {
+        cookieData = {
+            count: 0,
+            resetTime: Date.now() + windowMs
+        };
+    }
+
+    // بررسی محدودیت
+    if (cookieData.count >= limit) {
+        return res.status(429).json({
+            success: false,
+            error: 'شما در 24 ساعت گذشته بیش از حد مجاز پیام ارسال کرده‌اید. لطفاً بعداً تلاش کنید.'
+        });
+    }
+
+    // افزایش شمارنده و بروزرسانی کوکی
+    cookieData.count++;
+    res.cookie(cookieName, JSON.stringify(cookieData), {
+        maxAge: windowMs,
+        httpOnly: true,
+        secure: false // در production باید true باشد
+    });
+
+    next();
+}
 
 // ارسال پیام جدید
-router.post('/send', messageLimit, (req, res) => {
+router.post('/send', checkCookieLimit, (req, res) => {
     const { email, message } = req.body;
 
     // اعتبارسنجی ورودی‌ها
@@ -102,10 +117,10 @@ router.post('/send', messageLimit, (req, res) => {
         });
     }
 
-    if (message.length > 1000) {
+    if (message.length > 300) {
         return res.status(400).json({
             success: false,
-            error: 'پیام نباید بیش از 1000 کاراکتر باشد'
+            error: 'پیام نباید بیش از 300 کاراکتر باشد'
         });
     }
 

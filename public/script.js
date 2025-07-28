@@ -314,7 +314,7 @@ function initContactForm() {
             const currentLength = this.value.length;
             charCount.textContent = currentLength;
 
-            if (currentLength > 1000) {
+            if (currentLength > 300) {
                 charCount.style.color = '#e74c3c';
                 charCount.parentElement.style.color = '#e74c3c';
             } else {
@@ -324,38 +324,7 @@ function initContactForm() {
         });
     }
 
-    // Check remaining messages from server
-    async function checkRemainingMessages() {
-        try {
-            const response = await fetch('/api/contact/remaining');
-            const data = await response.json();
-
-            const remainingCount = data.remaining || 0;
-
-            if (messageCount) {
-                messageCount.textContent = remainingCount;
-            }
-
-            if (submitBtn) {
-                submitBtn.disabled = remainingCount <= 0;
-                if (remainingCount <= 0) {
-                    submitBtn.innerHTML = '<span>حد ارسال پیام تکمیل شده</span>';
-                    submitBtn.style.opacity = '0.6';
-                } else {
-                    submitBtn.innerHTML = '<span>ارسال پیام</span><i class="fas fa-paper-plane"></i>';
-                    submitBtn.style.opacity = '1';
-                }
-            }
-
-            return remainingCount;
-        } catch (error) {
-            console.error('خطا در دریافت تعداد پیام‌های باقی‌مانده:', error);
-            if (messageCount) {
-                messageCount.textContent = '-';
-            }
-            return 3;
-        }
-    }
+    
 
     // Form submission
     if (contactForm) {
@@ -381,8 +350,8 @@ function initContactForm() {
                 return;
             }
 
-            if (message.length > 1000) {
-                showError('پیام نباید بیش از 1000 کاراکتر باشد');
+            if (message.length > 300) {
+                showError('پیام نباید بیش از 300 کاراکتر باشد');
                 return;
             }
 
@@ -412,10 +381,7 @@ function initContactForm() {
                     contactForm.reset();
                     if (charCount) charCount.textContent = '0';
 
-                    // Update remaining messages count
-                    setTimeout(() => {
-                        checkRemainingMessages();
-                    }, 1000);
+                    
 
                 } else {
                     showError(result.error || 'خطا در ارسال پیام');
@@ -464,10 +430,7 @@ function initContactForm() {
         return emailRegex.test(email);
     }
 
-    // Initialize message count on page load
-    if (typeof checkRemainingMessages === 'function') {
-        checkRemainingMessages();
-    }
+    
 }
 
 // Mouse Parallax Effect

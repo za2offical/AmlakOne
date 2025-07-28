@@ -141,5 +141,14 @@
     "neighborhood": "تهران",
     "profileImagePath": "/profile-img/Tec.jpg",
     "updated_at": "2025-07-26T23:49:54.949Z"
+  },
+  {
+    "username": "Ton",
+    "hashedPassword": "$2a$10$WxQDGy112VLYz6Eq3kS96.ruE70/D1TvootDQDFEg6.B9oV9qxryC",
+    "phone": "09123456782",
+    "created_at": "2025-07-28T10:54:31.535Z",
+    "profileCompleted": false,
+    "failedLoginAttempts": 0,
+    "lockoutUntil": null
   }
 ]

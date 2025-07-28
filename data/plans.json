@@ -69,5 +69,12 @@
     "level_changed_at": "2025-07-27T00:21:47.161Z",
     "created_at": "2025-07-27T00:21:47.161Z",
     "updated_at": "2025-07-27T00:21:47.161Z"
+  },
+  "Ton": {
+    "username": "Ton",
+    "level": 0,
+    "level_changed_at": "2025-07-28T10:54:40.331Z",
+    "created_at": "2025-07-28T10:54:40.331Z",
+    "updated_at": "2025-07-28T10:54:40.331Z"
   }
 }

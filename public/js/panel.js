@@ -39,35 +39,21 @@
             // نمایش نام و نام خانوادگی
             const firstName = userData.firstName || userData.username || '';
             const lastName = userData.lastName || '';
-            
-            // به‌روزرسانی اطلاعات دسکتاپ
-            const firstNameEl = document.getElementById('firstName');
-            const lastNameEl = document.getElementById('lastName');
-            if (firstNameEl) firstNameEl.textContent = firstName;
-            if (lastNameEl) lastNameEl.textContent = lastName;
+            document.getElementById('firstName').textContent = firstName;
+            document.getElementById('lastName').textContent = lastName;
 
             // نمایش عکس پروفایل یا placeholder
             const profileImage = document.getElementById('profileImage');
             const profilePlaceholder = document.getElementById('profilePlaceholder');
 
-            if (userData.profileImagePath && profileImage && profilePlaceholder) {
+            if (userData.profileImagePath) {
                 profileImage.src = userData.profileImagePath;
                 profileImage.style.display = 'block';
-                profileImage.style.width = '100%';
-                profileImage.style.height = '100%';
-                profileImage.style.objectFit = 'cover';
-                profileImage.style.borderRadius = '50%';
                 profilePlaceholder.style.display = 'none';
-            } else if (profileImage && profilePlaceholder) {
+            } else {
                 profileImage.style.display = 'none';
                 profilePlaceholder.style.display = 'flex';
             }
-
-            // همگام‌سازی منوی موبایل
-            setTimeout(() => {
-                updateMobileProfile();
-                updateMobileNotificationBadge();
-            }, 100);
         }
     } catch (error) {
         console.error('Error loading user info:', error);
@@ -451,14 +437,10 @@
             method: 'POST',
             credentials: 'same-origin'
         });
-        // پاک کردن محلی کوکی ها
-        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         window.location.href = '/login';
     } catch (error) {
         console.error('Error during logout:', error);
-        // حتی در صورت خطا، کاربر را به صفحه لاگین هدایت کن
-        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        window.location.href = '/login';
+        showError('خطا در خروج از حساب. لطفاً دوباره تلاش کنید.');
     }
   }
 
@@ -478,62 +460,10 @@
     loadProducts();
   });
 
-  // بارگذاری اعلان‌ها
-  async function loadNotifications() {
-    try {
-      console.log('Loading notifications...');
-      const response = await fetch('/api/panel/notifications/unread-count', {
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Notification data:', data);
-        const badge = document.getElementById('notificationBadge');
-        const mobileBadge = document.getElementById('mobileNotificationBadge');
-        
-        if (data.unreadCount > 0) {
-          console.log(`Showing ${data.unreadCount} unread notifications`);
-          if (badge) {
-            badge.textContent = data.unreadCount;
-            badge.style.display = 'flex';
-            badge.style.visibility = 'visible';
-          }
-          if (mobileBadge) {
-            mobileBadge.textContent = data.unreadCount;
-            mobileBadge.style.display = 'flex';
-            mobileBadge.style.visibility = 'visible';
-          }
-        } else {
-          console.log('No unread notifications');
-          if (badge) {
-            badge.style.display = 'none';
-            badge.style.visibility = 'hidden';
-          }
-          if (mobileBadge) {
-            mobileBadge.style.display = 'none';
-            mobileBadge.style.visibility = 'hidden';
-          }
-        }
-      } else {
-        console.error('Failed to fetch notifications:', response.status);
-      }
-    } catch (error) {
-      console.error('Error loading notifications:', error);
-    }
-  }
-
   // بارگذاری اولیه
   document.addEventListener('DOMContentLoaded', () => {
-    // تاخیر کوتاه برای اطمینان از رندر کامل DOM
-    setTimeout(() => {
-      loadUserInfo();
-      loadProducts();
-      loadNotifications();
-      
-      // بارگذاری مجدد اعلان‌ها هر ۳۰ ثانیه
-      setInterval(loadNotifications, 30000);
-    }, 50);
+    loadUserInfo();
+    loadProducts();
   });
 
   // --- Menu Functions ---
@@ -635,41 +565,23 @@
   });
   // Enhanced user info loading for mobile menu
   function updateMobileProfile() {
-    try {
-      const firstNameEl = document.getElementById('firstName');
-      const lastNameEl = document.getElementById('lastName');
-      const profileImage = document.getElementById('profileImage');
-      const mobileFirstNameEl = document.getElementById('mobileFirstName');
-      const mobileLastNameEl = document.getElementById('mobileLastName');
-      const mobileProfileImage = document.getElementById('mobileProfileImage');
-      const mobileProfilePlaceholder = document.getElementById('mobileProfilePlaceholder');
+    const firstName = document.getElementById('firstName').textContent;
+    const lastName = document.getElementById('lastName').textContent;
+    const profileImage = document.getElementById('profileImage');
 
-      // چک کردن وجود المان‌های اصلی
-      if (firstNameEl && mobileFirstNameEl) {
-        mobileFirstNameEl.textContent = firstNameEl.textContent;
-      }
-      
-      if (lastNameEl && mobileLastNameEl) {
-        mobileLastNameEl.textContent = lastNameEl.textContent;
-      }
+    document.getElementById('mobileFirstName').textContent = firstName;
+    document.getElementById('mobileLastName').textContent = lastName;
 
-      // همگام‌سازی تصویر پروفایل
-      if (profileImage && mobileProfileImage && mobileProfilePlaceholder) {
-        if (profileImage.style.display !== 'none' && profileImage.src && profileImage.src !== window.location.href) {
-          mobileProfileImage.src = profileImage.src;
-          mobileProfileImage.style.display = 'block';
-          mobileProfileImage.style.width = '100%';
-          mobileProfileImage.style.height = '100%';
-          mobileProfileImage.style.objectFit = 'cover';
-          mobileProfileImage.style.borderRadius = '50%';
-          mobileProfilePlaceholder.style.display = 'none';
-        } else {
-          mobileProfileImage.style.display = 'none';
-          mobileProfilePlaceholder.style.display = 'flex';
-        }
-      }
-    } catch (error) {
-      console.error('Error updating mobile profile:', error);
+    const mobileProfileImage = document.getElementById('mobileProfileImage');
+    const mobileProfilePlaceholder = document.getElementById('mobileProfilePlaceholder');
+
+    if (profileImage.style.display !== 'none' && profileImage.src) {
+      mobileProfileImage.src = profileImage.src;
+      mobileProfileImage.style.display = 'block';
+      mobileProfilePlaceholder.style.display = 'none';
+    } else {
+      mobileProfileImage.style.display = 'none';
+      mobileProfilePlaceholder.style.display = 'flex';
     }
   }
 

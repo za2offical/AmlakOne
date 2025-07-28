@@ -189,39 +189,10 @@
       "tenantName": "رضا محمدی",
       "tenantPhone": "09987654321",
       "mainImage": "/images/img-alireza/product-1753030547919-581454389.jpg"
-    },
-    {
-      "id": "1753604857486",
-      "propertyType": "sale",
-      "bedrooms": 1,
-      "area": 79.99,
-      "constructionYear": 1390,
-      "images": [],
-      "facilities": {
-        "parking": true,
-        "storage": true,
-        "elevator": false,
-        "balcony": false,
-        "parquet": false,
-        "westernToilet": false
-      },
-      "privateInfo": {
-        "propertyAddress": "قبرستون",
-        "ownerName": "رضا محمدی",
-        "ownerPhone": "09229292222",
-        "propertyNumber": "1191",
-        "tenantName": "اکبر",
-        "tenantPhone": "09229292222"
-      },
-      "description": "",
-      "created_at": "2025-07-27T08:27:37.486Z",
-      "updated_at": "2025-07-27T08:27:37.486Z",
-      "salePrice": 11111111111,
-      "pricePerMeter": 138906252
     }
   ],
   "user_level": 0,
   "product_limit": 6,
   "level_changed_at": "2025-07-26T23:57:04.399Z",
-  "total_products_created": 6
+  "total_products_created": 5
 }

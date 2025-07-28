@@ -28,37 +28,6 @@
     <link rel="stylesheet" href="/css/login.css">
     <script src="/js/common.js"></script>
     <script src="/js/pwa.js"></script>
-    <script>
-        // چک خودکار احراز هویت
-        async function checkAutoLogin() {
-            try {
-                const response = await fetch('/api/panel/user-info', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    const userData = await response.json();
-                    // کاربر قبلاً لاگین کرده، هدایت به پنل
-                    if (userData.username === 'admin') {
-                        window.location.href = '/editor';
-                    } else {
-                        if (userData.profileCompleted === false) {
-                            window.location.href = '/create-profile';
-                        } else {
-                            window.location.href = '/panel';
-                        }
-                    }
-                }
-            } catch (error) {
-                // اگر خطا بود، کاربر لاگین نیست و در صفحه لاگین می‌ماند
-                console.log('User not logged in');
-            }
-        }
-        
-        // اجرای چک خودکار هنگام بارگذاری صفحه
-        document.addEventListener('DOMContentLoaded', checkAutoLogin);
-    </script>
 </head>
 <body>
     <div class="login-container">
@@ -97,10 +66,6 @@
             </form>
 
             <div class="error-message" id="errorMessage"></div>
-            
-            <div class="signup-link">
-                <p>حساب کاربری ندارید؟ <a href="/signup.html" class="signup-btn">ثبت نام کنید</a></p>
-            </div>
         </div>
     </div>
 

@@ -28,7 +28,7 @@ router.post('/verify', async (req, res) => {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: 30 * 24 * 60 * 60 * 1000 // 30 روز (یک ماه)
+                maxAge: 24 * 60 * 60 * 1000 // 24 ساعت
             });
             return res.json({ success: true, isAdmin: true });
         }
@@ -86,7 +86,7 @@ router.post('/verify', async (req, res) => {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: 30 * 24 * 60 * 60 * 1000 // 30 روز (یک ماه)
+                maxAge: 24 * 60 * 60 * 1000
             });
             const profileCompleted = freshUser.profileCompleted || false;
             res.json({ 
@@ -121,12 +121,7 @@ router.post('/verify', async (req, res) => {
 
 // مسیر خروج از سیستم
 router.post('/logout', (req, res) => {
-    res.clearCookie('token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        path: '/'
-    });
+    res.clearCookie('token');
     res.json({ success: true });
 });
 

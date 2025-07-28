@@ -138,19 +138,6 @@ async function getUserLevel(username) {
   return plans[username] ? plans[username].level : 0;
 }
 
-// تعریف محدودیت‌های هر سطح
-const LEVEL_LIMITS = {
-  0: { product_limit: 3, features: ['basic'] },           // سطح مبتدی
-  1: { product_limit: 10, features: ['basic', 'premium'] }, // سطح برنزی  
-  2: { product_limit: 25, features: ['basic', 'premium', 'advanced'] }, // سطح نقره‌ای
-  3: { product_limit: -1, features: ['basic', 'premium', 'advanced', 'unlimited'] } // سطح طلایی (نامحدود)
-};
-
-// دریافت محدودیت‌های یک سطح
-function getLevelLimits(level) {
-  return LEVEL_LIMITS[level] || LEVEL_LIMITS[0];
-}
-
 // تنظیم سطح یک کاربر
 async function setUserLevel(username, level) {
   // بررسی اعتبار level (باید بین 0 تا 3 باشد)
@@ -169,22 +156,14 @@ async function setUserLevel(username, level) {
 
   // اگر سطح تغییر کرده باشد
   if (oldLevel !== level) {
-    // دریافت محدودیت‌های جدید بر اساس سطح
-    const levelLimits = getLevelLimits(level);
-    
     // به‌روزرسانی اطلاعات در plans.json
     plans[username].level = level;
-    plans[username].product_limit = levelLimits.product_limit;
-    plans[username].features = levelLimits.features;
     plans[username].level_changed_at = currentTime;
     plans[username].updated_at = currentTime;
 
     // ذخیره تغییرات در plans.json
     await writePlans(plans);
-    console.log(`plans.json به‌روزرسانی شد: کاربر ${username} سطح ${oldLevel} → ${level} با محدودیت ${levelLimits.product_limit} در ${currentTime}`);
-
-    // به‌روزرسانی فایل محصولات کاربر
-    await updateUserProductLimits(username, levelLimits);
+    console.log(`plans.json به‌روزرسانی شد: کاربر ${username} سطح ${oldLevel} → ${level} در ${currentTime}`);
 
     console.log(`سطح کاربر ${username} از ${oldLevel} به ${level} تغییر کرد در ${currentTime}`);
   }
@@ -263,39 +242,6 @@ router.post('/sync', async (req, res) => {
   }
 });
 
-// به‌روزرسانی محدودیت‌های محصولات کاربر
-async function updateUserProductLimits(username, levelLimits) {
-  try {
-    const userProductsPath = path.join(__dirname, '../data/products', `${username}.json`);
-    
-    // بررسی وجود فایل محصولات کاربر
-    let userData;
-    try {
-      const data = await fs.readFile(userProductsPath, 'utf8');
-      userData = JSON.parse(data);
-    } catch (error) {
-      // اگر فایل وجود نداشت، ایجاد کن
-      userData = { 
-        products: [],
-        total_products_created: 0
-      };
-    }
-
-    // به‌روزرسانی محدودیت‌ها
-    userData.product_limit = levelLimits.product_limit;
-    userData.user_level = plans[username]?.level || 0;
-    userData.features = levelLimits.features;
-    userData.updated_at = new Date().toISOString();
-
-    // ذخیره فایل
-    await fs.writeFile(userProductsPath, JSON.stringify(userData, null, 2));
-    console.log(`محدودیت‌های محصولات کاربر ${username} به‌روزرسانی شد: limit=${levelLimits.product_limit}`);
-    
-  } catch (error) {
-    console.error(`خطا در به‌روزرسانی محدودیت‌های کاربر ${username}:`, error);
-  }
-}
-
 // شروع خودکار رصدگر فایل و همگام‌سازی دوره‌ای
 const fileWatcherSystem = startFileWatcher();
 
@@ -308,8 +254,5 @@ module.exports = {
   setUserLevel,
   getAllPlans,
   startFileWatcher,
-  fileWatcherSystem,
-  LEVEL_LIMITS,
-  getLevelLimits,
-  updateUserProductLimits
+  fileWatcherSystem
 };

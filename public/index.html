@@ -5,16 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AmlakOne - آینده مدیریت املاک</title>
-    
-    <!-- PWA Icons -->
-    <link rel="icon" type="image/jpeg" href="/AmlakOne-logo.jpg">
-    <link rel="icon" type="image/png" sizes="32x32" href="/images/icons/icon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/images/icons/icon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/icon-180x180.png">
-    <link rel="mask-icon" href="/images/icons/safari-pinned-tab.svg" color="#2563eb">
-    
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AmlakOne">
+    <meta property="og:title" content="AmlakOne - آینده مدیریت املاک">
+    <meta property="og:description" content="سیستم پیشرفته مدیریت املاک با هوش مصنوعی، تبدیل تصاویر به مدل سه‌بعدی و امکانات کامل مشاوره املاک">
+    <meta property="og:image" content="/AmlakOne-logo.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="AmlakOne - آینده مدیریت املاک">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AmlakOne - آینده مدیریت املاک">
+    <meta name="twitter:description" content="سیستم پیشرفته مدیریت املاک با هوش مصنوعی، تبدیل تصاویر به مدل سه‌بعدی و امکانات کامل مشاوره املاک">
+    <meta name="twitter:image" content="/AmlakOne-logo.jpg">
+
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- Preloader -->
@@ -46,7 +56,7 @@
                 <button id="theme-toggle" class="theme-toggle">
                     <i class="fas fa-moon"></i>
                 </button>
-                <a href="/login.html" class="nav-cta">ورود</a>
+                <button class="nav-cta">شروع کنید</button>
             </div>
         </div>
     </nav>
@@ -63,16 +73,16 @@
                     <span class="title-line gradient-text">مدیریت املاک</span>
                     <span class="title-line">اینجاست</span>
                 </h1>
-                <p class="hero-subtitle">به دنیای مدرن املاک وان خوش آمدید!</p>
+                <p class="hero-subtitle">مبتنی بر هوش مصنوعی. آماده سه‌بعدی. دوستدار مشاور.</p>
                 <div class="hero-buttons">
-                    <a href="/login.html" class="btn btn-primary">
-                        <span>ورود</span>
-                        <i class="fas fa-sign-in-alt"></i>
-                    </a>
-                    <a href="/signup.html" class="btn btn-secondary">
-                        <i class="fas fa-user-plus"></i>
-                        <span>ثبت نام</span>
-                    </a>
+                    <button class="btn btn-primary">
+                        <span>شروع کنید</span>
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-play"></i>
+                        <span>مشاهده نمایش</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -95,35 +105,35 @@
                     <div class="feature-icon">
                         <i class="fas fa-folder-open"></i>
                     </div>
-                    <h3>مدیریت  فایل های املاک</h3>
-                    <p>فایل‌های املاک خود را با دسته‌بندی و جستجوی فوری سازماندهی و دسترسی داشته باشید.</p>
+                    <h3>مدیریت هوشمند فایل</h3>
+                    <p>فایل‌های املاک خود را با دسته‌بندی مبتنی بر هوش مصنوعی و جستجوی فوری سازماندهی و دسترسی داشته باشید.</p>
                 </div>
                 <div class="feature-card" data-feature="2">
                     <div class="feature-icon">
                         <i class="fas fa-cube"></i>
                     </div>
-                    <h3>نقشه‌برداری هوش مصنوعی فیلم به سه‌بعدی</h3>
-                    <p> فیلم املاک را با فناوری پیشرفته هوش مصنوعی ما به مدل‌های سه‌بعدی جذاب تبدیل کنید.</p>
+                    <h3>نقشه‌برداری هوش مصنوعی تصویر به سه‌بعدی</h3>
+                    <p>تصاویر دوبعدی املاک را با فناوری پیشرفته هوش مصنوعی ما به مدل‌های سه‌بعدی جذاب تبدیل کنید.</p>
                 </div>
                 <div class="feature-card" data-feature="3">
                     <div class="feature-icon">
                         <i class="fas fa-calendar-alt"></i>
                     </div>
-                    <h3>ثبت قرار ملاقات</h3>
-                    <p>جلسات با مشتریان را با زمان‌بندی هوشمند و یادآوری‌های خودکار، ساده کنید.</p>
+                    <h3>رزرو قرار ملاقات</h3>
+                    <p>جلسات با مشتریان را با زمان‌بندی هوشمند و یادآوری‌های خودکار ساده کنید.</p>
                 </div>
                 <div class="feature-card" data-feature="4">
                     <div class="feature-icon">
                         <i class="fas fa-robot"></i>
                     </div>
-                    <h3>چت هوش مصنوعی</h3>
-                    <p>پاسخ سوال های خود را از چت بات هوش مصنوعی به سرعت دریافت کنید</p>
+                    <h3>دستیار چت هوش مصنوعی</h3>
+                    <p>پاسخ‌های فوری درباره املاک، روندهای بازار و ترجیحات مشتریان دریافت کنید.</p>
                 </div>
                 <div class="feature-card" data-feature="5">
                     <div class="feature-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <h3>داشبورد تحلیلی - به زودی</h3>
+                    <h3>داشبورد تحلیلی</h3>
                     <p>معیارهای عملکرد را پیگیری کنید و با تحلیل‌های جامع بینش کسب کنید.</p>
                 </div>
                 <div class="feature-card" data-feature="6">
@@ -159,16 +169,16 @@
                                 <div class="tab-content active" id="dashboard">
                                     <div class="dashboard-grid">
                                         <div class="dashboard-card">
-                                            <h4>آگهی های فعال</h4>
-                                            <div class="metric">250</div>
+                                            <h4>کل املاک</h4>
+                                            <div class="metric">۱,۲۴۷</div>
                                         </div>
                                         <div class="dashboard-card">
-                                            <h4>قرار های ثبت شده</h4>
-                                            <div class="metric">25</div>
+                                            <h4>آگهی‌های فعال</h4>
+                                            <div class="metric">۸۹</div>
                                         </div>
                                         <div class="dashboard-card">
                                             <h4>مدل‌های سه‌بعدی</h4>
-                                            <div class="metric">30</div>
+                                            <div class="metric">۱۵۶</div>
                                         </div>
                                     </div>
                                 </div>
@@ -177,15 +187,15 @@
                                         <div class="property-item">
                                             <div class="property-image"></div>
                                             <div class="property-info">
-                                                <h5>آپارتمان در غرب شهر</h5>
-                                                <p>12 میلیارد تومان</p>
+                                                <h5>ویلای مدرن</h5>
+                                                <p>۸۵۰,۰۰۰ دلار</p>
                                             </div>
                                         </div>
                                         <div class="property-item">
                                             <div class="property-image"></div>
                                             <div class="property-info">
                                                 <h5>آپارتمان مرکز شهر</h5>
-                                                <p>9 میلیارد تومان</p>
+                                                <p>۴۲۵,۰۰۰ دلار</p>
                                             </div>
                                         </div>
                                     </div>
@@ -208,7 +218,7 @@
                     <div class="device-screen">
                         <div class="mobile-interface">
                             <div class="mobile-header">
-                                <h4>اپ موبایل</h4>
+                                <h4>AmlakOne موبایل</h4>
                             </div>
                             <div class="mobile-content">
                                 <div class="mobile-card">
@@ -235,10 +245,10 @@
     <section id="ai-action" class="ai-action">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">نقشه راه مدل سه بعدی</h2>
-                <p class="section-subtitle">تبدیل تصویر به مدل سه‌بعدی، تنها با یک کلیک.</p>
+                <h2 class="section-title">هوش مصنوعی در عمل</h2>
+                <p class="section-subtitle">ببینید چگونه هوش مصنوعی ما تصاویر دوبعدی را به مدل‌های سه‌بعدی تبدیل می‌کند</p>
                 <div class="ai-badge">
-                    <span class="shimmer">قدرت گرفته از هوش مصنوعی</span>
+                    <span class="shimmer">نیرو گرفته از هوش مصنوعی</span>
                 </div>
             </div>
             <div class="ai-steps">
@@ -247,11 +257,11 @@
                         <i class="fas fa-upload"></i>
                     </div>
                     <div class="step-content">
-                        <h3>آپلود فیلم</h3>
-                        <p>به سادگی فیلم های املاک خود را آپلود کنید</p>
+                        <h3>آپلود تصویر</h3>
+                        <p>به سادگی عکس‌های املاک خود را آپلود کنید</p>
                     </div>
                     <div class="step-tooltip">
-                        <span>پشتیبانی از فرمت mp4</span>
+                        <span>از فرمت‌های JPG، PNG، HEIC پشتیبانی می‌کند</span>
                     </div>
                 </div>
                 <div class="step-arrow">
@@ -262,7 +272,7 @@
                         <i class="fas fa-brain"></i>
                     </div>
                     <div class="step-content">
-                        <h3>پردازش هوش مصنوعی</h3>
+                        <h3>تحلیل هوش مصنوعی</h3>
                         <p>هوش مصنوعی ما عمق و ساختار را تحلیل می‌کند</p>
                     </div>
                     <div class="step-tooltip">
@@ -277,7 +287,7 @@
                         <i class="fas fa-cube"></i>
                     </div>
                     <div class="step-content">
-                        <h3>خروجی سه‌بعدی</h3>
+                        <h3>تولید سه‌بعدی</h3>
                         <p>مدل سه‌بعدی جذاب ایجاد می‌کند</p>
                     </div>
                     <div class="step-tooltip">
@@ -317,37 +327,34 @@
                         <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        <p>هوش مصنوعی ما به دقت بیش از ۹۰٪ در تولید مدل سه‌بعدی دست می‌یابد و از الگوریتم‌های پیشرفته بینایی کامپیوتری آموزش دیده استفاده می‌کند.</p>
+                        <p>هوش مصنوعی ما به دقت بیش از ۹۵٪ در تولید مدل سه‌بعدی دست می‌یابد و از الگوریتم‌های پیشرفته بینایی کامپیوتری آموزش دیده روی میلیون‌ها تصویر املاک استفاده می‌کند.</p>
                     </div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">
-                        <h3>املاک وان چه ویژگی‌هایی دارد؟</h3>
+                        <h3>آیا داده‌های من با AmlakOne امن است؟</h3>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        <p>با املاک وان می‌توانید: قرار ملاقات‌ها را ثبت و مدیریت کنید، فایل‌های ملکی را با تمام جزئیات ثبت و ویرایش کنید، آگهی‌ها را با مشتریان به‌راحتی به اشتراک بگذارید و حتی با یک کلیک، درخواست مدل سه‌بعدی از ملک ثبت‌شده بدهید.
-همه‌چیز در یک پنل ساده، هوشمند و قدرتمند در اختیار شماست.</p>
+                        <p>کاملاً. ما از رمزگذاری سطح سازمانی استفاده می‌کنیم، با GDPR مطابقت داریم و تمام داده‌ها را در مراکز داده امن و تأیید شده ذخیره می‌کنیم.</p>
                     </div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">
-                        <h3>آیا می‌توانم با موبایل از املاک وان استفاده کنم؟</h3>
+                        <h3>آیا می‌توانم AmlakOne را با CRM موجود خود ادغام کنم؟</h3>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        <p>بله، املاک وان علاوه بر نسخه‌ی تحت وب، دارای اپلیکیشن اختصاصی موبایل نیز هست.
-شما می‌توانید با استفاده از اپ، به‌راحتی فایل‌ها را ثبت و مدیریت کنید، قرار ملاقات‌ها را تنظیم کنید، مدل سه‌بعدی درخواست دهید و اطلاعات را با مشتریان به اشتراک بگذارید — همه‌چیز، در هر زمان و هر مکان.</p>
+                        <p>بله! AmlakOne ادغام بی‌درنگ با سیستم‌های CRM محبوب از جمله Salesforce، HubSpot و APIهای سفارشی ارائه می‌دهد.</p>
                     </div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">
-                        <h3>آیا استفاده از املاک وان رایگان است؟</h3>
+                        <h3>از چه فرمت‌های فایلی پشتیبانی می‌کنید؟</h3>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        <p>بله، املاک وان دارای پلن رایگان است که به شما امکان ثبت ۲۰ آگهی در ماه را می‌دهد و شامل پشتیبانی ۲۴ ساعته نیز می‌شود.
-همچنین می‌توانید با ارتقاء به پلن‌های پیشرفته‌تر از امکانات بیشتری بهره‌مند شوید!</p>
+                        <p>ما از تمام فرمت‌های تصویری اصلی (JPG، PNG، HEIC، RAW) پشتیبانی می‌کنیم و می‌توانیم مدل‌های سه‌بعدی را در فرمت‌های مختلف از جمله OBJ، FBX و GLTF صادر کنیم.</p>
                     </div>
                 </div>
             </div>
@@ -358,33 +365,40 @@
     <section id="contact" class="contact">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">سوال یا پیشنهادی دارید؟</h2>
-                <p class="section-subtitle">پیام خود را برای ما ارسال کنید، ما در اسرع وقت پاسخ خواهیم داد</p>
+                <h2 class="section-title">آماده تحول در کسب و کار خود هستید؟</h2>
+                <p class="section-subtitle">به لیست انتظار بپیوندید و جزو اولین‌هایی باشید که AmlakOne را تجربه می‌کنند</p>
             </div>
             <div class="contact-content">
                 <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" required>
+                        <label for="name">نام کامل</label>
+                    </div>
                     <div class="form-group">
                         <input type="email" id="email" name="email" required>
                         <label for="email">آدرس ایمیل</label>
                     </div>
                     <div class="form-group">
-                        <textarea id="message" name="message" rows="4" required maxlength="300"></textarea>
-                        <label for="message">پیام شما</label>
-                        <div class="char-counter">
-                            <span id="charCount">0</span>/300 کاراکتر
-                        </div>
+                        <input type="text" id="company" name="company">
+                        <label for="company">شرکت (اختیاری)</label>
                     </div>
-                    <button type="submit" class="btn btn-primary form-submit" id="submitBtn">
-                        <span>ارسال پیام</span>
+                    <div class="form-group">
+                        <select id="interest" name="interest" required>
+                            <option value="">علاقه‌مندی خود را انتخاب کنید</option>
+                            <option value="individual">مشاور فردی</option>
+                            <option value="team">تیم املاک</option>
+                            <option value="brokerage">دلالی</option>
+                            <option value="developer">توسعه‌دهنده املاک</option>
+                        </select>
+                        <label for="interest">علاقه‌مند هستم به عنوان</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary form-submit">
+                        <span>پیوستن به لیست انتظار</span>
                         <i class="fas fa-paper-plane"></i>
                     </button>
                     <div class="form-success" id="formSuccess">
                         <i class="fas fa-check-circle"></i>
-                        <span>پیام شما با موفقیت ارسال شد!</span>
-                    </div>
-                    <div class="form-error" id="formError">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span id="errorMessage">خطا در ارسال پیام</span>
+                        <span>متشکرم! شما در لیست انتظار قرار گرفتید.</span>
                     </div>
                 </form>
                 <div class="contact-social">
@@ -421,7 +435,7 @@
                         <h4>محصول</h4>
                         <a href="#">ویژگی‌ها</a>
                         <a href="#">قیمت‌گذاری</a>
-                        <a href="#">مدل سه بعدی</a>
+                        <a href="#">API</a>
                     </div>
                     <div class="footer-column">
                         <h4>شرکت</h4>
@@ -438,15 +452,10 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; ۲۰۲۵ AmlakOne. تمام حقوق محفوظ است.</p>
+                <p>&copy; ۲۰۲۴ AmlakOne. تمام حقوق محفوظ است.</p>
             </div>
         </div>
     </footer>
-
-    <!-- Back to Top Button -->
-    <button id="back-to-top" class="back-to-top" aria-label="برو به بالا">
-        <i class="fas fa-arrow-up"></i>
-    </button>
 
     <script src="script.js"></script>
 </body>

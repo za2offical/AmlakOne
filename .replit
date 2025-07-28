@@ -3,7 +3,7 @@ modules = ["nodejs-20"]
 channel = "stable-25_05"
 
 [workflows]
-runButton = "Start Application"
+runButton = "Run Both Apps"
 
 [[workflows.workflow]]
 name = "Start Server"
@@ -114,24 +114,6 @@ args = "node index.js"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node server.js"
-
-[[workflows.workflow]]
-name = "Main Server"
-author = 39313916
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node index.js"
-
-[[workflows.workflow]]
-name = "Start Application"
-author = 39313916
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node index.js"
 
 [[ports]]
 localPort = 3000

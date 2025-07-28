@@ -212,9 +212,9 @@ function initGalleryWithCurrentImages() {
 
 async function handleAddNewImages(event) {
     const files = Array.from(event.target.files);
-    // مجموع عکس‌های فعلی و جدید نباید بیشتر از 5 شود
-    if (galleryImages.length + files.length > 5) {
-        showMessage('حداکثر 5 تصویر می‌توانید آپلود کنید', 'error');
+    // مجموع عکس‌های فعلی و جدید نباید بیشتر از 10 شود
+    if (galleryImages.length + files.length > 10) {
+        showMessage('حداکثر ۱۰ تصویر می‌توانید آپلود کنید', 'error');
         event.target.value = '';
         return;
     }

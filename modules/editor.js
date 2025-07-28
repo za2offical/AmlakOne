@@ -126,7 +126,7 @@ router.post('/unlock-user', async (req, res) => {
 });
 
 // ارسال اعلان به تمام کاربران
-router.post('/notifications', async (req, res) => {
+router.post('/send-notification', async (req, res) => {
     try {
         const { title, message } = req.body;
         if (!title || !message) {

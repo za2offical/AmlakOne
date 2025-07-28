@@ -46,6 +46,10 @@
 
 .header-left {
     justify-self: start;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
 }
 
 .header-center {
@@ -59,23 +63,27 @@
 .back-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    gap: 0.75rem;
+    padding: 0.875rem 1.75rem;
     background: var(--primary-500);
-    border: 1px solid var(--primary-600);
-    border-radius: 0.5rem;
+    border: 2px solid var(--primary-600);
+    border-radius: 12px;
     color: white;
     text-decoration: none;
     font-weight: 500;
-    transition: all 0.2s;
+    font-size: 1rem;
+    transition: all 0.2s ease;
     cursor: pointer;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    white-space: nowrap;
+    min-width: fit-content;
 }
 
 .back-btn:hover {
     background: var(--primary-600);
+    border-color: #1d4ed8;
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
 }
 
 .page-title {
@@ -186,56 +194,22 @@
 }
 
 .product-card.has-pending-request {
-    border: 3px solid transparent !important;
-    background: linear-gradient(white, white) padding-box,
-                linear-gradient(45deg, #fbbf24, #f59e0b, #fbbf24) border-box !important;
+    border: 2px solid #fbbf24 !important;
     box-shadow: 
-        0 0 25px rgba(251, 191, 36, 0.4) !important,
-        0 0 50px rgba(251, 191, 36, 0.2) !important,
-        0 8px 32px rgba(0, 0, 0, 0.12) !important;
-    animation: pendingGlow 3s ease-in-out infinite alternate !important;
+        0 0 8px rgba(251, 191, 36, 0.6),
+        0 0 16px rgba(251, 191, 36, 0.3),
+        inset 0 0 0 1px rgba(251, 191, 36, 0.4) !important;
 }
 
 .product-card.has-approved-request {
-    border: 3px solid transparent !important;
-    background: linear-gradient(white, white) padding-box,
-                linear-gradient(45deg, #10b981, #059669, #10b981) border-box !important;
+    border: 2px solid #10b981 !important;
     box-shadow: 
-        0 0 25px rgba(16, 185, 129, 0.4) !important,
-        0 0 50px rgba(16, 185, 129, 0.2) !important,
-        0 8px 32px rgba(0, 0, 0, 0.12) !important;
-    animation: approvedGlow 3s ease-in-out infinite alternate !important;
+        0 0 8px rgba(16, 185, 129, 0.6),
+        0 0 16px rgba(16, 185, 129, 0.3),
+        inset 0 0 0 1px rgba(16, 185, 129, 0.4) !important;
 }
 
-@keyframes pendingGlow {
-    0% {
-        box-shadow: 
-            0 0 25px rgba(251, 191, 36, 0.3),
-            0 0 50px rgba(251, 191, 36, 0.1),
-            0 8px 32px rgba(0, 0, 0, 0.12);
-    }
-    100% {
-        box-shadow: 
-            0 0 35px rgba(251, 191, 36, 0.5),
-            0 0 70px rgba(251, 191, 36, 0.2),
-            0 8px 32px rgba(0, 0, 0, 0.12);
-    }
-}
 
-@keyframes approvedGlow {
-    from {
-        box-shadow: 
-            0 0 20px rgba(16, 185, 129, 0.2),
-            0 0 40px rgba(16, 185, 129, 0.05),
-            0 4px 16px rgba(0, 0, 0, 0.08);
-    }
-    to {
-        box-shadow: 
-            0 0 30px rgba(16, 185, 129, 0.4),
-            0 0 60px rgba(16, 185, 129, 0.15),
-            0 8px 32px rgba(0, 0, 0, 0.12);
-    }
-}
 
 @keyframes rejectedGlow {
     from {
@@ -298,28 +272,59 @@
     font-size: 0.75rem;
     font-weight: 700;
     text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-    animation: pulseGlow 2s ease-in-out infinite alternate;
+    animation: pulseGlow 1.5s ease-in-out infinite alternate;
     z-index: 10;
+    transition: all 0.3s ease;
 }
 
 .request-status.pending {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: #92400e;
-    box-shadow: 
-        0 0 20px rgba(251, 191, 36, 0.4),
-        0 0 40px rgba(251, 191, 36, 0.2),
-        0 4px 15px rgba(251, 191, 36, 0.3);
-    border: 2px solid rgba(251, 191, 36, 0.6);
+    background: #fbbf24;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+    border: 1px solid rgba(251, 191, 36, 0.5);
 }
 
 .request-status.approved {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: #10b981;
     color: white;
-    box-shadow: 
-        0 0 20px rgba(16, 185, 129, 0.4),
-        0 0 40px rgba(16, 185, 129, 0.2),
-        0 4px 15px rgba(16, 185, 129, 0.3);
-    border: 2px solid rgba(16, 185, 129, 0.6);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+@keyframes statusBadgePending {
+    0% {
+        box-shadow: 
+            0 0 25px rgba(251, 191, 36, 0.6),
+            0 0 50px rgba(251, 191, 36, 0.3),
+            0 4px 20px rgba(251, 191, 36, 0.4);
+        transform: scale(1);
+    }
+    100% {
+        box-shadow: 
+            0 0 35px rgba(251, 191, 36, 0.8),
+            0 0 70px rgba(251, 191, 36, 0.4),
+            0 6px 25px rgba(251, 191, 36, 0.5);
+        transform: scale(1.05);
+    }
+}
+
+@keyframes statusBadgeApproved {
+    0% {
+        box-shadow: 
+            0 0 25px rgba(16, 185, 129, 0.6),
+            0 0 50px rgba(16, 185, 129, 0.3),
+            0 4px 20px rgba(16, 185, 129, 0.4);
+        transform: scale(1);
+    }
+    100% {
+        box-shadow: 
+            0 0 35px rgba(16, 185, 129, 0.8),
+            0 0 70px rgba(16, 185, 129, 0.4),
+            0 6px 25px rgba(16, 185, 129, 0.5);
+        transform: scale(1.05);
+    }
 }
 
 .request-status.rejected {
@@ -388,21 +393,23 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    font-size: 0.95rem;
+    font-size: 1rem;
     border-radius: 12px;
     transition: all 0.2s ease;
     white-space: nowrap;
     min-width: fit-content;
-    background: white;
-    border: 2px solid #e5e7eb;
-    color: #374151;
+    background: #8b5cf6 !important;
+    border: 2px solid #7c3aed !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2) !important;
 }
 
 .toggle-btn:hover {
-    border-color: #3b82f6;
-    color: #3b82f6;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    background: #7c3aed !important;
+    border-color: #6d28d9 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3) !important;
 }
 
 .btn-outline {
@@ -453,7 +460,7 @@
 }
 
 .count-badge {
-    background: #3b82f6;
+    background: #8b5cf6;
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
@@ -1239,12 +1246,12 @@
         margin-bottom: 20px;
         height: 50px;
     }
-    
+
     .upload-dot {
         width: 10px;
         height: 10px;
     }
-    
+
     @keyframes uploadDotBounce {
         0%, 60%, 100% {
             transform: translateY(0);
@@ -1253,23 +1260,23 @@
             transform: translateY(-15px);
         }
     }
-    
+
     .upload-loading-text {
         font-size: 1rem;
     }
-    
+
     .upload-loading-description {
         font-size: 0.85rem;
         max-width: 250px;
         padding: 0 1rem;
     }
-    
+
     .upload-progress-ring {
         width: 60px;
         height: 60px;
         margin-bottom: 16px;
     }
-    
+
     .upload-progress-percentage {
         font-size: 0.875rem;
     }
@@ -1430,4 +1437,150 @@
         align-items: flex-start;
         gap: 0.5rem;
     }
+}
+
+/* plan badge */
+.plan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* No Plan Static Header */
+.no-plan-moving-header {
+    margin-top: 1.5rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.moving-text-container {
+    margin-bottom: 1.25rem;
+}
+
+.moving-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000000;
+    font-weight: 500;
+    font-size: 1.95rem;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.moving-text svg {
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+.no-plan-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.no-plan-shop-btn {
+    background: #8b5cf6;
+    border: 1px solid #8b5cf6;
+    color: white;
+    font-weight: 600;
+    min-width: 140px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.no-plan-shop-btn:hover {
+    background: #7c3aed;
+    border-color: #7c3aed;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+/* Responsive Design for No Plan Header */
+@media (max-width: 768px) {
+    .no-plan-moving-header {
+        margin-top: 1rem;
+        padding: 1rem;
+    }
+
+    .moving-text {
+        font-size: 0.875rem;
+        gap: 0.5rem;
+    }
+
+    .moving-text svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .no-plan-actions {
+        justify-content: center;
+        gap: 0;
+    }
+
+    .no-plan-shop-btn {
+        min-width: 200px;
+        padding: 0.875rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .no-plan-moving-header {
+        margin-top: 0.75rem;
+        padding: 0.875rem;
+        border-radius: 8px;
+    }
+
+    .moving-text {
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+
+    .moving-text svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .no-plan-shop-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        min-width: 180px;
+    }
+}
+
+/* Disabled button styles for no-plan users */
+.btn-primary:disabled,
+.btn-secondary:disabled {
+    background: var(--gray-300) !important;
+    color: var(--gray-500) !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.product-card .btn-primary:disabled {
+    background: #e5e7eb !important;
+    color: #9ca3af !important;
+    border: 1px solid #d1d5db !important;
 }

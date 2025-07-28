@@ -97,7 +97,16 @@ function showLimitWarning(data) {
             <p>${data.error}</p>
             <p>تعداد آگهی‌های ایجاد شده: ${data.used} از ${data.limit || 'نامحدود'}</p>
             <p>سطح کاربری شما: ${data.userLevel}</p>
-            <a href="/panel" class="back-link">بازگشت به پنل</a>
+            <p class="upgrade-suggestion">یا برای افزایش محدودیت می‌تونید پلن پیشرفته‌تری خریداری کنید</p>
+            <div class="action-buttons">
+                <a href="/requests-3d" class="purchase-plan-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.41c-.15.28-.25.61-.25.97 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                    </svg>
+                    خرید پلن
+                </a>
+                <a href="/panel" class="back-link">بازگشت به پنل</a>
+            </div>
         </div>
     `;
     

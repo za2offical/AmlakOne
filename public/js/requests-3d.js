@@ -1,6 +1,7 @@
 let allProducts = [];
 let activeRequests = [];
 let selectedProductId = null;
+let userPlanStatus = { hasPlan: false, remainingUses: 0 };
 
 // بررسی وضعیت احراز هویت
 async function checkAuth() {
@@ -15,6 +16,21 @@ async function checkAuth() {
         console.error('Authentication error:', error);
         window.location.href = '/login';
         return null;
+    }
+}
+
+// بررسی وضعیت پلن کاربر
+async function checkUserPlan() {
+    try {
+        const response = await fetch('/api/requests-3d/check-plan');
+        if (response.ok) {
+            userPlanStatus = await response.json();
+            return userPlanStatus;
+        }
+        return { hasPlan: false, remainingUses: 0 };
+    } catch (error) {
+        console.error('Error checking user plan:', error);
+        return { hasPlan: false, remainingUses: 0 };
     }
 }
 
@@ -35,6 +51,17 @@ async function loadUserProducts() {
         const userInfo = await checkAuth();
         if (!userInfo) return;
 
+        // بررسی وضعیت پلن کاربر
+        const planStatus = await checkUserPlan();
+
+        // نمایش تعداد استفاده‌های باقی‌مانده (اگر پلن دارد)
+        if (planStatus.hasPlan) {
+            updatePlanDisplay(planStatus.remainingUses);
+        } else {
+            // نمایش هدر متحرک برای کاربرانی که پلن ندارند
+            showNoPlanHeader();
+        }
+
         // بارگذاری محصولات با داده‌های زنده - هیچ کش‌ای استفاده نمی‌شود
         const timestamp = Date.now() + Math.random(); // اطمینان از یکتا بودن
         const response = await fetch(`/api/requests-3d/user-products?live=${timestamp}`, {
@@ -46,7 +73,7 @@ async function loadUserProducts() {
                 'Expires': '0'
             }
         });
-        
+
         if (response.status === 401) {
             window.location.href = '/login';
             return;
@@ -92,7 +119,7 @@ function displayProducts(products) {
         if (hasActiveRequest) {
             console.log('Active request found:', activeRequest); // Debug log
             console.log('Request status:', activeRequest.status); // Debug log
-            
+
             if (activeRequest.status === 'تایید شده') {
                 requestStatus = 'approved';
                 cardClass += ' has-approved-request';
@@ -107,12 +134,19 @@ function displayProducts(products) {
 
         productCard.className = cardClass;
 
-        // فقط اگر درخواست تایید نشده باشد کلیک کردن مجاز است
-        if (!hasActiveRequest) {
+        // اضافه کردن attribute برای آسان‌تر شدن شناسایی
+        productCard.setAttribute('data-product-id', product.id);
+
+        // اگر درخواست فعال ندارد و پلن دارد، کلیک مجاز است
+        if (!hasActiveRequest && userPlanStatus.hasPlan) {
             productCard.onclick = () => openUploadModal(product);
             productCard.style.cursor = 'pointer';
         } else {
             productCard.style.cursor = 'default';
+            if (!userPlanStatus.hasPlan && !hasActiveRequest) {
+                // برای کاربران بدون پلن پیغام مناسب نمایش دهید
+                productCard.onclick = () => showError('برای استفاده از این بخش باید پلن خریداری کنید.');
+            }
         }
 
         productCard.innerHTML = `
@@ -172,11 +206,11 @@ function displayProducts(products) {
                                 در حال بررسی`
                             }
                         </button>` :
-                        `<button class="btn-primary btn-small">
+                        `<button class="btn-primary btn-small" ${!userPlanStatus.hasPlan ? 'disabled' : ''}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.99.99 0 013 16.5v-9c0-.38.21.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9z"/>
                             </svg>
-                            درخواست 3D
+                            ${userPlanStatus.hasPlan ? 'درخواست 3D' : 'نیاز به پلن'}
                         </button>`
                     }
                 </div>
@@ -203,16 +237,27 @@ async function loadActiveRequests() {
             }
         });
         if (response.ok) {
-            activeRequests = await response.json();
-            console.log('Live active requests loaded:', activeRequests); // Debug log
-            console.log('Number of active requests:', activeRequests.length); // Debug log
-            
+            const newActiveRequests = await response.json();
+            console.log('Live active requests loaded:', newActiveRequests); // Debug log
+            console.log('Number of active requests:', newActiveRequests.length); // Debug log
+
+            // بررسی تغییرات و به‌روزرسانی فوری
+            const hasChanges = JSON.stringify(activeRequests) !== JSON.stringify(newActiveRequests);
+            activeRequests = newActiveRequests;
+
             displayActiveRequests();
-            // به‌روزرسانی نمایش محصولات با وضعیت جدید
+
+            // همیشه محصولات را مجدد رندر کن تا وضعیت‌ها به‌روزرسانی شوند
             if (allProducts.length > 0) {
-                console.log('Refreshing products display with request status...'); // Debug log
+                console.log('Refreshing products display with latest request status...'); // Debug log
                 displayProducts(allProducts);
             }
+
+            // اجبار به‌روزرسانی انیمیشن‌ها
+            setTimeout(() => {
+                forceRefreshCardAnimations();
+            }, 100);
+
         } else {
             console.error('Failed to load active requests:', response.status);
         }
@@ -227,7 +272,7 @@ function toggleActiveRequests() {
     const toggleBtn = document.getElementById('toggleRequestsBtn');
     const toggleBtnText = document.getElementById('toggleBtnText');
     const toggleIcon = document.getElementById('toggleIcon');
-    
+
     if (activeRequestsSection.style.display === 'none' || activeRequestsSection.style.display === '') {
         activeRequestsSection.style.display = 'block';
         toggleBtnText.textContent = 'مخفی کردن درخواست‌های من';
@@ -266,7 +311,7 @@ function showSuccessMessage(message) {
         z-index: 1000;
         animation: fadeInOut 3s forwards;
     `;
-    
+
     // اضافه کردن انیمیشن
     const style = document.createElement('style');
     style.textContent = `
@@ -277,7 +322,7 @@ function showSuccessMessage(message) {
         }
     `;
     document.head.appendChild(style);
-    
+
     document.body.appendChild(successDiv);
     setTimeout(() => {
         document.body.removeChild(successDiv);
@@ -299,12 +344,12 @@ function displayActiveRequests() {
 
     // نمایش دکمه تغییر وضعیت و بخش درخواست‌ها
     toggleBtn.style.display = 'inline-flex';
-    
+
     // به‌روزرسانی تعداد درخواست‌ها
     if (requestsCount) {
         requestsCount.textContent = `${activeRequests.length} درخواست`;
     }
-    
+
     activeRequestsList.innerHTML = '';
 
     activeRequests.forEach(request => {
@@ -385,6 +430,12 @@ function openUploadModal(product) {
     const hasActiveRequest = activeRequests.some(req => req.productId === product.id);
     if (hasActiveRequest) {
         showError('برای این ملک قبلاً درخواست ارسال شده است.');
+        return;
+    }
+
+    // بررسی وضعیت پلن کاربر
+    if (!userPlanStatus.hasPlan) {
+        showError('برای استفاده از این بخش باید پلن خریداری کنید.');
         return;
     }
 
@@ -510,7 +561,7 @@ function showUploadLoadingOverlay() {
                 </div>
                 <div class="upload-loading-text">در حال ارسال درخواست...</div>
                 <div class="upload-loading-description">لطفاً صبر کنید، درخواست شما در حال پردازش است</div>
-                
+
                 <div class="upload-progress-ring" style="display: none;">
                     <svg>
                         <defs>
@@ -528,7 +579,7 @@ function showUploadLoadingOverlay() {
         `;
         document.body.appendChild(overlay);
     }
-    
+
     const overlay = document.getElementById('uploadLoadingOverlay');
     overlay.classList.add('show');
 }
@@ -550,13 +601,13 @@ function updateUploadProgress(percentage) {
         const progressBar = overlay.querySelector('.progress-bar-circle');
         const progressText = overlay.querySelector('.upload-progress-percentage');
         const loadingText = overlay.querySelector('.upload-loading-text');
-        
+
         if (percentage > 0) {
             // تغییر به حالت نمایش درصد
             dotsContainer.style.display = 'none';
             progressRing.style.display = 'block';
             loadingText.textContent = 'در حال آپلود فایل...';
-            
+
             // محاسبه stroke-dashoffset برای نمایش پیشرفت
             const circumference = 2 * Math.PI * 36;
             const offset = circumference - (percentage / 100) * circumference;
@@ -578,7 +629,7 @@ async function submitRequest() {
     try {
         submitBtn.disabled = true;
         submitBtn.textContent = 'در حال ارسال...';
-        
+
         // نمایش انیمیشن زیبا
         showUploadLoadingOverlay();
 
@@ -603,11 +654,51 @@ async function submitRequest() {
                 const response = JSON.parse(xhr.responseText);
                 closeUploadModal();
                 showSuccessModal();
+
+                // به‌روزرسانی فوری وضعیت کارت محصول
+                updateProductCardStatusImmediately(selectedProductId, 'pending');
+
                 loadActiveRequests(); // بارگذاری مجدد درخواست‌های فعال
                 displayProducts(allProducts); // به‌روزرسانی نمایش محصولات
+
+                // بررسی و به‌روزرسانی تعداد باقی‌مانده بر اساس پاسخ سرور
+                console.log('Server response:', response);
+
+                if (response.remainingUses !== undefined) {
+                    console.log(`Updating remaining uses from ${userPlanStatus.remainingUses} to ${response.remainingUses}`);
+                    userPlanStatus.remainingUses = response.remainingUses;
+                    updatePlanDisplay(response.remainingUses);
+                } else if (userPlanStatus.remainingUses > 0) {
+                    // fallback اگر سرور تعداد جدید نفرستاد
+                    console.log('Fallback: decreasing remaining uses locally');
+                    userPlanStatus.remainingUses--;
+                    updatePlanDisplay(userPlanStatus.remainingUses);
+                }
+
+                // نمایش وضعیت به‌روزرسانی پلن
+                if (response.planDecremented === false) {
+                    console.warn('Plan was not decremented on server');
+                    // نمایش هشدار به کاربر
+                    alert('هشدار: ممکن است پلن شما به درستی به‌روزرسانی نشده باشد');
+                }
+
+                // اگر تعداد استفاده به صفر رسید، نمایش حالت بدون پلن
+                if (userPlanStatus.remainingUses <= 0) {
+                    setTimeout(() => {
+                        console.log('Showing no plan state due to 0 remaining uses');
+                        showNoPlanState();
+                    }, 2000); // با تاخیر 2 ثانیه بعد از نمایش پیام موفقیت
+                }
             } else {
                 const errorResponse = JSON.parse(xhr.responseText);
-                showError(errorResponse.error || 'خطا در ارسال درخواست');
+
+                // اگر خطای نبود پلن باشد
+                if (errorResponse.needsPlan) {
+                    closeUploadModal();
+                    showNoPlanState();
+                } else {
+                    showError(errorResponse.error || 'خطا در ارسال درخواست');
+                }
             }
         });
 
@@ -718,26 +809,389 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// به‌روزرسانی نرم وضعیت درخواست‌ها
+async function softUpdateRequestsStatus() {
+    try {
+        console.log('Soft updating requests status...');
+
+        // بارگذاری آرام درخواست‌های جدید
+        const timestamp = Date.now() + Math.random();
+        const response = await fetch(`/api/requests-3d/my-requests?live=${timestamp}`, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+
+        if (response.ok) {
+            const newActiveRequests = await response.json();
+
+            // بررسی تغییرات در درخواست‌ها
+            const hasChanges = JSON.stringify(activeRequests) !== JSON.stringify(newActiveRequests);
+
+            if (hasChanges || newActiveRequests.length !== activeRequests.length) {
+                console.log('Request status changes detected, updating display...');
+                activeRequests = newActiveRequests;
+
+                // به‌روزرسانی نرم نمایش بدون پرش
+                updateProductCardsStatus();
+                displayActiveRequests();
+
+                // اجبار رندر مجدد کارت‌ها برای اطمینان از نمایش صحیح
+                setTimeout(() => {
+                    displayProducts(allProducts);
+                }, 500);
+            } else {
+                console.log('No changes in request status');
+            }
+        }
+    } catch (error) {
+        console.error('Error in soft update:', error);
+    }
+}
+
+// به‌روزرسانی فوری وضعیت یک کارت محصول خاص
+function updateProductCardStatusImmediately(productId, status) {
+    console.log('Updating product card immediately:', productId, status);
+
+    // پیدا کردن کارت با استفاده از data attribute
+    const targetCard = document.querySelector(`[data-product-id="${productId}"]`);
+
+    if (!targetCard) {
+        console.log('Target card not found, trying fallback method');
+        // fallback method
+        const productCards = document.querySelectorAll('.product-card');
+        const productData = allProducts.find(product => product.id === productId);
+
+        if (!productData) return;
+
+        productCards.forEach(card => {
+            const cardText = card.textContent;
+            const isTargetCard = cardText.includes(`${productData.bedrooms} خوابه`) && 
+                                cardText.includes(`${productData.area} متر`);
+
+            if (isTargetCard) {
+                updateSingleCard(card, status, productData);
+            }
+        });
+        return;
+    }
+
+    const productData = allProducts.find(product => product.id === productId);
+    if (!productData) return;
+
+    updateSingleCard(targetCard, status, productData);
+}
+
+// تابع کمکی برای به‌روزرسانی یک کارت
+function updateSingleCard(card, status, productData) {
+
+        console.log('Updating single card:', productData.id, status);
+
+    // حذف کلاس‌های قدیمی
+    card.classList.remove('has-approved-request', 'has-pending-request', 'has-rejected-request');
+
+    // اضافه کردن کلاس جدید
+    if (status === 'pending') {
+        card.classList.add('has-pending-request');
+    } else if (status === 'approved') {
+        card.classList.add('has-approved-request');
+    } else if (status === 'rejected') {
+        card.classList.add('has-rejected-request');
+    }
+
+    // غیرفعال کردن کلیک
+    card.style.cursor = 'default';
+    card.onclick = null;
+
+    // اضافه کردن badge وضعیت
+    const imageContainer = card.querySelector('.product-image-container');
+    const existingStatus = card.querySelector('.request-status');
+
+    if (!existingStatus) {
+        const statusBadge = document.createElement('div');
+        statusBadge.className = `request-status ${status}`;
+        statusBadge.style.cssText = 'z-index: 10; position: absolute; top: 10px; right: 10px;';
+        statusBadge.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                ${status === 'approved' ? 
+                    `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>` :
+                    `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/>`
+                }
+            </svg>
+            ${status === 'approved' ? 'تایید شده' : status === 'rejected' ? 'رد شده' : 'در حال بررسی'}
+        `;
+        imageContainer.appendChild(statusBadge);
+    }
+
+    // به‌روزرسانی دکمه
+    const actionButton = card.querySelector('.product-actions button');
+    if (actionButton) {
+        actionButton.disabled = true;
+        actionButton.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/>
+            </svg>
+            در حال بررسی
+        `;
+    }
+
+    // اجبار بازنویسی انیمیشن با تاخیر کوتاه
+    setTimeout(() => {
+        card.style.animationName = 'none';
+        card.offsetHeight; // trigger reflow
+        card.style.animationName = '';
+    }, 50);
+}
+
+// به‌روزرسانی وضعیت کارت‌های محصول بدون رندر مجدد
+function updateProductCardsStatus() {
+    const productCards = document.querySelectorAll('.product-card');
+
+    productCards.forEach(card => {
+        // پیدا کردن محصول مربوطه
+        const productData = allProducts.find(product => {
+            const cardText = card.textContent;
+            return cardText.includes(`${product.bedrooms} خوابه`) && 
+                   cardText.includes(`${product.area} متر`);
+        });
+
+        if (!productData) return;
+
+        // پیدا کردن درخواست مربوط به این محصول
+        const activeRequest = activeRequests.find(req => req.productId === productData.id);
+        const hasActiveRequest = !!activeRequest;
+
+        // حذف کلاس‌های قدیمی
+        card.classList.remove('has-approved-request', 'has-pending-request', 'has-rejected-request');
+
+        // پیدا کردن المنت‌های مربوط به وضعیت
+        const existingStatus = card.querySelector('.request-status');
+        const actionButton = card.querySelector('.product-actions button');
+
+        if (hasActiveRequest) {
+            // تعیین وضعیت جدید
+            let requestStatus = null;
+            if (activeRequest.status === 'تایید شده') {
+                requestStatus = 'approved';
+                card.classList.add('has-approved-request');
+            } else if (activeRequest.status === 'در حال بررسی') {
+                requestStatus = 'pending';
+                card.classList.add('has-pending-request');
+            } else if (activeRequest.status === 'رد شده') {
+                requestStatus = 'rejected';
+                card.classList.add('has-rejected-request');
+            }
+
+            card.style.cursor = 'default';
+            card.onclick = null;
+
+            // اضافه کردن badge وضعیت اگر وجود ندارد
+            if (!existingStatus) {
+                const imageContainer = card.querySelector('.product-image-container');
+                const statusBadge = document.createElement('div');
+                statusBadge.className = `request-status ${requestStatus}`;
+                statusBadge.style.cssText = 'z-index: 10; position: absolute; top: 10px; right: 10px;';
+                statusBadge.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        ${requestStatus === 'approved' ? 
+                            `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>` :
+                            `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/>`
+                        }
+                    </svg>
+                    ${requestStatus === 'approved' ? 'تایید شده' : requestStatus === 'rejected' ? 'رد شده' : 'در حال بررسی'}
+                `;
+                imageContainer.appendChild(statusBadge);
+            } else {
+                // به‌روزرسانی badge موجود
+                existingStatus.className = `request-status ${requestStatus}`;
+                existingStatus.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        ${requestStatus === 'approved' ? 
+                            `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>` :
+                            `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/>`
+                        }
+                    </svg>
+                    ${requestStatus === 'approved' ? 'تایید شده' : requestStatus === 'rejected' ? 'رد شده' : 'در حال بررسی'}
+                `;
+            }
+
+            // به‌روزرسانی دکمه action
+            if (actionButton) {
+                actionButton.disabled = true;
+                actionButton.innerHTML = `
+                    ${requestStatus === 'approved' ? 
+                        `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        درخواست تایید شده` :
+                        requestStatus === 'rejected' ?
+                        `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 6L12 10.5 8.5 8 7 9.5 10.5 12 7 14.5 8.5 16 12 13.5 15.5 16 17 14.5 13.5 12 17 9.5 15.5 8z"/>
+                        </svg>
+                        درخواست رد شده` :
+                        `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/>
+                        </svg>
+                        در حال بررسی`
+                    }
+                `;
+            }
+        } else {
+            // حذف وضعیت درخواست اگر دیگر وجود ندارد
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+
+            card.style.cursor = 'pointer';
+            card.onclick = () => openUploadModal(productData);
+
+            // بازگردانی دکمه به حالت عادی
+            if (actionButton) {
+                actionButton.disabled = false;
+                actionButton.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.99.99 0 013 16.5v-9c0-.38.21.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9z"/>
+                    </svg>
+                    درخواست 3D
+                `;
+            }
+        }
+    });
+}
+
 // تابع refresh دستی
 function forceRefresh() {
     console.log('Force refreshing live data...');
     loadUserProducts();
 }
 
-// حذف شده - دکمه بروزرسانی دیگر اضافه نمی‌شود
+// نمایش هدر بدون پلن
+function showNoPlanHeader() {
+    const headerCenter = document.querySelector('.header-center');
+
+    // حذف هدر قبلی
+    const existingNoPlanHeader = document.querySelector('.no-plan-moving-header');
+    if (existingNoPlanHeader) {
+        existingNoPlanHeader.remove();
+    }
+
+    // اضافه کردن هدر متحرک
+    const noPlanHeader = document.createElement('div');
+    noPlanHeader.className = 'no-plan-moving-header';
+    noPlanHeader.innerHTML = `
+        <div class="moving-text-container">
+            <div class="moving-text">
+                برای استفاده از این بخش باید پلن خریداری کنید
+            </div>
+        </div>
+        <div class="no-plan-actions">
+            <a href="/page2.html" class="no-plan-shop-btn">
+                خرید پلن
+            </a>
+        </div>
+    `;
+
+    headerCenter.appendChild(noPlanHeader);
+}
+
+// نمایش تعداد استفاده‌های باقی‌مانده
+function updatePlanDisplay(remainingUses) {
+    const headerLeft = document.querySelector('.page-header .header-left');
+
+    // حذف نمایش قبلی
+    const existingPlanDisplay = document.querySelector('.plan-status');
+    if (existingPlanDisplay) {
+        existingPlanDisplay.remove();
+    }
+
+    // اضافه کردن نمایش جدید بعد از دکمه بازگشت
+    const planDisplay = document.createElement('div');
+    planDisplay.className = 'plan-status';
+    planDisplay.innerHTML = `
+        <div class="plan-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.5 2.5L21 7v10l-8.5 4.5L4 17V7l8.5-4.5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            </svg>
+            <span>${remainingUses} درخواست باقی‌مانده</span>
+        </div>
+    `;
+
+    headerLeft.appendChild(planDisplay);
+
+    // اضافه کردن استایل
+    const style = document.createElement('style');
+    style.textContent = `
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .plan-status {
+            margin-top: 0.5rem;
+        }
+
+        .plan-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .plan-badge svg {
+            opacity: 0.9;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// اجبار به‌روزرسانی انیمیشن‌های کارت
+function forceRefreshCardAnimations() {
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach(card => {
+        // حذف موقت کلاس‌ها و اضافه مجدد
+        const classes = Array.from(card.classList);
+        const animationClasses = classes.filter(cls => 
+            cls.includes('has-') && (cls.includes('request') || cls.includes('pending') || cls.includes('approved'))
+        );
+
+        if (animationClasses.length > 0) {
+            // حذف موقت
+            animationClasses.forEach(cls => card.classList.remove(cls));
+
+            // اجبار reflow
+            card.offsetHeight;
+
+            // اضافه مجدد
+            setTimeout(() => {
+                animationClasses.forEach(cls => card.classList.add(cls));
+            }, 10);
+        }
+    });
+}
 
 // بارگذاری اولیه
 document.addEventListener('DOMContentLoaded', () => {
     loadUserProducts();
-    
-    // سیستم به‌روزرسانی خودکار هر 10 ثانیه
+
+    // سیستم به‌روزرسانی نرم هر 5 ثانیه برای واکنش سریع‌تر
     setInterval(() => {
-        console.log('Auto-refreshing data...');
-        loadActiveRequests(); // فقط درخواست‌ها را به‌روزرسانی می‌کند
-        
-        // اگر درخواست‌ها تغییر کرده باشند، محصولات را هم به‌روزرسانی کن
-        if (allProducts.length > 0) {
-            displayProducts(allProducts);
-        }
-    }, 10000); // هر 10 ثانیه
+        softUpdateRequestsStatus();
+    }, 5000); // هر 5 ثانیه
+
+    // به‌روزرسانی فوری پس از 2 ثانیه از بارگذاری اولیه
+    setTimeout(() => {
+        softUpdateRequestsStatus();
+    }, 2000);
 });

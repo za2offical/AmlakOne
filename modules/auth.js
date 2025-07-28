@@ -1,25 +1,27 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const fs = require('fs').promises;
+const path = require('path');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const { getAllUsers, createUser, getUserByUsername, updateUser } = require('./database');
 
 // احراز هویت - بدون سیستم کش
-const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-key-replace-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+const USERS_FILE = path.join(__dirname, '..', 'data', 'users.json');
 
-// خواندن کاربران از دیتابیس
+// خواندن کاربران از فایل
 async function readUsers() {
     try {
-        return await getAllUsers();
+        const data = await fs.readFile(USERS_FILE, 'utf8');
+        return JSON.parse(data);
     } catch (error) {
         return [];
     }
 }
 
-// نوشتن کاربران در دیتابیس (این تابع دیگر مورد استفاده قرار نمی‌گیرد)
+// نوشتن کاربران در فایل
 async function writeUsers(users) {
-    // این تابع برای سازگاری باقی می‌ماند اما از دیتابیس استفاده می‌کند
-    return true;
+    await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
 }
 
 // تولید توکن

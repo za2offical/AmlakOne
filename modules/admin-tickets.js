@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('./auth');
-const { getAllUsers, createTicket, updateTicket, deleteTicket } = require('./database');
+const fs = require('fs').promises;
+const path = require('path');
+
+const TICKETS_FILE = path.join(__dirname, '..', 'data', 'tickets.json');
+const USERS_FILE = path.join(__dirname, '..', 'data', 'users.json');
 
 // میدلور احراز هویت و بررسی دسترسی ادمین
 router.use(authenticateToken);
@@ -19,22 +23,22 @@ router.use(async (req, res, next) => {
 // تابع دریافت نام کامل کاربران برای تیکت
 async function getTicketUsersInfo(ticket) {
     try {
-        const users = await getAllUsers();
+        const users = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
         const createdByUser = users.find(u => u.username === ticket.createdBy);
         const assignedToUser = ticket.assignedTo ? users.find(u => u.username === ticket.assignedTo) : null;
-
+        
         const createdByName = createdByUser ? 
             (createdByUser.firstName && createdByUser.lastName ? 
                 `${createdByUser.firstName} ${createdByUser.lastName}` : 
                 (createdByUser.firstName || ticket.createdBy)) : 
             ticket.createdBy;
-
+            
         const assignedToName = assignedToUser ? 
             (assignedToUser.firstName && assignedToUser.lastName ? 
                 `${assignedToUser.firstName} ${assignedToUser.lastName}` : 
                 (assignedToUser.firstName || ticket.assignedTo)) : 
             (ticket.assignedTo || null);
-
+            
         return { createdByName, assignedToName };
     } catch (error) {
         return { createdByName: ticket.createdBy, assignedToName: ticket.assignedTo };
@@ -44,10 +48,10 @@ async function getTicketUsersInfo(ticket) {
 // تابع دریافت نام کامل کاربران برای پیام‌ها
 async function getMessagesWithUserNames(messages) {
     try {
-        const users = await getAllUsers();
+        const users = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
         return messages.map(message => {
             let fullName = message.sender;
-
+            
             // اگر پیام از ادمین است
             if (message.sender === 'admin') {
                 fullName = 'ادمین';
@@ -64,7 +68,7 @@ async function getMessagesWithUserNames(messages) {
                     }
                 }
             }
-
+            
             return { ...message, fullName };
         });
     } catch (error) {
@@ -136,12 +140,12 @@ router.get('/all', async (req, res) => {
         filteredTickets.sort((a, b) => {
             let aValue = a[sortBy];
             let bValue = b[sortBy];
-
+            
             if (sortBy === 'createdAt' || sortBy === 'updatedAt') {
                 aValue = new Date(aValue);
                 bValue = new Date(bValue);
             }
-
+            
             if (sortOrder === 'asc') {
                 return aValue > bValue ? 1 : -1;
             } else {
@@ -241,7 +245,7 @@ router.put('/:ticketId/status', async (req, res) => {
 
         let tickets = JSON.parse(await fs.readFile(TICKETS_FILE, 'utf8'));
         const ticketIndex = tickets.findIndex(t => t.id === ticketId);
-
+        
         if (ticketIndex === -1) {
             return res.status(404).json({ error: 'تیکت یافت نشد' });
         }
@@ -297,7 +301,7 @@ router.put('/:ticketId/assign', async (req, res) => {
 
         let tickets = JSON.parse(await fs.readFile(TICKETS_FILE, 'utf8'));
         const ticketIndex = tickets.findIndex(t => t.id === ticketId);
-
+        
         if (ticketIndex === -1) {
             return res.status(404).json({ error: 'تیکت یافت نشد' });
         }
@@ -344,7 +348,7 @@ router.put('/:ticketId/priority', async (req, res) => {
 
         let tickets = JSON.parse(await fs.readFile(TICKETS_FILE, 'utf8'));
         const ticketIndex = tickets.findIndex(t => t.id === ticketId);
-
+        
         if (ticketIndex === -1) {
             return res.status(404).json({ error: 'تیکت یافت نشد' });
         }
@@ -386,7 +390,7 @@ router.delete('/:ticketId', async (req, res) => {
 
         let tickets = JSON.parse(await fs.readFile(TICKETS_FILE, 'utf8'));
         const ticketIndex = tickets.findIndex(t => t.id === ticketId);
-
+        
         if (ticketIndex === -1) {
             return res.status(404).json({ error: 'تیکت یافت نشد' });
         }
@@ -523,7 +527,7 @@ router.post('/:ticketId/system-message', async (req, res) => {
 
         let tickets = JSON.parse(await fs.readFile(TICKETS_FILE, 'utf8'));
         const ticketIndex = tickets.findIndex(t => t.id === ticketId);
-
+        
         if (ticketIndex === -1) {
             return res.status(404).json({ error: 'تیکت یافت نشد' });
         }
@@ -558,32 +562,4 @@ router.post('/:ticketId/system-message', async (req, res) => {
     }
 });
 
-// دریافت لیست تیکت‌ها
-router.get('/', async (req, res) => {
-    try {
-        const { getAllTickets } = require('./database');
-        const tickets = await getAllTickets();
-
-        // ترتیب دادن تیکت‌ها بر اساس تاریخ ایجاد (جدیدترین اول)
-        tickets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-        // اضافه کردن اطلاعات کاربران به تیکت‌ها
-        const ticketsWithUserInfo = await Promise.all(
-            tickets.map(ticket => getTicketUsersInfo({
-                ...ticket,
-                createdBy: ticket.username,
-                title: ticket.subject,
-                description: ticket.message,
-                createdAt: ticket.created_at,
-                updatedAt: ticket.updated_at
-            }))
-        );
-
-        res.json(ticketsWithUserInfo);
-    } catch (error) {
-        console.error('Error reading tickets:', error);
-        res.status(500).json({ error: 'خطا در بارگذاری تیکت‌ها' });
-    }
-});
-
-module.exports = router;
+module.exports = router; 

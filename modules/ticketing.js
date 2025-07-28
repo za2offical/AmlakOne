@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs').promises;
+const path = require('path');
 const { authenticateToken, isAdmin } = require('./auth');
-const { createTicket, getAllTickets, updateTicket, deleteTicket, getAllUsers } = require('./database');
+
+const TICKETS_FILE = path.join(__dirname, '..', 'data', 'tickets.json');
+const USERS_FILE = path.join(__dirname, '..', 'data', 'users.json');
 
 // مدل داده تیکت (برای مرجع)
 // {
@@ -11,15 +15,15 @@ const { createTicket, getAllTickets, updateTicket, deleteTicket, getAllUsers } =
 // --- توابع سرویس ---
 async function readTickets() {
   try {
-    return await getAllTickets();
+    const data = await fs.readFile(TICKETS_FILE, 'utf8');
+    return JSON.parse(data);
   } catch (e) {
     return [];
   }
 }
 
 async function writeTickets(tickets) {
-  // این تابع برای سازگاری باقی می‌ماند ولی در عمل استفاده نمی‌شود
-  return true;
+  await fs.writeFile(TICKETS_FILE, JSON.stringify(tickets, null, 2));
 }
 
 // --- روت‌های کاربر ---

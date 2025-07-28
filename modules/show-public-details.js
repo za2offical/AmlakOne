@@ -1,9 +1,10 @@
 
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs').promises;
 const rateLimit = require('express-rate-limit');
 const sanitize = require('sanitize-filename');
-const { getProductById, get3DRequestById, get3DRequests } = require('./database');
 
 // محدودیت درخواست
 const limiter = rateLimit({
@@ -43,14 +44,26 @@ async function getProductDetails(username, productId) {
             return null;
         }
 
-        const product = await getProductById(productId);
+        const sanitizedUsername = sanitize(username);
+        const dataPath = path.join(__dirname, '..', 'data', 'products', `${sanitizedUsername}.json`);
         
-        // بررسی اینکه محصول متعلق به کاربر درست است
-        if (product && product.username === username) {
-            return product;
+        // بررسی وجود فایل
+        try {
+            await fs.access(dataPath);
+        } catch {
+            return null;
         }
-        
-        return null;
+
+        const data = await fs.readFile(dataPath, 'utf8');
+        const userData = JSON.parse(data);
+
+        if (!userData.products || !Array.isArray(userData.products)) {
+            return null;
+        }
+
+        // پیدا کردن محصول با ID مشخص
+        const product = userData.products.find(p => p.id === productId);
+        return product || null;
     } catch (error) {
         console.error('Error reading product details:', error);
         return null;
@@ -60,14 +73,23 @@ async function getProductDetails(username, productId) {
 // بررسی وجود درخواست 3D تایید شده
 async function getApproved3DRequest(username, productId) {
     try {
-        const requests = await get3DRequests();
+        const dataPath = path.join(__dirname, '..', '3D', 'data.json');
+        
+        try {
+            await fs.access(dataPath);
+        } catch {
+            return null;
+        }
 
-        if (!requests || !Array.isArray(requests)) {
+        const data = await fs.readFile(dataPath, 'utf8');
+        const requestsData = JSON.parse(data);
+
+        if (!requestsData.requests || !Array.isArray(requestsData.requests)) {
             return null;
         }
 
         // پیدا کردن درخواست تایید شده برای این محصول
-        const request = requests.find(r => 
+        const request = requestsData.requests.find(r => 
             r.username === username && 
             r.productId === productId && 
             r.status === 'تایید شده'

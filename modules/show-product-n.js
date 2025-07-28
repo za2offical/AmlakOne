@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs').promises;
 const { authenticateToken } = require('./auth');
 const helmet = require('helmet');
-const { getProductById } = require('./database');
 const sanitizeHtml = require('sanitize-html');
 
 // استفاده از helmet برای امنیت بیشتر
@@ -11,14 +12,11 @@ router.use(helmet());
 // خواندن اطلاعات محصول خاص
 async function getProductDetails(username, productId) {
     try {
-        const product = await getProductById(productId);
-        
-        // بررسی اینکه محصول متعلق به کاربر درخواست کننده است
-        if (product && product.username === username) {
-            return product;
-        }
-        
-        return null;
+        const dataPath = path.join(__dirname, '..', 'data', 'products', `${username}.json`);
+        const data = await fs.readFile(dataPath, 'utf8');
+        const userData = JSON.parse(data);
+
+        return userData.products.find(p => p.id === productId);
     } catch (error) {
         console.error('Error reading product details:', error);
         return null;

@@ -1,9 +1,10 @@
 
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs').promises;
 const rateLimit = require('express-rate-limit');
 const sanitize = require('sanitize-filename');
-const { getProductsByUser, getUserByUsername } = require('./database');
 
 // محدودیت درخواست برای جلوگیری از abuse
 const limiter = rateLimit({
@@ -33,20 +34,25 @@ async function getUserProductsPublic(username) {
             return null;
         }
 
-        // بررسی وجود کاربر
-        const user = await getUserByUsername(username);
-        if (!user) {
-            return null;
+        const sanitizedUsername = sanitize(username);
+        const dataPath = path.join(__dirname, '..', 'data', 'products', `${sanitizedUsername}.json`);
+        
+        // بررسی وجود فایل
+        try {
+            await fs.access(dataPath);
+        } catch {
+            return null; // کاربر محصولی ندارد
         }
 
-        const products = await getProductsByUser(username);
+        const data = await fs.readFile(dataPath, 'utf8');
+        const userData = JSON.parse(data);
 
-        if (!products || !Array.isArray(products)) {
+        if (!userData.products || !Array.isArray(userData.products)) {
             return [];
         }
 
         // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
-        return products.sort((a, b) => 
+        return userData.products.sort((a, b) => 
             new Date(b.created_at) - new Date(a.created_at)
         );
     } catch (error) {
@@ -110,8 +116,12 @@ router.get('/user-info/:username', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        const usersPath = path.join(__dirname, '..', 'data', 'users.json');
+        
         try {
-            const user = await getUserByUsername(username);
+            const usersData = await fs.readFile(usersPath, 'utf8');
+            const users = JSON.parse(usersData);
+            const user = users.find(u => u.username === username);
             
             if (user && user.firstName && user.lastName) {
                 res.json({

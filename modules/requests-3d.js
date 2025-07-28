@@ -1,191 +1,352 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
+const multer = require('multer');
 const { authenticateToken } = require('./auth');
-const { 
-    create3DRequest, 
-    get3DRequests, 
-    get3DRequestById, 
-    update3DRequest, 
-    delete3DRequest,
-    get3DDataByKey,
-    upsert3DData,
-    getAll3DData,
-    getDB 
-} = require('./database');
+const sanitize = require('sanitize-filename');
 
-// تنظیمات آپلود فایل
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '..', '3D', 'videos'));
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
+// تنظیمات آپلود ویدیو
+const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 500 * 1024 * 1024 // 500MB
+        fileSize: 100 * 1024 * 1024 // حداکثر 100 مگابایت
     },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm'];
-        const ext = path.extname(file.originalname).toLowerCase();
-        if (allowedTypes.includes(ext)) {
-            cb(null, true);
-        } else {
-            cb(new Error('فقط فایل‌های ویدیویی مجاز هستند'));
+        // فقط فایل‌های ویدیویی مجاز
+        if (!file.mimetype.startsWith('video/')) {
+            return cb(new Error('Only video files are allowed'));
         }
+        cb(null, true);
     }
-});
+}).single('video');
 
-// دریافت تمام درخواست‌های 3D
-router.get('/requests', authenticateToken, async (req, res) => {
+// ایجاد دایرکتوری‌های مورد نیاز
+async function ensureDirectories(username) {
+    const dataDir = path.join(__dirname, '..', '3D');
+    const userVideoDir = path.join(dataDir, sanitize(username));
+    const dataFile = path.join(dataDir, 'data.json');
+
+    await fs.mkdir(dataDir, { recursive: true });
+    await fs.mkdir(userVideoDir, { recursive: true });
+
+    return {
+        dataFile,
+        userVideoDir
+    };
+}
+
+// خواندن اطلاعات درخواست‌های 3D
+async function read3DRequests(dataFile) {
     try {
-        const requests = await get3DRequests();
-        res.json(requests || []);
+        const data = await fs.readFile(dataFile, 'utf8');
+        return JSON.parse(data);
     } catch (error) {
-        console.error('خطا در دریافت درخواست‌های 3D:', error);
-        res.status(500).json({ error: 'خطا در دریافت درخواست‌ها' });
+        return { requests: [] };
     }
-});
+}
 
-// دریافت درخواست 3D خاص
-router.get('/requests/:id', authenticateToken, async (req, res) => {
+// خواندن محصولات کاربر
+async function getUserProducts(username) {
     try {
-        const request = await get3DRequestById(req.params.id);
-        if (!request) {
-            return res.status(404).json({ error: 'درخواست یافت نشد' });
-        }
-        res.json(request);
+        const dataPath = path.join(__dirname, '..', 'data', 'products', `${sanitize(username)}.json`);
+        const data = await fs.readFile(dataPath, 'utf8');
+        const userData = JSON.parse(data);
+        return userData.products || [];
     } catch (error) {
-        console.error('خطا در دریافت درخواست 3D:', error);
-        res.status(500).json({ error: 'خطا در دریافت درخواست' });
+        console.error('Error reading user products:', error);
+        return [];
     }
-});
+}
 
-// ایجاد درخواست 3D جدید
-router.post('/submit', authenticateToken, upload.single('video'), async (req, res) => {
+// خواندن پلن‌های 3D
+async function read3DPlans() {
     try {
-        const { productId } = req.body;
-        const username = req.user.username;
-
-        if (!req.file) {
-            return res.status(400).json({ error: 'فایل ویدیو الزامی است' });
-        }
-
-        const requestData = {
-            id: Date.now().toString(),
-            username: username,
-            productId: productId || '',
-            videoPath: req.file.path,
-            status: 'در حال بررسی',
-            url: null,
-            submittedAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-
-        await create3DRequest(requestData);
-
-        res.status(201).json({
-            success: true,
-            message: 'درخواست 3D با موفقیت ثبت شد',
-            request: requestData
-        });
+        const planPath = path.join(__dirname, '..', '3D', 'plan3D.json');
+        const data = await fs.readFile(planPath, 'utf8');
+        return JSON.parse(data);
     } catch (error) {
-        console.error('خطا در ثبت درخواست 3D:', error);
-        res.status(500).json({ error: 'خطا در ثبت درخواست' });
+        console.error('Error reading 3D plans:', error);
+        return {};
     }
-});
+}
 
-// به‌روزرسانی درخواست 3D
-router.put('/update/:id', authenticateToken, async (req, res) => {
+// به‌روزرسانی پلن‌های 3D
+async function update3DPlans(plans) {
     try {
-        const requestId = req.params.id;
-        const updateData = req.body;
-
-        // حذف فیلدهای غیرقابل تغییر
-        delete updateData.id;
-        delete updateData.username;
-        delete updateData.submittedAt;
-
-        updateData.updatedAt = new Date().toISOString();
-
-        await update3DRequest(requestId, updateData);
-
-        res.json({
-            success: true,
-            message: 'درخواست با موفقیت به‌روزرسانی شد'
-        });
+        const planPath = path.join(__dirname, '..', '3D', 'plan3D.json');
+        await fs.writeFile(planPath, JSON.stringify(plans, null, 2));
+        return true;
     } catch (error) {
-        console.error('خطا در به‌روزرسانی درخواست 3D:', error);
-        res.status(500).json({ error: 'خطا در به‌روزرسانی درخواست' });
+        console.error('Error updating 3D plans:', error);
+        return false;
     }
-});
+}
 
-// حذف درخواست 3D
-router.delete('/delete/:id', authenticateToken, async (req, res) => {
+// بررسی وجود پلن برای کاربر
+async function checkUserPlan(username) {
+    const plans = await read3DPlans();
+    const userPlan = plans[username];
+
+    return {
+        hasPlan: userPlan !== undefined,
+        remainingUses: userPlan || 0
+    };
+}
+
+// کاهش تعداد استفاده پلن
+async function decrementPlanUsage(username) {
     try {
-        const requestId = req.params.id;
+        console.log(`Attempting to decrement plan usage for user: ${username}`);
+        const plans = await read3DPlans();
+        console.log('Current plans before decrement:', plans);
 
-        // دریافت اطلاعات درخواست برای حذف فایل ویدیو
-        const request = await get3DRequestById(requestId);
-        if (request && request.videoPath) {
-            try {
-                await fs.unlink(request.videoPath);
-            } catch (err) {
-                console.warn('فایل ویدیو یافت نشد:', err.message);
+        if (plans[username] && plans[username] > 0) {
+            const oldValue = plans[username];
+            plans[username]--;
+            console.log(`Decremented ${username} from ${oldValue} to ${plans[username]}`);
+
+            // اگر تعداد استفاده به صفر رسید، کاربر را حذف کن
+            if (plans[username] === 0) {
+                console.log(`Removing user ${username} from plan (reached 0)`);
+                delete plans[username];
             }
+
+            const updateResult = await update3DPlans(plans);
+            console.log('Plan update result:', updateResult);
+            console.log('Plans after update:', await read3DPlans());
+
+            return updateResult;
+        } else {
+            console.log(`User ${username} not found in plans or has 0 remaining uses`);
+            return false;
         }
-
-        await delete3DRequest(requestId);
-
-        res.json({
-            success: true,
-            message: 'درخواست با موفقیت حذف شد'
-        });
     } catch (error) {
-        console.error('خطا در حذف درخواست 3D:', error);
-        res.status(500).json({ error: 'خطا در حذف درخواست' });
+        console.error('Error in decrementPlanUsage:', error);
+        return false;
+    }
+}
+
+// میدلور احراز هویت
+router.use(authenticateToken);
+
+// بررسی وضعیت پلن کاربر
+router.get('/check-plan', async (req, res) => {
+    try {
+        const username = req.user.username;
+        const planStatus = await checkUserPlan(username);
+
+        res.json(planStatus);
+    } catch (error) {
+        console.error('Error checking user plan:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// دریافت داده‌های 3D (نظیر پلن‌ها)
-router.get('/data', authenticateToken, async (req, res) => {
+// دریافت محصولات کاربر برای نمایش در صفحه درخواست 3D
+router.get('/user-products', async (req, res) => {
     try {
-        const data = await getAll3DData();
-        res.json(data);
+        const username = req.user.username;
+        const products = await getUserProducts(username);
+
+        // بررسی وضعیت پلن کاربر
+        const planStatus = await checkUserPlan(username);
+
+        // آماده‌سازی داده‌های محصولات برای نمایش
+        const safeProducts = products.map(product => ({
+            id: product.id,
+            bedrooms: product.bedrooms,
+            area: product.area,
+            mainImage: product.images[0] || '',
+            propertyType: product.propertyType || 'rent',
+            created_at: product.created_at
+        }));
+
+        res.json(safeProducts);
     } catch (error) {
-        console.error('خطا در دریافت داده‌های 3D:', error);
-        res.status(500).json({ error: 'خطا در دریافت داده‌ها' });
+        console.error('Error fetching products for 3D request:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// به‌روزرسانی داده‌های 3D
-router.post('/data', authenticateToken, async (req, res) => {
+// دریافت درخواست‌های 3D کاربر
+router.get('/my-requests', async (req, res) => {
     try {
-        if (req.user.username !== 'admin') {
-            return res.status(403).json({ error: 'دسترسی غیرمجاز' });
+        const username = req.user.username;
+        const { dataFile } = await ensureDirectories(username);
+        const requestsData = await read3DRequests(dataFile);
+
+        // فیلتر کردن درخواست‌های مربوط به کاربر
+        const userRequests = requestsData.requests.filter(request => 
+            request.id.startsWith(`${username}-`)
+        );
+
+        // اطمینان از بازگشت تمام فیلدها شامل URL
+        const safeRequests = userRequests.map(request => ({
+            id: request.id,
+            username: request.username,
+            productId: request.productId,
+            videoPath: request.videoPath,
+            status: request.status,
+            url: request.url || null,
+            submittedAt: request.submittedAt,
+            updatedAt: request.updatedAt
+        }));
+
+        res.json(safeRequests);
+    } catch (error) {
+        console.error('Error fetching 3D requests:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// ارسال درخواست 3D جدید
+router.post('/submit-request', async (req, res) => {
+    upload(req, res, async (err) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({ error: 'File upload error: ' + err.message });
+        } else if (err) {
+            return res.status(500).json({ error: 'Unknown error: ' + err.message });
         }
 
-        const { key, value } = req.body;
-        if (!key || value === undefined) {
-            return res.status(400).json({ error: 'کلید و مقدار الزامی است' });
+        try {
+            const username = req.user.username;
+            const { productId } = req.body;
+
+            if (!productId || !req.file) {
+                return res.status(400).json({ error: 'Product ID and video file are required' });
+            }
+
+            // بررسی وجود پلن برای کاربر
+            const planStatus = await checkUserPlan(username);
+            if (!planStatus.hasPlan || planStatus.remainingUses <= 0) {
+                return res.status(403).json({ 
+                    error: 'شما پلن 3D فعالی ندارید. لطفاً ابتدا از فروشگاه پلن تهیه کنید.',
+                    needsPlan: true
+                });
+            }
+
+            const { dataFile, userVideoDir } = await ensureDirectories(username);
+
+            // خواندن درخواست‌های موجود
+            const requestsData = await read3DRequests(dataFile);
+
+            // بررسی وجود درخواست قبلی برای همین محصول
+            const requestId = `${username}-${productId}`;
+            const existingRequest = requestsData.requests.find(r => r.id === requestId);
+
+            if (existingRequest) {
+                return res.status(400).json({ 
+                    error: 'برای این محصول قبلاً درخواست ارسال شده است',
+                    existingStatus: existingRequest.status
+                });
+            }
+
+            // ذخیره فایل ویدیو
+            const videoFileName = `${productId}.mp4`;
+            const videoPath = path.join(userVideoDir, videoFileName);
+            await fs.writeFile(videoPath, req.file.buffer);
+
+            // ایجاد درخواست جدید
+            const newRequest = {
+                id: requestId,
+                username: username,
+                productId: productId,
+                videoPath: path.join('3D', sanitize(username), videoFileName),
+                status: 'در حال بررسی',
+                url: null,
+                submittedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            // اضافه کردن درخواست جدید
+            requestsData.requests.push(newRequest);
+
+            // ذخیره درخواست‌ها
+            await fs.writeFile(dataFile, JSON.stringify(requestsData, null, 2));
+
+            // کاهش تعداد استفاده از پلن کاربر هنگام ثبت درخواست
+            try {
+                const decrementResult = await decrementPlanUsage(username);
+                console.log(`Plan usage decrement result for ${username}:`, decrementResult);
+
+                if (!decrementResult) {
+                    console.error(`Failed to decrement plan usage for user: ${username}`);
+                }
+
+                // خواندن مجدد پلن برای اطمینان از به‌روزرسانی
+                const updatedPlanStatus = await checkUserPlan(username);
+                console.log(`Updated plan status for ${username}:`, updatedPlanStatus);
+
+                res.status(201).json({
+                    success: true,
+                    message: 'درخواست 3D با موفقیت ارسال شد',
+                    request: newRequest,
+                    remainingUses: updatedPlanStatus.remainingUses,
+                    planDecremented: decrementResult
+                });
+            } catch (decrementError) {
+                console.error('Error decrementing plan usage:', decrementError);
+                // حتی اگر کاهش پلن با خطا مواجه شود، درخواست را ثبت کن
+                res.status(201).json({
+                    success: true,
+                    message: 'درخواست 3D با موفقیت ارسال شد',
+                    request: newRequest,
+                    remainingUses: Math.max(0, planStatus.remainingUses - 1),
+                    planDecremented: false,
+                    error: 'خطا در به‌روزرسانی پلن'
+                });
+            }
+
+        } catch (error) {
+            console.error('Error submitting 3D request:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    });
+});
+
+// endpoint برای تایید درخواست (برای ادمین‌ها)
+router.post('/approve-request', async (req, res) => {
+    try {
+        const { requestId, url } = req.body;
+
+        if (!requestId) {
+            return res.status(400).json({ error: 'Request ID is required' });
         }
 
-        await upsert3DData(key, value);
+        const { dataFile } = await ensureDirectories('temp');
+        const requestsData = await read3DRequests(dataFile);
+
+        // پیدا کردن درخواست
+        const requestIndex = requestsData.requests.findIndex(r => r.id === requestId);
+
+        if (requestIndex === -1) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+
+        const request = requestsData.requests[requestIndex];
+
+        // اگر درخواست قبلاً تایید نشده باشد
+        if (request.status !== 'تایید شده') {
+            // تایید درخواست
+            requestsData.requests[requestIndex].status = 'تایید شده';
+            requestsData.requests[requestIndex].url = url || null;
+            requestsData.requests[requestIndex].updatedAt = new Date().toISOString();
+
+            // ذخیره تغییرات درخواست
+            await fs.writeFile(dataFile, JSON.stringify(requestsData, null, 2));
+        }
 
         res.json({
             success: true,
-            message: 'داده‌ها با موفقیت به‌روزرسانی شدند'
+            message: 'درخواست با موفقیت تایید شد',
+            request: requestsData.requests[requestIndex]
         });
+
     } catch (error) {
-        console.error('خطا در به‌روزرسانی داده‌های 3D:', error);
-        res.status(500).json({ error: 'خطا در به‌روزرسانی داده‌ها' });
+        console.error('Error approving request:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 

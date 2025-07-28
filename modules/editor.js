@@ -1,15 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const { authenticateToken } = require("./auth");
+const fs = require("fs").promises;
+const path = require("path");
 const bcrypt = require("bcryptjs");
-const { 
-    getUserByUsername, 
-    updateUser, 
-    getAllUsers, 
-    createUser, 
-    createNotification,
-    getDB
-} = require('./database');
+
+const USERS_FILE = path.join(__dirname, "..", "data", "users.json");
+const NOTIFICATIONS_FILE = path.join(__dirname, "..", "data", "notifications.json");
 
 // استفاده از میدلور احراز هویت
 router.use(authenticateToken);
@@ -17,7 +14,7 @@ router.use(authenticateToken);
 // بررسی دسترسی ادمین
 router.use(async (req, res, next) => {
     try {
-        if (req.user.username !== process.env.ADMIN_USERNAME && req.user.username !== 'admin') {
+        if (req.user.username !== 'admin') {
             return res.status(403).json({ error: 'Access denied - Admin only' });
         }
         next();
@@ -29,7 +26,7 @@ router.use(async (req, res, next) => {
 // دریافت لیست کاربران
 router.get('/users', async (req, res) => {
     try {
-        const users = await getAllUsers();
+        const users = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
         const userList = users.map(user => ({
             username: user.username,
             firstName: user.firstName || '',
@@ -60,8 +57,8 @@ router.post('/create-user', async (req, res) => {
         if (!passwordRegex.test(password)) {
             return res.status(400).json({ error: 'رمز عبور باید حداقل 8 کاراکتر باشد و شامل حروف بزرگ، کوچک، عدد و کاراکتر خاص باشد' });
         }
-        const existingUser = await getUserByUsername(username);
-        if (existingUser) {
+        const users = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
+        if (users.find(u => u.username === username)) {
             return res.status(400).json({ error: 'این نام کاربری قبلاً استفاده شده است' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -70,10 +67,10 @@ router.post('/create-user', async (req, res) => {
             hashedPassword,
             created_at: new Date().toISOString(),
             failedLoginAttempts: 0,
-            lockoutUntil: null,
-            profileCompleted: false
+            lockoutUntil: null
         };
-        await createUser(newUser);
+        users.push(newUser);
+        await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
         res.json({ success: true, message: 'کاربر با موفقیت ایجاد شد' });
     } catch (error) {
         res.status(500).json({ error: 'خطا در ایجاد کاربر' });
@@ -91,14 +88,15 @@ router.post('/change-password', async (req, res) => {
         if (!passwordRegex.test(newPassword)) {
             return res.status(400).json({ error: 'رمز عبور باید حداقل 8 کاراکتر باشد و شامل حروف بزرگ، کوچک، عدد و کاراکتر خاص باشد' });
         }
-        const user = await getUserByUsername(username);
-        if (!user) {
+        const users = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
+        const userIndex = users.findIndex(u => u.username === username);
+        if (userIndex === -1) {
             return res.status(404).json({ error: 'کاربر یافت نشد' });
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await updateUser(username, {
-            hashedPassword: hashedPassword
-        });
+        users[userIndex].hashedPassword = hashedPassword;
+        users[userIndex].updated_at = new Date().toISOString();
+        await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
         res.json({ success: true, message: 'رمز عبور با موفقیت تغییر کرد' });
     } catch (error) {
         res.status(500).json({ error: 'خطا در تغییر رمز عبور' });
@@ -112,14 +110,15 @@ router.post('/unlock-user', async (req, res) => {
         if (!username) {
             return res.status(400).json({ error: 'نام کاربری الزامی است' });
         }
-        const user = await getUserByUsername(username);
-        if (!user) {
+        const users = JSON.parse(await fs.readFile(USERS_FILE, 'utf8'));
+        const userIndex = users.findIndex(u => u.username === username);
+        if (userIndex === -1) {
             return res.status(404).json({ error: 'کاربر یافت نشد' });
         }
-        await updateUser(username, {
-            failedLoginAttempts: 0,
-            lockoutUntil: null
-        });
+        users[userIndex].failedLoginAttempts = 0;
+        users[userIndex].lockoutUntil = null;
+        users[userIndex].updated_at = new Date().toISOString();
+        await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
         res.json({ success: true, message: 'محدودیت لاگین کاربر رفع شد' });
     } catch (error) {
         res.status(500).json({ error: 'خطا در رفع محدودیت' });
@@ -139,14 +138,17 @@ router.post('/send-notification', async (req, res) => {
         if (message.length > 1000) {
             return res.status(400).json({ error: 'متن اعلان نمی‌تواند بیشتر از 1000 کاراکتر باشد' });
         }
+        const notifications = JSON.parse(await fs.readFile(NOTIFICATIONS_FILE, 'utf8'));
         const newNotification = {
             id: Date.now().toString(),
-            username: 'all',
             title: title.trim(),
             message: message.trim(),
-            created_at: new Date().toISOString()
+            sentBy: req.user.username,
+            sentAt: new Date().toISOString(),
+            readBy: []
         };
-        await createNotification(newNotification);
+        notifications.unshift(newNotification);
+        await fs.writeFile(NOTIFICATIONS_FILE, JSON.stringify(notifications, null, 2));
         res.json({ success: true, message: 'اعلان با موفقیت برای تمام کاربران ارسال شد', notification: newNotification });
     } catch (error) {
         res.status(500).json({ error: 'خطا در ارسال اعلان' });
@@ -156,16 +158,9 @@ router.post('/send-notification', async (req, res) => {
 // دریافت لیست اعلان‌ها (برای ادمین)
 router.get('/notifications', async (req, res) => {
     try {
-        const db = getDB();
-        const notifications = await new Promise((resolve, reject) => {
-            db.all("SELECT * FROM notifications ORDER BY created_at DESC", [], (err, rows) => {
-                if (err) reject(err);
-                else resolve(rows || []);
-            });
-        });
+        const notifications = JSON.parse(await fs.readFile(NOTIFICATIONS_FILE, 'utf8'));
         res.json(notifications);
     } catch (error) {
-        console.error('Error loading notifications:', error);
         res.status(500).json({ error: 'خطا در بارگذاری اعلان‌ها' });
     }
 });
@@ -174,24 +169,18 @@ router.get('/notifications', async (req, res) => {
 router.delete('/notifications/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const db = getDB();
-
-        const result = await new Promise((resolve, reject) => {
-            db.run("DELETE FROM notifications WHERE id = ?", [id], function(err) {
-                if (err) reject(err);
-                else resolve(this);
-            });
-        });
-
-        if (result.changes === 0) {
+        const notifications = JSON.parse(await fs.readFile(NOTIFICATIONS_FILE, 'utf8'));
+        const notificationIndex = notifications.findIndex(n => n.id === id);
+        if (notificationIndex === -1) {
             return res.status(404).json({ error: 'اعلان یافت نشد' });
         }
-
+        notifications.splice(notificationIndex, 1);
+        await fs.writeFile(NOTIFICATIONS_FILE, JSON.stringify(notifications, null, 2));
         res.json({ success: true, message: 'اعلان با موفقیت حذف شد' });
     } catch (error) {
-        console.error('Error deleting notification:', error);
         res.status(500).json({ error: 'خطا در حذف اعلان' });
     }
 });
 
 module.exports = router;
+

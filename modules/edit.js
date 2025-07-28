@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const { authenticateToken } = require('./auth');
-const { getUserByUsername, updateUser, getAllUsers } = require('./database');
+const { authenticateToken, readUsers, writeUsers, User } = require('./auth');
 
 router.use(authenticateToken);
 
@@ -18,7 +17,7 @@ router.get('/check-auth', async (req, res) => {
 
 router.get('/user-info', async (req, res) => {
     try {
-        const user = await getUserByUsername(req.user.username);
+        const user = await User.findOne({ username: req.user.username }).lean();
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -47,29 +46,27 @@ router.put('/update-username', async (req, res) => {
             });
         }
 
-        const existing = await getUserByUsername(newUsername);
+        const existing = await User.findOne({ username: newUsername });
         if (existing && existing.username !== currentUsername) {
             return res.status(400).json({ error: 'Username already exists' });
         }
 
-        const user = await getUserByUsername(currentUsername);
+        const user = await User.findOne({ username: currentUsername });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
         // انتقال فایل‌ها در صورت تغییر نام کاربری
-        let profileImagePath = user.profileImagePath;
         if (newUsername !== currentUsername) {
             await transferUserFiles(currentUsername, newUsername);
             if (user.profileImagePath && user.profileImagePath.includes(`${currentUsername}.jpg`)) {
-                profileImagePath = user.profileImagePath.replace(`${currentUsername}.jpg`, `${newUsername}.jpg`);
+                user.profileImagePath = user.profileImagePath.replace(`${currentUsername}.jpg`, `${newUsername}.jpg`);
             }
         }
 
-        await updateUser(currentUsername, {
-            username: newUsername,
-            profileImagePath: profileImagePath
-        });
+        user.username = newUsername;
+        user.updated_at = new Date().toISOString();
+        await user.save();
 
         const { generateToken } = require('./auth');
         const newToken = generateToken({ username: newUsername });
@@ -247,20 +244,28 @@ router.put('/update-profile', (req, res) => {
                 });
             }
 
+            const users = await readUsers();
+
             // بررسی تکراری بودن نام کاربری
-            const existingUser = await getUserByUsername(newUsername);
-            if (existingUser && existingUser.username !== currentUsername) {
+            if (users.some(u => u.username === newUsername && u.username !== currentUsername)) {
                 return res.status(400).json({ error: 'این نام کاربری قبلاً استفاده شده است' });
             }
 
-            // دریافت اطلاعات کاربر فعلی
-            const user = await getUserByUsername(currentUsername);
-            if (!user) {
+            // بررسی تکراری بودن شماره تلفن
+            const phoneExists = users.some(u => u.phone === phone && u.username !== currentUsername);
+            if (phoneExists) {
+                return res.status(400).json({ 
+                    error: 'این شماره تلفن قبلاً ثبت شده است' 
+                });
+            }
+
+            const userIndex = users.findIndex(u => u.username === currentUsername);
+            if (userIndex === -1) {
                 return res.status(404).json({ error: 'کاربر پیدا نشد' });
             }
 
             // پردازش عکس پروفایل (اختیاری)
-            let profileImagePath = user.profileImagePath; // حفظ عکس قبلی
+            let profileImagePath = users[userIndex].profileImagePath; // حفظ عکس قبلی
             
             // انتقال فایل‌ها در صورت تغییر نام کاربری
             if (newUsername !== currentUsername) {
@@ -279,8 +284,8 @@ router.put('/update-profile', (req, res) => {
                 const imagePath = path.join(profileImagesDir, filename);
 
                 // حذف عکس قبلی اگر وجود داشت
-                if (user.profileImagePath) {
-                    const oldImagePath = path.join(__dirname, '..', user.profileImagePath);
+                if (users[userIndex].profileImagePath) {
+                    const oldImagePath = path.join(__dirname, '..', users[userIndex].profileImagePath);
                     try {
                         await fs.unlink(oldImagePath);
                     } catch (e) { /* اگر نبود مشکلی نیست */ }
@@ -290,15 +295,19 @@ router.put('/update-profile', (req, res) => {
                 profileImagePath = `/profile-img/${filename}`;
             }
 
-            // به‌روزرسانی اطلاعات کاربر در دیتابیس
-            await updateUser(currentUsername, {
+            // به‌روزرسانی اطلاعات کاربر
+            users[userIndex] = {
+                ...users[userIndex],
                 username: newUsername,
                 phone: phone,
                 province: province,
                 neighborhood: neighborhood,
                 profileImagePath: profileImagePath,
-                profileCompleted: 1
-            });
+                profileCompleted: true,
+                updated_at: new Date().toISOString()
+            };
+
+            await writeUsers(users);
 
             // اگر نام کاربری تغییر کرده، توکن جدید بسازیم
             if (newUsername !== currentUsername) {

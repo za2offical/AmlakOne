@@ -1,14 +1,30 @@
+
 const express = require('express');
 const router = express.Router();
-const { 
-    createSignupEntry, 
-    getAllSignupEntries, 
-    deleteSignupEntry,
-    getDB 
-} = require('./database');
+const fs = require('fs').promises;
+const path = require('path');
+const bcrypt = require('bcryptjs');
+const { readUsers, writeUsers } = require('./auth');
 
-// ثبت شماره تلفن جدید
-router.post('/add', async (req, res) => {
+const SIGNUP_FILE = path.join(__dirname, '..', 'data', 'signup.json');
+
+// خواندن شماره‌های مجاز از فایل
+async function readAuthorizedPhones() {
+    try {
+        const data = await fs.readFile(SIGNUP_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        return [];
+    }
+}
+
+// نوشتن شماره‌های مجاز در فایل
+async function writeAuthorizedPhones(phones) {
+    await fs.writeFile(SIGNUP_FILE, JSON.stringify(phones, null, 2));
+}
+
+// مرحله اول: بررسی شماره تلفن
+router.post('/verify-phone', async (req, res) => {
     try {
         const { phone } = req.body;
 
@@ -16,53 +32,140 @@ router.post('/add', async (req, res) => {
             return res.status(400).json({ error: 'شماره تلفن الزامی است' });
         }
 
-        // اعتبارسنجی شماره تلفن ایرانی
-        if (!/^09[0-9]{9}$/.test(phone)) {
-            return res.status(400).json({ error: 'فرمت شماره تلفن نامعتبر است' });
+        // اعتبارسنجی شماره تلفن (فرمت ایرانی)
+        const phoneRegex = /^09\d{9}$/;
+        if (!phoneRegex.test(phone)) {
+            return res.status(400).json({ 
+                error: 'فرمت شماره تلفن نامعتبر است. از فرمت 09XXXXXXXXX استفاده کنید' 
+            });
         }
 
-        await createSignupEntry(phone);
+        // بررسی اینکه شماره در لیست مجاز هست یا نه
+        const authorizedPhones = await readAuthorizedPhones();
+        if (!authorizedPhones.includes(phone)) {
+            return res.status(403).json({ 
+                error: 'شماره تلفن شما در لیست مجاز نیست' 
+            });
+        }
 
-        res.status(201).json({
-            success: true,
-            message: 'شماره تلفن با موفقیت ثبت شد'
+        // بررسی اینکه آیا این شماره قبلاً ثبت نام کرده یا نه
+        const users = await readUsers();
+        const existingUser = users.find(u => u.phone === phone);
+        if (existingUser) {
+            return res.status(400).json({ 
+                error: 'این شماره تلفن قبلاً ثبت نام کرده است' 
+            });
+        }
+
+        res.json({ 
+            success: true, 
+            message: 'شماره تلفن تایید شد',
+            phone: phone
         });
+
     } catch (error) {
-        if (error.message.includes('UNIQUE constraint failed')) {
-            return res.status(400).json({ error: 'این شماره تلفن قبلاً ثبت شده است' });
-        }
-        console.error('خطا در ثبت شماره تلفن:', error);
-        res.status(500).json({ error: 'خطا در ثبت شماره تلفن' });
+        console.error('Error verifying phone:', error);
+        res.status(500).json({ error: 'خطای داخلی سرور' });
     }
 });
 
-// دریافت تمام شماره‌های ثبت شده (فقط ادمین)
-router.get('/all', async (req, res) => {
+// مرحله دوم: تکمیل ثبت نام
+router.post('/complete-registration', async (req, res) => {
     try {
-        // این endpoint فقط برای ادمین در نظر گرفته شده
-        const signups = await getAllSignupEntries();
-        const phones = signups.map(signup => signup.phone);
-        res.json(phones);
-    } catch (error) {
-        console.error('خطا در دریافت لیست ثبت‌نام‌ها:', error);
-        res.status(500).json({ error: 'خطا در دریافت لیست ثبت‌نام‌ها' });
-    }
-});
+        const { phone, username, password, confirmPassword } = req.body;
 
-// حذف شماره تلفن (فقط ادمین)
-router.delete('/remove/:phone', async (req, res) => {
-    try {
-        const phone = req.params.phone;
+        // اعتبارسنجی داده‌های ورودی
+        if (!phone || !username || !password || !confirmPassword) {
+            return res.status(400).json({ 
+                error: 'تمام فیلدها الزامی هستند' 
+            });
+        }
 
-        await deleteSignupEntry(phone);
+        // بررسی تطابق رمز عبور
+        if (password !== confirmPassword) {
+            return res.status(400).json({ 
+                error: 'رمز عبور و تکرار آن یکسان نیستند' 
+            });
+        }
 
-        res.json({
-            success: true,
-            message: 'شماره تلفن با موفقیت حذف شد'
+        // اعتبارسنجی نام کاربری
+        if (username.length < 3 || username.length > 20) {
+            return res.status(400).json({ 
+                error: 'نام کاربری باید بین 3 تا 20 کاراکتر باشد' 
+            });
+        }
+
+        // بررسی فقط شامل حروف انگلیسی و اعداد
+        const usernameRegex = /^[a-zA-Z0-9]+$/;
+        if (!usernameRegex.test(username)) {
+            return res.status(400).json({ 
+                error: 'نام کاربری فقط باید شامل حروف انگلیسی و اعداد باشد' 
+            });
+        }
+
+        // اعتبارسنجی رمز عبور
+        if (password.length < 6) {
+            return res.status(400).json({ 
+                error: 'رمز عبور باید حداقل 6 کاراکتر باشد' 
+            });
+        }
+
+        // بررسی دوباره شماره تلفن
+        const authorizedPhones = await readAuthorizedPhones();
+        if (!authorizedPhones.includes(phone)) {
+            return res.status(403).json({ 
+                error: 'شماره تلفن معتبر نیست' 
+            });
+        }
+
+        // بررسی تکراری نبودن نام کاربری
+        const users = await readUsers();
+        const existingUsername = users.find(u => u.username === username);
+        if (existingUsername) {
+            return res.status(400).json({ 
+                error: 'این نام کاربری قبلاً استفاده شده است' 
+            });
+        }
+
+        // بررسی تکراری نبودن شماره تلفن
+        const existingPhone = users.find(u => u.phone === phone);
+        if (existingPhone) {
+            return res.status(400).json({ 
+                error: 'این شماره تلفن قبلاً ثبت نام کرده است' 
+            });
+        }
+
+        // هش کردن رمز عبور
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // ایجاد کاربر جدید
+        const newUser = {
+            username: username,
+            hashedPassword: hashedPassword,
+            phone: phone,
+            created_at: new Date().toISOString(),
+            profileCompleted: false,
+            failedLoginAttempts: 0,
+            lockoutUntil: null
+        };
+
+        // اضافه کردن کاربر به لیست
+        users.push(newUser);
+        await writeUsers(users);
+
+        // حذف شماره تلفن از لیست مجاز
+        const updatedPhones = authorizedPhones.filter(p => p !== phone);
+        await writeAuthorizedPhones(updatedPhones);
+
+        res.json({ 
+            success: true, 
+            message: 'ثبت نام با موفقیت انجام شد',
+            username: username
         });
+
     } catch (error) {
-        console.error('خطا در حذف شماره تلفن:', error);
-        res.status(500).json({ error: 'خطا در حذف شماره تلفن' });
+        console.error('Error completing registration:', error);
+        res.status(500).json({ error: 'خطای داخلی سرور' });
     }
 });
 

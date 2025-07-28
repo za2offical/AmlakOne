@@ -324,7 +324,7 @@ function initContactForm() {
         });
     }
 
-    
+
 
     // Form submission
     if (contactForm) {
@@ -381,7 +381,7 @@ function initContactForm() {
                     contactForm.reset();
                     if (charCount) charCount.textContent = '0';
 
-                    
+
 
                 } else {
                     showError(result.error || 'خطا در ارسال پیام');
@@ -430,7 +430,7 @@ function initContactForm() {
         return emailRegex.test(email);
     }
 
-    
+
 }
 
 // Mouse Parallax Effect
@@ -569,4 +569,67 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         // Register service worker when available
     });
+}
+
+// ارسال پیام تماس
+async function sendContactMessage(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('contactEmail').value.trim();
+    const message = document.getElementById('contactMessage').value.trim();
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+
+    // اعتبارسنجی
+    if (!email || !message) {
+        showMessage('لطفاً تمام فیلدها را پر کنید', 'error');
+        return;
+    }
+
+    // بررسی فرمت ایمیل
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showMessage('فرمت ایمیل نامعتبر است', 'error');
+        return;
+    }
+
+    if (message.length > 300) {
+        showMessage('پیام نباید بیش از 300 کاراکتر باشد', 'error');
+        return;
+    }
+
+    if (message.length < 10) {
+        showMessage('پیام باید حداقل 10 کاراکتر باشد', 'error');
+        return;
+    }
+
+    submitBtn.textContent = 'در حال ارسال...';
+    submitBtn.disabled = true;
+
+    try {
+        const response = await fetch('/contact/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, message })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            showMessage('پیام شما با موفقیت ارسال شد', 'success');
+            document.getElementById('contactForm').reset();
+            updateCharacterCount(); // بازنشانی شمارنده کاراکتر
+        } else {
+            showMessage(data.error || 'خطا در ارسال پیام', 'error');
+        }
+
+    } catch (error) {
+        console.error('خطا در ارسال پیام:', error);
+        showMessage('خطا در برقراری ارتباط با سرور', 'error');
+    } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
 }

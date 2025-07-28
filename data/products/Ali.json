@@ -197,10 +197,50 @@
       "updated_at": "2025-07-28T05:30:09.030Z",
       "salePrice": 12000000000,
       "pricePerMeter": 92307692
+    },
+    {
+      "id": "1753705408046",
+      "propertyType": "sale",
+      "bedrooms": 3,
+      "area": 80,
+      "constructionYear": 1396,
+      "images": [
+        "/images/img-Ali/product-1753705407177-0.jpg",
+        "/images/img-Ali/product-1753705407234-1.jpg",
+        "/images/img-Ali/product-1753705407283-2.jpg",
+        "/images/img-Ali/product-1753705407332-3.jpg",
+        "/images/img-Ali/product-1753705407436-4.jpg",
+        "/images/img-Ali/product-1753705407535-5.jpg",
+        "/images/img-Ali/product-1753705407658-6.jpg",
+        "/images/img-Ali/product-1753705407759-7.jpg",
+        "/images/img-Ali/product-1753705407845-8.jpg",
+        "/images/img-Ali/product-1753705407943-9.jpg"
+      ],
+      "facilities": {
+        "parking": true,
+        "storage": true,
+        "elevator": true,
+        "balcony": false,
+        "parquet": false,
+        "westernToilet": false
+      },
+      "privateInfo": {
+        "propertyAddress": "",
+        "ownerName": "",
+        "ownerPhone": "",
+        "propertyNumber": "",
+        "tenantName": "",
+        "tenantPhone": ""
+      },
+      "description": "",
+      "created_at": "2025-07-28T12:23:28.046Z",
+      "updated_at": "2025-07-28T12:23:28.046Z",
+      "salePrice": 5000000000,
+      "pricePerMeter": 62500000
     }
   ],
   "user_level": 0,
   "product_limit": 20,
   "level_changed_at": "2025-07-26T23:57:04.399Z",
-  "total_products_created": 9
+  "total_products_created": 10
 }

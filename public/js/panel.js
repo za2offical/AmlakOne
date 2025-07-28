@@ -95,20 +95,13 @@
         productsContainer.innerHTML = '';
 
         // اضافه کردن پارامتر تصادفی برای جلوگیری از کش
-        const response = await fetch('/api/show-product-panel/user-products?nocache=' + Date.now());
+        const response = await fetch('/api/panel-products/user-products?nocache=' + Date.now());
         if (response.status === 401) {
             window.location.href = '/login';
             return;
         }
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Failed to load products:', response.status, errorText);
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
-
         allProducts = await response.json();
-        console.log('Loaded products:', allProducts);
 
         if (allProducts.length === 0) {
             productsContainer.innerHTML = `

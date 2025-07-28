@@ -131,14 +131,19 @@ function display3DButton(product) {
 function createImageGallery(images) {
     const mainWrapper = document.getElementById('swiperMainWrapper');
     const thumbWrapper = document.getElementById('swiperThumbWrapper');
+    const imageViewHint = document.getElementById('imageViewHint');
     mainWrapper.innerHTML = '';
     thumbWrapper.innerHTML = '';
 
     if (!images || images.length === 0) {
         mainWrapper.innerHTML = '<div class="swiper-slide"><div class="no-image">تصویری موجود نیست</div></div>';
         thumbWrapper.innerHTML = '';
+        imageViewHint.style.display = 'none';
         return;
     }
+
+    // نمایش متن راهنما در صورت وجود تصویر
+    imageViewHint.style.display = 'block';
 
     images.forEach((img, idx) => {
         mainWrapper.innerHTML += `<div class='swiper-slide'><img src='${img}' alt='تصویر ${idx+1}' class='main-image' onclick='openModal(${idx})' onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>تصویری در دسترس نیست</div>'"></div>`;

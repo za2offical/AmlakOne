@@ -279,6 +279,48 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* لینک ثبت نام */
+.signup-link {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.signup-link p {
+    color: #718096;
+    font-size: 14px;
+    margin: 0;
+}
+
+.signup-btn {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.signup-btn:hover {
+    color: #5a67d8;
+    text-decoration: none;
+}
+
+.signup-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.3s ease;
+}
+
+.signup-btn:hover::after {
+    width: 100%;
+}
+
 /* ریسپانسیو */
 @media (max-width: 480px) {
     .login-container {

@@ -166,21 +166,21 @@
       "pricePerMeter": 83333333
     },
     {
-      "id": "1753602155708",
-      "propertyType": "rent",
+      "id": "1753680609030",
+      "propertyType": "sale",
       "bedrooms": 3,
-      "area": 120,
-      "constructionYear": 1398,
+      "area": 130,
+      "constructionYear": 1395,
       "images": [
-        "/images/img-Ali/product-1753602155562-0.jpg",
-        "/images/img-Ali/product-1753602155613-1.jpg",
-        "/images/img-Ali/product-1753602155660-2.jpg"
+        "/images/img-Ali/product-1753680608878-0.jpg",
+        "/images/img-Ali/product-1753680608925-1.jpg",
+        "/images/img-Ali/product-1753680608983-2.jpg"
       ],
       "facilities": {
-        "parking": false,
+        "parking": true,
         "storage": true,
         "elevator": true,
-        "balcony": true,
+        "balcony": false,
         "parquet": false,
         "westernToilet": false
       },
@@ -193,15 +193,14 @@
         "tenantPhone": ""
       },
       "description": "",
-      "created_at": "2025-07-27T07:42:35.708Z",
-      "updated_at": "2025-07-27T07:42:35.708Z",
-      "deposit": 125000000,
-      "monthlyRent": 9000000,
-      "allowConversion": false
+      "created_at": "2025-07-28T05:30:09.030Z",
+      "updated_at": "2025-07-28T05:30:09.030Z",
+      "salePrice": 12000000000,
+      "pricePerMeter": 92307692
     }
   ],
   "user_level": 0,
   "product_limit": 6,
   "level_changed_at": "2025-07-26T23:57:04.399Z",
-  "total_products_created": 8
+  "total_products_created": 9
 }

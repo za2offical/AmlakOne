@@ -296,47 +296,68 @@ function initFAQ() {
 
 // Contact Form
 function initContactForm() {
-    // فرم تماس
-    const contactForm = document.getElementById('contact-form');
+    // Message form functionality
+    const contactForm = document.getElementById('contactForm');
+    const emailInput = document.getElementById('email');
+    const messageInput = document.getElementById('message');
+    const charCount = document.getElementById('charCount');
+    const submitBtn = document.getElementById('submitBtn');
+    const formSuccess = document.getElementById('formSuccess');
+    const formError = document.getElementById('formError');
+    const errorMessage = document.getElementById('errorMessage');
+    const remainingMessages = document.getElementById('remainingMessages');
+    const messageCount = document.getElementById('messageCount');
+
+    // Character counter for message
+    if (messageInput && charCount) {
+        messageInput.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            charCount.textContent = currentLength;
+
+            if (currentLength > 300) {
+                charCount.style.color = '#e74c3c';
+                charCount.parentElement.style.color = '#e74c3c';
+            } else {
+                charCount.style.color = '#666';
+                charCount.parentElement.style.color = '#666';
+            }
+        });
+    }
+
+
+
+    // Form submission
     if (contactForm) {
-        // شمارنده کاراکتر برای textarea
-        const messageTextarea = document.getElementById('message');
-        const charCount = document.getElementById('char-count');
-        const charCounter = document.querySelector('.char-counter');
-
-        if (messageTextarea && charCount) {
-            messageTextarea.addEventListener('input', function() {
-                const currentLength = this.value.length;
-                const maxLength = 300;
-
-                charCount.textContent = currentLength;
-
-                // تغییر رنگ بر اساس تعداد کاراکتر
-                charCounter.classList.remove('warning', 'danger');
-                if (currentLength > maxLength * 0.8) {
-                    charCounter.classList.add('warning');
-                }
-                if (currentLength > maxLength * 0.95) {
-                    charCounter.classList.add('danger');
-                }
-            });
-        }
-
         contactForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalText = submitButton.textContent;
+            const email = emailInput.value.trim();
+            const message = messageInput.value.trim();
 
-            // نمایش حالت لودینگ
-            submitButton.textContent = 'در حال ارسال...';
-            submitButton.disabled = true;
+            // Validation
+            if (!email || !message) {
+                showError('لطفاً همه فیلدها را پر کنید');
+                return;
+            }
 
-            const formData = new FormData(this);
-            const data = {
-                email: formData.get('email'),
-                message: formData.get('message')
-            };
+            if (!isValidEmail(email)) {
+                showError('لطفاً یک ایمیل معتبر وارد کنید');
+                return;
+            }
+
+            if (message.length < 10) {
+                showError('پیام باید حداقل 10 کاراکتر باشد');
+                return;
+            }
+
+            if (message.length > 300) {
+                showError('پیام نباید بیش از 300 کاراکتر باشد');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>در حال ارسال...</span><i class="fas fa-spinner fa-spin"></i>';
 
             try {
                 const response = await fetch('/api/contact/send', {
@@ -344,29 +365,72 @@ function initContactForm() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({
+                        email: email,
+                        message: message
+                    })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('پیام شما با موفقیت ارسال شد');
-                    this.reset();
+                    // Show success
+                    showSuccess(result.message || 'پیام شما با موفقیت ارسال شد!');
+
+                    // Reset form
+                    contactForm.reset();
                     if (charCount) charCount.textContent = '0';
-                    if (charCounter) charCounter.classList.remove('warning', 'danger');
+
+
+
                 } else {
-                    alert(result.error || 'خطا در ارسال پیام');
+                    showError(result.error || 'خطا در ارسال پیام');
                 }
+
             } catch (error) {
-                console.error('Error:', error);
-                alert('خطا در ارسال پیام');
-            } finally {
-                // بازگرداندن حالت عادی دکمه
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
+                console.error('خطا در ارسال پیام:', error);
+                showError('خطا در ارسال پیام. لطفاً دوباره تلاش کنید');
             }
+
+            // Reset button after delay
+            setTimeout(() => {
+                if (!submitBtn.disabled) {
+                    submitBtn.innerHTML = '<span>ارسال پیام</span><i class="fas fa-paper-plane"></i>';
+                }
+            }, 2000);
         });
     }
+
+    function showSuccess(message) {
+        if (formSuccess) {
+            formSuccess.querySelector('span').textContent = message;
+            formSuccess.style.display = 'flex';
+            if (formError) formError.style.display = 'none';
+
+            setTimeout(() => {
+                formSuccess.style.display = 'none';
+            }, 5000);
+        }
+    }
+
+    function showError(message) {
+        if (formError && errorMessage) {
+            errorMessage.textContent = message;
+            formError.style.display = 'flex';
+            if (formSuccess) formSuccess.style.display = 'none';
+
+            setTimeout(() => {
+                formError.style.display = 'none';
+            }, 5000);
+        }
+    }
+
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+
 }
 
 // Mouse Parallax Effect

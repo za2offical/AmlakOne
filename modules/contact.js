@@ -110,7 +110,7 @@ function checkCookieLimit(req, res, next) {
 }
 
 // ارسال پیام جدید
-router.post('/send', (req, res) => {
+router.post('/send', checkCookieLimit, (req, res) => {
     const { email, message } = req.body;
 
     // اعتبارسنجی ورودی‌ها

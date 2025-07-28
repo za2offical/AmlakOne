@@ -296,140 +296,102 @@ function initFAQ() {
 
 // Contact Form
 function initContactForm() {
-    // Message Form
+    // Message form functionality
     const contactForm = document.getElementById('contactForm');
+    const emailInput = document.getElementById('email');
+    const messageInput = document.getElementById('message');
+    const charCount = document.getElementById('charCount');
+    const submitBtn = document.getElementById('submitBtn');
     const formSuccess = document.getElementById('formSuccess');
     const formError = document.getElementById('formError');
     const errorMessage = document.getElementById('errorMessage');
-    const messageTextarea = document.getElementById('message');
-    const charCount = document.getElementById('charCount');
-    const messageCountSpan = document.getElementById('messageCount');
     const remainingMessages = document.getElementById('remainingMessages');
-    const submitBtn = document.getElementById('submitBtn');
+    const messageCount = document.getElementById('messageCount');
 
-    // Character counter
-    if (messageTextarea && charCount) {
-        messageTextarea.addEventListener('input', function() {
-            const count = this.value.length;
-            charCount.textContent = count;
+    // Character counter for message
+    if (messageInput && charCount) {
+        messageInput.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            charCount.textContent = currentLength;
 
-            if (count > 950) {
-                charCount.style.color = '#ef4444';
-            } else if (count > 800) {
-                charCount.style.color = '#f59e0b';
+            if (currentLength > 1000) {
+                charCount.style.color = '#e74c3c';
+                charCount.parentElement.style.color = '#e74c3c';
             } else {
-                charCount.style.color = '#64748b';
+                charCount.style.color = '#666';
+                charCount.parentElement.style.color = '#666';
             }
         });
     }
 
-    // Check message limit on page load
-    checkMessageLimit();
+    // Check remaining messages from server
+    async function checkRemainingMessages() {
+        try {
+            const response = await fetch('/api/contact/remaining');
+            const data = await response.json();
 
-    function checkMessageLimit() {
-        const today = new Date().toDateString();
-        const messageKey = `messages_${today}`;
-        const emailKey = `email_${today}`;
+            const remainingCount = data.remaining || 0;
 
-        const messagesData = localStorage.getItem(messageKey);
-        const storedEmail = localStorage.getItem(emailKey);
-
-        let messageCount = 0;
-
-        if (messagesData) {
-            try {
-                const data = JSON.parse(messagesData);
-                messageCount = data.count || 0;
-            } catch (e) {
-                messageCount = 0;
+            if (messageCount) {
+                messageCount.textContent = remainingCount;
             }
-        }
 
-        const remaining = Math.max(0, 3 - messageCount);
-        messageCountSpan.textContent = remaining;
+            if (submitBtn) {
+                submitBtn.disabled = remainingCount <= 0;
+                if (remainingCount <= 0) {
+                    submitBtn.innerHTML = '<span>حد ارسال پیام تکمیل شده</span>';
+                    submitBtn.style.opacity = '0.6';
+                } else {
+                    submitBtn.innerHTML = '<span>ارسال پیام</span><i class="fas fa-paper-plane"></i>';
+                    submitBtn.style.opacity = '1';
+                }
+            }
 
-        if (remaining === 0) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span>حد مجاز ارسال پیام تمام شده</span>';
-            remainingMessages.style.color = '#ef4444';
+            return remainingCount;
+        } catch (error) {
+            console.error('خطا در دریافت تعداد پیام‌های باقی‌مانده:', error);
+            if (messageCount) {
+                messageCount.textContent = '-';
+            }
+            return 3;
         }
     }
 
-    function updateMessageCount(email) {
-        const today = new Date().toDateString();
-        const messageKey = `messages_${today}`;
-        const emailKey = `email_${today}`;
-
-        let messageData = {
-            count: 0,
-            lastEmail: email
-        };
-
-        const existing = localStorage.getItem(messageKey);
-        if (existing) {
-            try {
-                messageData = JSON.parse(existing);
-            } catch (e) {
-                messageData = { count: 0, lastEmail: email };
-            }
-        }
-
-        messageData.count += 1;
-        messageData.lastEmail = email;
-
-        localStorage.setItem(messageKey, JSON.stringify(messageData));
-        localStorage.setItem(emailKey, email);
-
-        checkMessageLimit();
-    }
-
+    // Form submission
     if (contactForm) {
         contactForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const email = document.getElementById('email').value.trim();
-            const message = document.getElementById('message').value.trim();
+            const email = emailInput.value.trim();
+            const message = messageInput.value.trim();
 
+            // Validation
             if (!email || !message) {
-                showError('لطفاً تمام فیلدها را پر کنید');
+                showError('لطفاً همه فیلدها را پر کنید');
                 return;
             }
 
             if (!isValidEmail(email)) {
-                showError('لطفاً ایمیل معتبری وارد کنید');
+                showError('لطفاً یک ایمیل معتبر وارد کنید');
                 return;
             }
 
             if (message.length < 10) {
-                showError('پیام باید حداقل ۱۰ کاراکتر باشد');
+                showError('پیام باید حداقل 10 کاراکتر باشد');
                 return;
             }
 
-            // Check message limit
-            const today = new Date().toDateString();
-            const messageKey = `messages_${today}`;
-            const messagesData = localStorage.getItem(messageKey);
-            let messageCount = 0;
-
-            if (messagesData) {
-                try {
-                    const data = JSON.parse(messagesData);
-                    messageCount = data.count || 0;
-                } catch (e) {
-                    messageCount = 0;
-                }
-            }
-
-            if (messageCount >= 3) {
-                showError('شما امروز حداکثر ۳ پیام ارسال کرده‌اید. لطفاً فردا دوباره تلاش کنید');
+            if (message.length > 1000) {
+                showError('پیام نباید بیش از 1000 کاراکتر باشد');
                 return;
             }
 
+            // Show loading state
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span>در حال ارسال...</span><i class="fas fa-spinner fa-spin"></i>';
 
             try {
-                const response = await fetch('/api/send-message', {
+                const response = await fetch('/api/contact/send', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -442,52 +404,69 @@ function initContactForm() {
 
                 const result = await response.json();
 
-                if (response.ok && result.success) {
-                    updateMessageCount(email);
-                    showSuccess('پیام شما با موفقیت ارسال شد!');
+                if (result.success) {
+                    // Show success
+                    showSuccess(result.message || 'پیام شما با موفقیت ارسال شد!');
+
+                    // Reset form
                     contactForm.reset();
                     if (charCount) charCount.textContent = '0';
+
+                    // Update remaining messages count
+                    setTimeout(() => {
+                        checkRemainingMessages();
+                    }, 1000);
+
                 } else {
-                    throw new Error(result.error || 'خطا در ارسال پیام');
+                    showError(result.error || 'خطا در ارسال پیام');
                 }
+
             } catch (error) {
-                console.error('Error sending message:', error);
-                showError(error.message || 'خطا در ارسال پیام. لطفاً دوباره تلاش کنید');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span>ارسال پیام</span><i class="fas fa-paper-plane"></i>';
+                console.error('خطا در ارسال پیام:', error);
+                showError('خطا در ارسال پیام. لطفاً دوباره تلاش کنید');
             }
+
+            // Reset button after delay
+            setTimeout(() => {
+                if (!submitBtn.disabled) {
+                    submitBtn.innerHTML = '<span>ارسال پیام</span><i class="fas fa-paper-plane"></i>';
+                }
+            }, 2000);
         });
     }
 
     function showSuccess(message) {
-        hideMessages();
-        formSuccess.querySelector('span').textContent = message;
-        formSuccess.style.display = 'flex';
+        if (formSuccess) {
+            formSuccess.querySelector('span').textContent = message;
+            formSuccess.style.display = 'flex';
+            if (formError) formError.style.display = 'none';
 
-        setTimeout(() => {
-            formSuccess.style.display = 'none';
-        }, 5000);
+            setTimeout(() => {
+                formSuccess.style.display = 'none';
+            }, 5000);
+        }
     }
 
     function showError(message) {
-        hideMessages();
-        errorMessage.textContent = message;
-        formError.style.display = 'flex';
+        if (formError && errorMessage) {
+            errorMessage.textContent = message;
+            formError.style.display = 'flex';
+            if (formSuccess) formSuccess.style.display = 'none';
 
-        setTimeout(() => {
-            formError.style.display = 'none';
-        }, 5000);
-    }
-
-    function hideMessages() {
-        formSuccess.style.display = 'none';
-        formError.style.display = 'none';
+            setTimeout(() => {
+                formError.style.display = 'none';
+            }, 5000);
+        }
     }
 
     function isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
+    }
+
+    // Initialize message count on page load
+    if (typeof checkRemainingMessages === 'function') {
+        checkRemainingMessages();
     }
 }
 

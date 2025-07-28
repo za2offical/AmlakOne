@@ -22,7 +22,18 @@ function readMessages() {
     ensureMessagesFile();
     try {
         const data = fs.readFileSync(messagesPath, 'utf8');
-        return JSON.parse(data);
+        const parsedData = JSON.parse(data);
+        
+        // اطمینان از وجود ساختار صحیح
+        if (!parsedData || typeof parsedData !== 'object') {
+            return { messages: [] };
+        }
+        
+        if (!Array.isArray(parsedData.messages)) {
+            parsedData.messages = [];
+        }
+        
+        return parsedData;
     } catch (error) {
         console.error('خطا در خواندن فایل پیام‌ها:', error);
         return { messages: [] };
@@ -133,6 +144,11 @@ router.post('/send', checkCookieLimit, (req, res) => {
 
     // خواندن پیام‌های موجود
     const messagesData = readMessages();
+
+    // اطمینان از وجود آرایه messages
+    if (!Array.isArray(messagesData.messages)) {
+        messagesData.messages = [];
+    }
 
     // ایجاد پیام جدید
     const newMessage = {

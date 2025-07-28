@@ -1,13 +1,11 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const cookieParser = require('cookie-parser');
-const { connectDB } = require('./modules/database');
 const editorRouter = require('./modules/editor');
 const loginRouter = require('./modules/login');
 const panelRouter = require('./modules/panel');
-const showProductPanelRouter = require('./modules/show-product-panel');
 const createProfileRouter = require('./modules/create-profile');
+const showProductPanelRouter = require('./modules/show-product-panel');
 const showProductNRouter = require('./modules/show-product-n');
 const showProductsPublicRouter = require('./modules/show-products-public');
 const showPublicDetailsRouter = require('./modules/show-public-details');
@@ -19,14 +17,10 @@ const adminTicketsRouter = require('./modules/admin-tickets');
 const appointmentsRouter = require('./modules/appointments');
 const ticketingRouter = require('./modules/ticketing');
 const signupRouter = require('./modules/signup'); // Added signup router
-const requests3dRouter = require('./modules/requests-3d');
-const plansRouter = require('./modules/plans');
+const plansModule = require('./modules/plans');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// اتصال به MongoDB
-connectDB();
+const port = 3000;
 
 // Trust proxy برای rate limiting در محیط production
 app.set('trust proxy', 1);
@@ -58,8 +52,8 @@ app.use('/api/login', loginRouter);
 app.use('/api/create-profile', createProfileRouter);
 app.use('/signup', signupRouter);
 app.use('/api/panel', panelRouter);
-app.use('/api/show-product-panel', showProductPanelRouter);
 app.use('/api/product', productRouter);
+app.use('/api/panel-products', showProductPanelRouter);
 app.use('/api/product-details', showProductNRouter);
 app.use('/api/public-products', showProductsPublicRouter);
 app.use('/api/public-details', showPublicDetailsRouter);
@@ -71,8 +65,8 @@ app.use('/api/tickets', ticketsRouter);
 app.use('/api/admin/tickets', adminTicketsRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/ticketing', ticketingRouter);
-app.use('/api/requests-3d', requests3dRouter);
-app.use('/api/plans', plansRouter);
+app.use('/api/requests-3d', require('./modules/requests-3d'));
+app.use('/api/plans', plansModule.router);
 
 // Serve HTML files
 app.get('/editor', (req, res) => {
@@ -158,6 +152,6 @@ app.get('*', (req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'public', 'page-not-found.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });

@@ -51,16 +51,9 @@ async function loadUserProducts() {
         const userInfo = await checkAuth();
         if (!userInfo) return;
 
-        // بررسی وضعیت پلن کاربر
-        const planStatus = await checkUserPlan();
-
-        // نمایش تعداد استفاده‌های باقی‌مانده (اگر پلن دارد)
-        if (planStatus.hasPlan) {
-            updatePlanDisplay(planStatus.remainingUses);
-        } else {
-            // نمایش هدر متحرک برای کاربرانی که پلن ندارند
-            showNoPlanHeader();
-        }
+        // نمایش پیغام "به زودی فعال خواهد شد" و مخفی کردن سایر المنت‌ها
+        showComingSoonOverlay();
+        return;
 
         // بارگذاری محصولات با داده‌های زنده - هیچ کش‌ای استفاده نمی‌شود
         const timestamp = Date.now() + Math.random(); // اطمینان از یکتا بودن
@@ -1179,6 +1172,25 @@ function forceRefreshCardAnimations() {
             }, 10);
         }
     });
+}
+
+// نمایش overlay "به زودی فعال خواهد شد"
+function showComingSoonOverlay() {
+    const overlay = document.getElementById('comingSoonOverlay');
+    const productsGrid = document.getElementById('productsGrid');
+    const emptyState = document.getElementById('emptyState');
+    const toggleBtn = document.getElementById('toggleRequestsBtn');
+    const activeRequestsSection = document.getElementById('activeRequestsSection');
+
+    if (overlay) {
+        overlay.style.display = 'flex';
+    }
+
+    // مخفی کردن سایر المنت‌ها
+    if (productsGrid) productsGrid.style.display = 'none';
+    if (emptyState) emptyState.style.display = 'none';
+    if (toggleBtn) toggleBtn.style.display = 'none';
+    if (activeRequestsSection) activeRequestsSection.style.display = 'none';
 }
 
 // بارگذاری اولیه

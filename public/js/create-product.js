@@ -306,9 +306,9 @@ async function previewImages(event) {
 
     const files = Array.from(event.target.files);
 
-    // مجموع عکس‌های قبلی و جدید نباید بیشتر از 5 شود
-    if (compressedFiles.length + files.length > 5) {
-        showMessage('حداکثر 5 تصویر می‌توانید آپلود کنید', 'error');
+    // مجموع عکس‌های قبلی و جدید نباید بیشتر از 10 شود
+    if (compressedFiles.length + files.length > 10) {
+        showMessage('حداکثر ۱۰ تصویر می‌توانید آپلود کنید', 'error');
         event.target.value = '';
         return;
     }

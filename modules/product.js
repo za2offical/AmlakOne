@@ -12,17 +12,17 @@ const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
     limits: {
-        files: 5, // حداکثر 5 فایل
+        files: 10, // حداکثر 10 فایل
         fileSize: 50 * 1024 * 1024 // حداکثر 50 مگابایت
     },
     fileFilter: (req, file, cb) => {
         // فقط تصاویر مجاز
         if (!file.mimetype.startsWith('image/')) {
-            return cb(new Error('Only image files are allowed'));
+            return cb(new Error('فقط فایل‌های تصویری مجاز هستند'));
         }
         cb(null, true);
     }
-}).array('images', 5);
+}).array('images', 10);
 
 // ایجاد دایرکتوری‌های مورد نیاز
 async function ensureDirectories(username) {
@@ -141,9 +141,14 @@ async function processAndSaveImage(file, username, index) {
 const handleUpload = (req, res, next) => {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
-            return res.status(400).json({ error: 'File upload error: ' + err.message });
+            if (err.code === 'LIMIT_FILE_COUNT') {
+                return res.status(400).json({ error: 'حداکثر ۱۰ تصویر می‌توانید آپلود کنید' });
+            } else if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ error: 'حجم فایل بیش از حد مجاز است (حداکثر ۵۰ مگابایت)' });
+            }
+            return res.status(400).json({ error: 'خطا در آپلود فایل: ' + err.message });
         } else if (err) {
-            return res.status(500).json({ error: 'Unknown error: ' + err.message });
+            return res.status(500).json({ error: 'خطای ناشناخته: ' + err.message });
         }
         next();
     });

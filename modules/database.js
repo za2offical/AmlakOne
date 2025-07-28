@@ -356,18 +356,41 @@ const createProduct = async (username, productData) => {
 
 const getProductsByUser = async (username) => {
     return new Promise((resolve, reject) => {
+        if (!db) {
+            console.error('Database connection is null in getProductsByUser');
+            reject(new Error('Database connection is null'));
+            return;
+        }
+
+        console.log('Executing getProductsByUser for username:', username);
+        
         db.all("SELECT * FROM products WHERE username = ?", [username], (err, rows) => {
             if (err) {
+                console.error('Database error in getProductsByUser:', err);
                 reject(err);
             } else {
-                const products = rows.map(row => ({
-                    ...row,
-                    images: JSON.parse(row.images || '[]'),
-                    facilities: JSON.parse(row.facilities || '{}'),
-                    privateInfo: JSON.parse(row.privateInfo || '{}'),
-                    allowConversion: Boolean(row.allowConversion)
-                }));
-                resolve(products);
+                console.log('Raw database rows for user', username, ':', rows);
+                
+                if (!rows || rows.length === 0) {
+                    console.log('No products found for user:', username);
+                    resolve([]);
+                    return;
+                }
+
+                try {
+                    const products = rows.map(row => ({
+                        ...row,
+                        images: JSON.parse(row.images || '[]'),
+                        facilities: JSON.parse(row.facilities || '{}'),
+                        privateInfo: JSON.parse(row.privateInfo || '{}'),
+                        allowConversion: Boolean(row.allowConversion)
+                    }));
+                    console.log('Processed products for user', username, ':', products.length);
+                    resolve(products);
+                } catch (parseError) {
+                    console.error('Error parsing product data:', parseError);
+                    reject(parseError);
+                }
             }
         });
     });

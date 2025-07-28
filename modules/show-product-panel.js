@@ -17,11 +17,35 @@ router.use(limiter);
 async function getUserProducts(username) {
     try {
         console.log('Getting products for user:', username);
+        
+        // اطمینان از وجود اتصال دیتابیس
+        const { getDB } = require('./database');
+        const db = getDB();
+        
+        if (!db) {
+            console.error('Database connection not found');
+            return [];
+        }
+
         const products = await getProductsByUser(username);
         console.log('Raw products from database:', products);
 
         if (!products || !Array.isArray(products)) {
-            console.log('No products found or invalid format');
+            console.log('No products found or invalid format for user:', username);
+            
+            // تست مستقیم دیتابیس برای اطمینان از وجود محصولات
+            const directTest = await new Promise((resolve, reject) => {
+                db.all("SELECT COUNT(*) as count FROM products WHERE username = ?", [username], (err, rows) => {
+                    if (err) {
+                        console.error('Direct database test error:', err);
+                        reject(err);
+                    } else {
+                        console.log('Direct database count result:', rows);
+                        resolve(rows);
+                    }
+                });
+            });
+            
             return [];
         }
 
@@ -34,6 +58,7 @@ async function getUserProducts(username) {
         return sortedProducts;
     } catch (error) {
         console.error('Error reading user products:', error);
+        console.error('Error stack:', error.stack);
         return [];
     }
 }
@@ -193,6 +218,52 @@ router.put('/product/:id/status', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('خطا در به‌روزرسانی وضعیت محصول:', error);
         res.status(500).json({ error: 'خطا در به‌روزرسانی وضعیت محصول' });
+    }
+});
+
+// Debug endpoint برای بررسی محتوای دیتابیس
+router.get('/debug/products', authenticateToken, async (req, res) => {
+    try {
+        const username = req.user.username;
+        const { getDB } = require('./database');
+        const db = getDB();
+        
+        // بررسی تمام محصولات در دیتابیس
+        const allProducts = await new Promise((resolve, reject) => {
+            db.all("SELECT * FROM products", [], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+        
+        // بررسی محصولات این کاربر خاص
+        const userProducts = await new Promise((resolve, reject) => {
+            db.all("SELECT * FROM products WHERE username = ?", [username], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+        
+        // بررسی تمام نام کاربری‌های موجود
+        const allUsernames = await new Promise((resolve, reject) => {
+            db.all("SELECT DISTINCT username FROM products", [], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+        
+        res.json({
+            currentUser: username,
+            totalProducts: allProducts.length,
+            userProducts: userProducts.length,
+            userProductsData: userProducts,
+            allUsernames: allUsernames,
+            allProductsPreview: allProducts.slice(0, 5) // نمونه ۵ محصول اول
+        });
+        
+    } catch (error) {
+        console.error('Debug endpoint error:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 

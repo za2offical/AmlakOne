@@ -17,7 +17,8 @@ router.get('/check-auth', async (req, res) => {
 
 router.get('/user-info', async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.user.username }).lean();
+        const users = await readUsers();
+        const user = users.find(u => u.username === req.user.username);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -46,15 +47,18 @@ router.put('/update-username', async (req, res) => {
             });
         }
 
-        const existing = await User.findOne({ username: newUsername });
+        const users = await readUsers();
+        const existing = users.find(u => u.username === newUsername);
         if (existing && existing.username !== currentUsername) {
             return res.status(400).json({ error: 'Username already exists' });
         }
 
-        const user = await User.findOne({ username: currentUsername });
-        if (!user) {
+        const userIndex = users.findIndex(u => u.username === currentUsername);
+        if (userIndex === -1) {
             return res.status(404).json({ error: 'User not found' });
         }
+        
+        const user = users[userIndex];
 
         // انتقال فایل‌ها در صورت تغییر نام کاربری
         if (newUsername !== currentUsername) {
@@ -64,9 +68,9 @@ router.put('/update-username', async (req, res) => {
             }
         }
 
-        user.username = newUsername;
-        user.updated_at = new Date().toISOString();
-        await user.save();
+        users[userIndex].username = newUsername;
+        users[userIndex].updated_at = new Date().toISOString();
+        await writeUsers(users);
 
         const { generateToken } = require('./auth');
         const newToken = generateToken({ username: newUsername });
@@ -213,11 +217,11 @@ router.put('/update-profile', (req, res) => {
         }
 
         try {
-            const { newUsername, province, neighborhood } = req.body;
+            const { newUsername, firstName, lastName, province, neighborhood } = req.body;
             const currentUsername = req.user.username;
 
             // اعتبارسنجی داده‌های ورودی
-            if (!newUsername || !province || !neighborhood) {
+            if (!newUsername || !firstName || !lastName || !province || !neighborhood) {
                 return res.status(400).json({ 
                     error: 'تمام فیلدها الزامی هستند' 
                 });
@@ -283,6 +287,8 @@ router.put('/update-profile', (req, res) => {
             users[userIndex] = {
                 ...users[userIndex],
                 username: newUsername,
+                firstName: firstName,
+                lastName: lastName,
                 province: province,
                 neighborhood: neighborhood,
                 profileImagePath: profileImagePath,
